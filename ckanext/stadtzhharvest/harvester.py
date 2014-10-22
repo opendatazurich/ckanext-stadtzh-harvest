@@ -40,7 +40,7 @@ class StadtzhHarvester(HarvesterBase):
     DIFF_PATH = config.get('metadata.diffpath', '/usr/lib/ckan/diffs')
     INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'https://ogd-integ.global.szh.loc')
 
-    def _gather_datasets(self, harvest_job):
+    def _gather_datasets(self, harvest_job, meta_dir=''):
 
         ids = []
 
@@ -49,7 +49,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # foreach -> meta.xml -> create entry
         for dataset in datasets:
-            with open(os.path.join(self.DROPZONE_PATH, dataset, 'DEFAULT/meta.xml'), 'r') as meta_xml:
+            with open(os.path.join(self.DROPZONE_PATH, dataset, meta_dir, 'meta.xml'), 'r') as meta_xml:
                 parser = etree.XMLParser(encoding='utf-8')
                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
 
@@ -256,6 +256,17 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return element.text
 
+    def _generate_attribute_notes(self, attributlist_node):
+        '''
+        Compose the attribute notes for all the given attributes
+        '''
+        response = u'##Attribute  \n'
+        for attribut in attributlist_node:
+            response += u'**' + attribut.find('sprechenderfeldname').text + u'**  \n'
+            if attribut.find('feldbeschreibung').text != None:
+                response += attribut.find('feldbeschreibung').text + u'  \n'
+        return response
+
     def _get(self, node, name):
         element = self._node_exists_and_is_nonempty(node, name)
         if element:
@@ -332,8 +343,11 @@ class StadtzhHarvester(HarvesterBase):
                 log.debug('Updating related %s' % entry)
                 action.update.related_update(context, entry)
             else:
-                log.debug('Creating related %s' % entry)
-                action.create.related_create(context, entry)
+                try:
+                    log.debug('Creating related %s' % entry)
+                    action.create.related_create(context, entry)
+                except Exception, e:
+                    log.exception(e)
 
     def _create_diffs(self, package_dict):
         today = datetime.date.today()
