@@ -115,15 +115,18 @@ class StadtzhHarvester(HarvesterBase):
         Get the groups from the node, normalize them and get the ids.
         '''
         categories = self._get(dataset_node, 'kategorie')
-        group_titles = categories.split(', ')
-        groups = []
-        for title in group_titles:
-            if title == u'Bauen und Wohnen':
-                name = u'bauen-wohnen'
-            else:
-                name = title.lower().replace(u'ö', u'oe').replace(u'ä', u'ae')
-            groups.append((name, title))
-        return self._get_group_ids(groups)
+        if categories:
+            group_titles = categories.split(', ')
+            groups = []
+            for title in group_titles:
+                if title == u'Bauen und Wohnen':
+                    name = u'bauen-wohnen'
+                else:
+                    name = title.lower().replace(u'ö', u'oe').replace(u'ä', u'ae')
+                groups.append((name, title))
+            return self._get_group_ids(groups)
+        else:
+            return []
 
     def _dropzone_get_metadata(self, dataset_id, dataset_node):
         '''
