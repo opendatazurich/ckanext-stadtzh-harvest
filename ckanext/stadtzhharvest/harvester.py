@@ -90,7 +90,7 @@ class StadtzhHarvester(HarvesterBase):
         context = {
             'model': model,
             'session': Session,
-            'user': user
+            'user': self.config['user']
         }
         groups = []
         for name, title in group_list:
