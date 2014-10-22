@@ -10,7 +10,9 @@ from ckan import model
 from ckan.model import Session
 from ckan.logic import action
 from ckan.lib.helpers import json
+from ckan.lib.munge import munge_title_to_name, munge_filename
 from ckanext.harvest.harvesters import HarvesterBase
+from ckan.logic import get_action
 
 import logging
 log = logging.getLogger(__name__)
@@ -248,7 +250,63 @@ class StadtzhHarvester(HarvesterBase):
         else:
             log.debug(new_metadata_path + ' Metadata JSON missing for the dataset: ' + package_dict['id'])
 
+    def _find_or_create_organization(self, package_dict, context):
+        # Find or create the organization the dataset should get assigned to.
+        try:
+            data_dict = {
+                'permission': 'edit_group',
+                'id': munge_title_to_name(self.ORGANIZATION['de']),
+                'name': munge_title_to_name(self.ORGANIZATION['de']),
+                'title': self.ORGANIZATION['de']
+            }
+            package_dict['owner_org'] = get_action('organization_show')(context, data_dict)['id']
+        except:
+            organization = get_action('organization_create')(context, data_dict)
+            package_dict['owner_org'] = organization['id']
 
+    def _add_resources_to_filestore(self, package_dict):
+        # Move file around and make sure it's in the file-store
+        for r in package_dict['resources']:
+            old_filename = r['name']
+            r['name'] = munge_filename(r['name'])
+            if r['resource_type'] == 'file':
+                label = package_dict['datasetID'] + '/' + r['name']
+                file_contents = ''
+                with open(os.path.join(self.DROPZONE_PATH, package_dict['datasetID'], 'DEFAULT', old_filename)) as contents:
+                    file_contents = contents.read()
+                params = {
+                    'filename-original': 'the original file name',
+                    'uploaded-by': self.config['user']
+                }
+                r['url'] = self.CKAN_SITE_URL + '/storage/f/' + label
+                self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
+
+    def _import_package(self, harvest_object):
+        package_dict = json.loads(harvest_object.content)
+        package_dict['id'] = harvest_object.guid
+        package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
+
+        user = model.User.get(self.config['user'])
+        context = {
+            'model': model,
+            'session': Session,
+            'user': self.config['user']
+        }
+
+        self._find_or_create_organization(package_dict, context)
+
+        # Insert the package only when it's not already in CKAN, but move the resources anyway.
+        package = model.Package.get(package_dict['id'])
+        if package: # package has already been imported.
+            self._create_diffs(package_dict)
+        else: # package does not exist, therefore create it.
+            pkg_role = model.PackageRole(package=package, user=user, role=model.Role.ADMIN)
+
+        self._add_resources_to_filestore(package_dict)
+
+        if not package:
+            result = self._create_or_update_package(package_dict, harvest_object)
+            self._related_create_or_update(package_dict['name'], package_dict['related'])
 
     # ---
     # COPIED FROM THE CKAN STORAGE CONTROLLER
