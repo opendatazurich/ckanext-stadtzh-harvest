@@ -256,17 +256,6 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return element.text
 
-    def _generate_attribute_notes(self, attributlist_node):
-        '''
-        Compose the attribute notes for all the given attributes
-        '''
-        response = u'##Attribute  \n'
-        for attribut in attributlist_node:
-            response += u'**' + attribut.find('sprechenderfeldname').text + u'**  \n'
-            if attribut.find('feldbeschreibung').text != None:
-                response += attribut.find('feldbeschreibung').text + u'  \n'
-        return response
-
     def _get(self, node, name):
         element = self._node_exists_and_is_nonempty(node, name)
         if element:
