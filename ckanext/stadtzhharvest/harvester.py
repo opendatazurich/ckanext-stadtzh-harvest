@@ -8,11 +8,11 @@ from ofs import get_impl
 from pylons import config
 from ckan import model
 from ckan.model import Session
-from ckan.logic import action
+from ckan.logic import action, get_action
 from ckan.lib.helpers import json
 from ckan.lib.munge import munge_title_to_name, munge_filename
 from ckanext.harvest.harvesters import HarvesterBase
-from ckan.logic import get_action
+from ckanext.harvest.model import HarvestObject
 
 import logging
 log = logging.getLogger(__name__)
@@ -39,6 +39,135 @@ class StadtzhHarvester(HarvesterBase):
 
     DIFF_PATH = config.get('metadata.diffpath', '/usr/lib/ckan/diffs')
     INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'https://ogd-integ.global.szh.loc')
+
+    def _gather_datasets(self, harvest_job):
+
+        ids = []
+
+        # list directories in geodropzone folder
+        datasets = self._remove_hidden_files(os.listdir(self.DROPZONE_PATH))
+
+        # foreach -> meta.xml -> create entry
+        for dataset in datasets:
+            with open(os.path.join(self.DROPZONE_PATH, dataset, 'DEFAULT/meta.xml'), 'r') as meta_xml:
+                parser = etree.XMLParser(encoding='utf-8')
+                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+
+                metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                id = self._save_harvest_object(metadata, harvest_job)
+                ids.append(id)
+
+                if not os.path.isdir(os.path.join(self.METADATA_PATH, dataset)):
+                    os.makedirs(os.path.join(self.METADATA_PATH, dataset))
+
+                with open(os.path.join(self.METADATA_PATH, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                    meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
+                    log.debug('Metadata JSON created')
+
+    def _save_harvest_object(metadata, harvest_job):
+        '''
+        Save the harvest object with the given metadata dict and harvest_job
+        '''
+
+        obj = HarvestObject(
+            guid=metadata['datasetID'],
+            job=harvest_job,
+            content=json.dumps(metadata)
+        )
+        obj.save()
+        log.debug('adding ' + metadata['datasetID'] + ' to the queue')
+
+        return obj.id
+
+    def _get_group_ids(self, group_list):
+        '''
+        Return the group ids for the given groups.
+        The list should contain group tuples: (name, title)
+        If a group does not exist in CKAN, create it.
+        '''
+
+        user = model.User.get(self.config['user'])
+        context = {
+            'model': model,
+            'session': Session,
+            'user': user
+        }
+        groups = []
+        for name, title in group_list:
+            try:
+                data_dict = {'id': name}
+                group_id = get_action('group_show')(context, data_dict)['id']
+                groups.append(group_id)
+                log.debug('Added group %s' % name)
+            except:
+                data_dict['name'] = name
+                data_dict['title'] = title
+                log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
+                group_id = get_action('group_create')(context, data_dict)['id']
+                groups.append(group_id)
+
+        return groups
+
+    def _dropzone_get_groups(self, dataset_node):
+        '''
+        Get the groups from the node, normalize them and get the ids.
+        '''
+        categories = self._get(dataset_node, 'kategorie')
+        group_titles = categories.split(', ')
+        groups = []
+        for title in group_titles:
+            if title == u'Bauen und Wohnen':
+                name = u'bauen-wohnen'
+            else:
+                name = title.lower().replace(u'ö', u'oe').replace(u'ä', u'ae')
+            groups.append((name, title))
+        return self._get_group_ids(groups)
+
+    def _dropzone_get_metadata(self, dataset_id, dataset_node):
+        '''
+        For the given dataset node return the metadata dict.
+        '''
+
+        return {
+            'datasetID': dataset_id,
+            'title': dataset_node.find('titel').text,
+            'url': self._get(dataset_node, 'lieferant'),
+            'notes': dataset_node.find('beschreibung').text,
+            'author': dataset_node.find('quelle').text,
+            'maintainer': 'Open Data Zürich',
+            'maintainer_email': 'opendata@zuerich.ch',
+            'license_id': 'cc-zero',
+            'license_url': 'http://opendefinition.org/licenses/cc-zero/',
+            'tags': self._generate_tags(dataset_node),
+            'groups': self._dropzone_get_groups(dataset_node),
+            'resources': self._generate_resources_dict_array(dataset_id + '/DEFAULT'),
+            'extras': [
+                ('spatialRelationship', self._get(dataset_node, 'raeumliche_beziehung')),
+                ('dateFirstPublished', self._get(dataset_node, 'erstmalige_veroeffentlichung')),
+                ('dateLastUpdated', self._get(dataset_node, 'aktualisierungsdatum')),
+                ('updateInterval', ), self._get_update_interval(dataset_node),
+                ('dataType', self._get_data_type(dataset_node)),
+                ('legalInformation', self._get(dataset_node, 'rechtsgrundlage')),
+                ('version', self._get(dataset_node, 'aktuelle_version')),
+                ('timeRange', self._get(dataset_node, 'zeitraum')),
+                ('comments', self._convert_comments(dataset_node)),
+                ('attributes', self._json_encode_attributes(self._get_attributes(dataset_node))),
+                ('dataQuality', self._get(dataset_node, 'datenqualitaet'))
+            ],
+            'related': self._get_related(dataset_node)
+        }
+
+    def _get_update_interval(self, dataset_node):
+        interval = self._get(dataset_node, 'aktualisierungsintervall').replace(u'ä', u'ae').replace(u'ö', u'oe').replace(u'ü', u'ue')
+        if not interval:
+            return '   '
+        return interval
+
+    def _get_data_type(self, dataset_node):
+        data_type = self._get(dataset_node, 'datentyp')
+        if not data_type:
+            return '   '
+        return data_type
 
     def _remove_hidden_files(self, file_list):
         '''
@@ -85,7 +214,7 @@ class StadtzhHarvester(HarvesterBase):
         '''
         resources = []
         resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.DROPZONE_PATH, dataset))
-            if os.path.isfile(os.path.join(self.DROPZONE_PATH, dataset, f))))
+                                                    if os.path.isfile(os.path.join(self.DROPZONE_PATH, dataset, f))))
         log.debug(resource_files)
 
         # for resource_file in resource_files:
@@ -95,7 +224,7 @@ class StadtzhHarvester(HarvesterBase):
                     parser = etree.XMLParser(encoding='utf-8')
                     links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
                     for link in links:
-                        if link.find('url').text != "" and link.find('url').text != None:
+                        if link.find('url').text != "" and link.find('url').text is not None:
                             resources.append({
                                 'url': link.find('url').text,
                                 'name': link.find('lable').text,
