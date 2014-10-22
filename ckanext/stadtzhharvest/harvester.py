@@ -150,7 +150,7 @@ class StadtzhHarvester(HarvesterBase):
                 ('spatialRelationship', self._get(dataset_node, 'raeumliche_beziehung')),
                 ('dateFirstPublished', self._get(dataset_node, 'erstmalige_veroeffentlichung')),
                 ('dateLastUpdated', self._get(dataset_node, 'aktualisierungsdatum')),
-                ('updateInterval', ), self._get_update_interval(dataset_node),
+                ('updateInterval', self._get_update_interval(dataset_node)),
                 ('dataType', self._get_data_type(dataset_node)),
                 ('legalInformation', self._get(dataset_node, 'rechtsgrundlage')),
                 ('version', self._get(dataset_node, 'aktuelle_version')),
