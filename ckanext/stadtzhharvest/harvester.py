@@ -64,7 +64,9 @@ class StadtzhHarvester(HarvesterBase):
                     meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                     log.debug('Metadata JSON created')
 
-    def _save_harvest_object(metadata, harvest_job):
+        return ids
+
+    def _save_harvest_object(self, metadata, harvest_job):
         '''
         Save the harvest object with the given metadata dict and harvest_job
         '''
