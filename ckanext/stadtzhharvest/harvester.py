@@ -121,7 +121,10 @@ class StadtzhHarvester(HarvesterBase):
         package = model.Package.get(package_dict['id'])
         if package:
             # package has already been imported.
-            self._create_diffs(package_dict)
+            try:
+                self._create_diffs(package_dict)
+            except AttributeError:
+                pass
         else:
             # package does not exist, therefore create it.
             pkg_role = model.PackageRole(package=package, user=user, role=model.Role.ADMIN)
