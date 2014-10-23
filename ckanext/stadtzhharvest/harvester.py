@@ -39,32 +39,98 @@ class StadtzhHarvester(HarvesterBase):
 
     DIFF_PATH = config.get('metadata.diffpath', '/usr/lib/ckan/diffs')
     INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'https://ogd-integ.global.szh.loc')
+    META_DIR = ''
 
-    def _gather_datasets(self, harvest_job, meta_dir=''):
+    def _gather_datasets(self, harvest_job):
 
         ids = []
 
-        # list directories in geodropzone folder
-        datasets = self._remove_hidden_files(os.listdir(self.DROPZONE_PATH))
+        # list directories in dropzone folder
+        datasets = self._remove_hidden_files(os.listdir(self.DATA_PATH))
 
         # foreach -> meta.xml -> create entry
         for dataset in datasets:
-            with open(os.path.join(self.DROPZONE_PATH, dataset, meta_dir, 'meta.xml'), 'r') as meta_xml:
-                parser = etree.XMLParser(encoding='utf-8')
-                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+            meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
+            if os.path.exists(meta_xml_file_path):
+                with open(meta_xml_file_path, 'r') as meta_xml:
+                    parser = etree.XMLParser(encoding='utf-8')
+                    dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                metadata = self._dropzone_get_metadata(dataset, dataset_node)
+            else:
+                metadata = {
+                    'datasetID': dataset,
+                    'title': dataset,
+                    'url': None,
+                    'resources': self._generate_resources_dict_array(dataset),
+                    'related': []
+                }
+            id = self._save_harvest_object(metadata, harvest_job)
+            ids.append(id)
 
-                metadata = self._dropzone_get_metadata(dataset, dataset_node, meta_dir)
-                id = self._save_harvest_object(metadata, harvest_job)
-                ids.append(id)
+            if not os.path.isdir(os.path.join(self.METADATA_PATH, dataset)):
+                os.makedirs(os.path.join(self.METADATA_PATH, dataset))
 
-                if not os.path.isdir(os.path.join(self.METADATA_PATH, dataset)):
-                    os.makedirs(os.path.join(self.METADATA_PATH, dataset))
-
-                with open(os.path.join(self.METADATA_PATH, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
-                    meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
-                    log.debug('Metadata JSON created')
+            with open(os.path.join(self.METADATA_PATH, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
+                log.debug('Metadata JSON created')
 
         return ids
+
+    def _fetch_datasets(self, harvest_object):
+        # Get the URL
+        datasetID = json.loads(harvest_object.content)['datasetID']
+        log.debug(harvest_object.content)
+
+        # Get contents
+        try:
+            harvest_object.save()
+            log.debug('successfully processed ' + datasetID)
+            return True
+        except Exception, e:
+            log.exception(e)
+
+    def _import_datasets(self, harvest_object):
+        if not harvest_object:
+            log.error('No harvest object received')
+            return False
+
+        try:
+            self._import_package(harvest_object)
+            Session.commit()
+
+        except Exception, e:
+            log.exception(e)
+
+        return True
+
+    def _import_package(self, harvest_object):
+        package_dict = json.loads(harvest_object.content)
+        package_dict['id'] = harvest_object.guid
+        package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
+
+        user = model.User.get(self.config['user'])
+        context = {
+            'model': model,
+            'session': Session,
+            'user': self.config['user']
+        }
+
+        self._find_or_create_organization(package_dict, context)
+
+        # Insert the package only when it's not already in CKAN, but move the resources anyway.
+        package = model.Package.get(package_dict['id'])
+        if package:
+            # package has already been imported.
+            self._create_diffs(package_dict)
+        else:
+            # package does not exist, therefore create it.
+            pkg_role = model.PackageRole(package=package, user=user, role=model.Role.ADMIN)
+
+        self._add_resources_to_filestore(package_dict)
+
+        if not package:
+            result = self._create_or_update_package(package_dict, harvest_object)
+            self._related_create_or_update(package_dict['name'], package_dict['related'])
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
@@ -128,7 +194,7 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return []
 
-    def _dropzone_get_metadata(self, dataset_id, dataset_node, meta_dir=''):
+    def _dropzone_get_metadata(self, dataset_id, dataset_node):
         '''
         For the given dataset node return the metadata dict.
         '''
@@ -145,7 +211,7 @@ class StadtzhHarvester(HarvesterBase):
             'license_url': 'http://opendefinition.org/licenses/cc-zero/',
             'tags': self._generate_tags(dataset_node),
             'groups': self._dropzone_get_groups(dataset_node),
-            'resources': self._generate_resources_dict_array(dataset_id + '/' + meta_dir),
+            'resources': self._generate_resources_dict_array(dataset_id),
             'extras': [
                 ('spatialRelationship', self._get(dataset_node, 'raeumliche_beziehung')),
                 ('dateFirstPublished', self._get(dataset_node, 'erstmalige_veroeffentlichung')),
@@ -218,14 +284,14 @@ class StadtzhHarvester(HarvesterBase):
         Given a dataset folder, it'll return an array of resource metadata
         '''
         resources = []
-        resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.DROPZONE_PATH, dataset))
-                                                    if os.path.isfile(os.path.join(self.DROPZONE_PATH, dataset, f))))
+        resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.DATA_PATH, dataset, self.META_DIR))
+                                                    if os.path.isfile(os.path.join(self.DATA_PATH, dataset, self.META_DIR, f))))
         log.debug(resource_files)
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
             if resource_file == u'link.xml':
-                with open(os.path.join(self.DROPZONE_PATH, dataset, resource_file), 'r') as links_xml:
+                with open(os.path.join(self.DATA_PATH, dataset, self.META_DIR, resource_file), 'r') as links_xml:
                     parser = etree.XMLParser(encoding='utf-8')
                     links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
                     for link in links:
@@ -401,7 +467,7 @@ class StadtzhHarvester(HarvesterBase):
             organization = get_action('organization_create')(context, data_dict)
             package_dict['owner_org'] = organization['id']
 
-    def _add_resources_to_filestore(self, package_dict, meta_dir=''):
+    def _add_resources_to_filestore(self, package_dict):
         # Move file around and make sure it's in the file-store
         for r in package_dict['resources']:
             old_filename = r['name']
@@ -409,7 +475,7 @@ class StadtzhHarvester(HarvesterBase):
             if r['resource_type'] == 'file':
                 label = package_dict['datasetID'] + '/' + r['name']
                 file_contents = ''
-                with open(os.path.join(self.DROPZONE_PATH, package_dict['datasetID'], meta_dir, old_filename)) as contents:
+                with open(os.path.join(self.DATA_PATH, package_dict['datasetID'], self.META_DIR, old_filename)) as contents:
                     file_contents = contents.read()
                 params = {
                     'filename-original': 'the original file name',
@@ -417,46 +483,6 @@ class StadtzhHarvester(HarvesterBase):
                 }
                 r['url'] = self.CKAN_SITE_URL + '/storage/f/' + label
                 self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
-
-    def _fetch_datasets(self, harvest_object):
-        # Get the URL
-        datasetID = json.loads(harvest_object.content)['datasetID']
-        log.debug(harvest_object.content)
-
-        # Get contents
-        try:
-            harvest_object.save()
-            log.debug('successfully processed ' + datasetID)
-            return True
-        except Exception, e:
-            log.exception(e)
-
-    def _import_package(self, harvest_object, meta_dir=''):
-        package_dict = json.loads(harvest_object.content)
-        package_dict['id'] = harvest_object.guid
-        package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-
-        user = model.User.get(self.config['user'])
-        context = {
-            'model': model,
-            'session': Session,
-            'user': self.config['user']
-        }
-
-        self._find_or_create_organization(package_dict, context)
-
-        # Insert the package only when it's not already in CKAN, but move the resources anyway.
-        package = model.Package.get(package_dict['id'])
-        if package: # package has already been imported.
-            self._create_diffs(package_dict)
-        else: # package does not exist, therefore create it.
-            pkg_role = model.PackageRole(package=package, user=user, role=model.Role.ADMIN)
-
-        self._add_resources_to_filestore(package_dict, meta_dir)
-
-        if not package:
-            result = self._create_or_update_package(package_dict, harvest_object)
-            self._related_create_or_update(package_dict['name'], package_dict['related'])
 
     # ---
     # COPIED FROM THE CKAN STORAGE CONTROLLER
