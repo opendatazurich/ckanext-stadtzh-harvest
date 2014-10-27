@@ -38,7 +38,7 @@ class StadtzhHarvester(HarvesterBase):
     }
 
     DIFF_PATH = config.get('metadata.diffpath', '/usr/lib/ckan/diffs')
-    INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'https://ogd-integ.global.szh.loc')
+    INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'http://internal.example.com')
     META_DIR = ''
 
     def _gather_datasets(self, harvest_job):
