@@ -373,9 +373,15 @@ class StadtzhHarvester(HarvesterBase):
             related_list = xpath.find(element)
             if related_list is not None:
                 for item in related_list:
+                    title = self._get(item, 'titel')
+                    description = self._get(item, 'beschreibung')
+                    # title is mandatory so use description if it is empty
+                    if not title:
+                        title = description
                     related.append({
-                        'title': self._get(item, 'beschreibung'),
+                        'title': title,
                         'type': related_type,
+                        'description': description,
                         'url': self._get(item, 'url')
                     })
         return related
