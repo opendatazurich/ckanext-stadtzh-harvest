@@ -374,8 +374,9 @@ class StadtzhHarvester(HarvesterBase):
             if related_list is not None:
                 for item in related_list:
                     related.append({
-                        'title': self._get(item, 'beschreibung'),
+                        'title': self._get(item, 'titel'),
                         'type': related_type,
+                        'description': self._get(item, 'beschreibung'),
                         'url': self._get(item, 'url')
                     })
         return related
