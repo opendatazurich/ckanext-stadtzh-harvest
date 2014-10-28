@@ -119,6 +119,8 @@ class StadtzhHarvester(HarvesterBase):
 
         # Insert the package only when it's not already in CKAN, but move the resources anyway.
         package = model.Package.get(package_dict['id'])
+        self._add_resources_to_filestore(package_dict)
+
         if package:
             # package has already been imported.
             try:
@@ -126,14 +128,9 @@ class StadtzhHarvester(HarvesterBase):
             except AttributeError:
                 pass
         else:
-            # package does not exist, therefore create it.
-            pkg_role = model.PackageRole(package=package, user=user, role=model.Role.ADMIN)
-
-        self._add_resources_to_filestore(package_dict)
-
-        if not package:
             result = self._create_or_update_package(package_dict, harvest_object)
             self._related_create_or_update(package_dict['name'], package_dict['related'])
+            self._create_notification_for_new_dataset(package_dict)
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
@@ -412,6 +409,16 @@ class StadtzhHarvester(HarvesterBase):
                     action.create.related_create(context, entry)
                 except Exception, e:
                     log.exception(e)
+
+    def _create_notification_for_new_dataset(self, package_dict):
+        today = datetime.date.today()
+        diff_path = os.path.join(self.DIFF_PATH, str(today) + '-' + package_dict['id'] + '.html')
+        with open(diff_path, 'w') as new_info:
+            new_info.write(
+                "<!DOCTYPE html>\n<html>\n<body>\n<h2>A new dataset has been added: <a href=\""
+                + self.INTERNAL_SITE_URL + "/dataset/" + package_dict['id'] + "\">"
+                + package_dict['id'] + "</a></h2></body></html>\n"
+            )
 
     def _create_diffs(self, package_dict):
         today = datetime.date.today()
