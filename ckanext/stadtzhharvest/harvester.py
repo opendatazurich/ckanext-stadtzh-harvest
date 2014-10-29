@@ -173,6 +173,7 @@ class StadtzhHarvester(HarvesterBase):
             except:
                 data_dict['name'] = name
                 data_dict['title'] = title
+                data_dict['image_url'] = self.CKAN_SITE_URL + '/kategorien/' + name + '.png'
                 log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
                 group_id = get_action('group_create')(context, data_dict)['id']
                 groups.append(group_id)
