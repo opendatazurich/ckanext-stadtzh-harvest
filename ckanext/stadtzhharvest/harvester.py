@@ -3,6 +3,7 @@
 import os
 import datetime
 import difflib
+import shutil
 from lxml import etree
 from ofs import get_impl
 from pylons import config
@@ -80,6 +81,8 @@ class StadtzhHarvester(HarvesterBase):
                 meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                 log.debug('Metadata JSON created')
 
+        self._create_notifications_for_deleted_datasets()
+
         return ids
 
     def _fetch_datasets(self, harvest_object):
@@ -136,6 +139,7 @@ class StadtzhHarvester(HarvesterBase):
         else:
             result = self._create_or_update_package(package_dict, harvest_object)
             self._related_create_or_update(package_dict['name'], package_dict['related'])
+            log.debug('Dataset `%s` has been added' % package_dict['id'])
             self._create_notification_for_new_dataset(package_dict)
 
     def _save_harvest_object(self, metadata, harvest_job):
@@ -416,21 +420,49 @@ class StadtzhHarvester(HarvesterBase):
                 except Exception, e:
                     log.exception(e)
 
-    def _create_notification_for_new_dataset(self, package_dict):
+    def _get_immediate_subdirectories(self, directory):
+        return [name for name in os.listdir(directory)
+                if os.path.isdir(os.path.join(directory, name))]
+
+    def _diff_path(self, package_id):
         today = datetime.date.today()
-        diff_path = os.path.join(self.DIFF_PATH, str(today) + '-' + package_dict['id'] + '.html')
-        with open(diff_path, 'w') as new_info:
+        return os.path.join(self.DIFF_PATH, str(today) + '-' + package_id + '.html')
+
+    def _create_notifications_for_deleted_datasets(self):
+        current_datasets = self._get_immediate_subdirectories(self.DATA_PATH)
+        cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.METADATA_DIR))
+        for package_id in cached_datasets:
+            if package_id not in current_datasets:
+                log.debug('Dataset `%s` has been deleted' % package_id)
+                # delete the metadata directory
+                metadata_dir = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
+                log.debug('Removing metadata dir `%s`' % metadata_dir)
+                shutil.rmtree(metadata_dir)
+                # only send notification if there is a package in CKAN
+                if model.Package.get(package_id):
+                    path = self._diff_path(package_id)
+                    with open(path, 'w') as deleted_info:
+                        deleted_info.write(
+                            "<!DOCTYPE html>\n<html>\n<body>\n<h2>Dataset deleted: <a href=\""
+                            + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                            + package_id + "</a></h2></body></html>\n"
+                        )
+                    log.debug('Wrote deleted notification to file `%s`' % path)
+
+    def _create_notification_for_new_dataset(self, package_dict):
+        path = self._diff_path(package_dict['id'])
+        with open(path, 'w') as new_info:
             new_info.write(
-                "<!DOCTYPE html>\n<html>\n<body>\n<h2>A new dataset has been added: <a href=\""
+                "<!DOCTYPE html>\n<html>\n<body>\n<h2>New dataset added: <a href=\""
                 + self.INTERNAL_SITE_URL + "/dataset/" + package_dict['id'] + "\">"
                 + package_dict['id'] + "</a></h2></body></html>\n"
             )
+        log.debug('Wrote added dataset notification to file `%s`' % path)
+
 
     def _create_diffs(self, package_dict):
-        today = datetime.date.today()
-        new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-' + str(today))
+        new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-' + str(datetime.date.today()))
         prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-previous')
-        diff_path = os.path.join(self.DIFF_PATH, str(today) + '-' + package_dict['id'] + '.html')
 
         if not os.path.isdir(self.DIFF_PATH):
             os.makedirs(self.DIFF_PATH)
@@ -442,7 +474,7 @@ class StadtzhHarvester(HarvesterBase):
                         if prev_metadata.read() != new_metadata.read():
                             with open(prev_metadata_path) as prev_metadata:
                                 with open(new_metadata_path) as new_metadata:
-                                    with open(diff_path, 'w') as diff:
+                                    with open(self._diff_path(package_dict['id']), 'w') as diff:
                                         diff.write(
                                             "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
                                             + self.INTERNAL_SITE_URL + "/dataset/" + package_dict['id'] + "\">"
