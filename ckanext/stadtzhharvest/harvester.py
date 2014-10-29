@@ -30,16 +30,22 @@ class StadtzhHarvester(HarvesterBase):
         'en': u'en_Stadt Zürich',
     }
     LANG_CODES = ['de', 'fr', 'it', 'en']
-    BUCKET = config.get('ckan.storage.bucket', 'default')
-    CKAN_SITE_URL = config.get('ckan.site_url', 'http://example.com')
 
     config = {
         'user': u'harvest'
     }
 
-    DIFF_PATH = config.get('metadata.diffpath', '/usr/lib/ckan/diffs')
-    INTERNAL_SITE_URL = config.get('ckan.site_url_internal', 'http://internal.example.com')
     META_DIR = ''
+    BUCKET = 'default'
+
+    def __init__(self, **kwargs):
+        HarvesterBase.__init__(self, **kwargs)
+        try:
+            self.INTERNAL_SITE_URL = config['ckan.site_url_internal']
+            self.CKAN_SITE_URL = config['ckan.site_url']
+            self.DIFF_PATH = config['metadata.diffpath']
+        except KeyError as e:
+            raise Exception("'%s' not found in config" % e.message)
 
     def _gather_datasets(self, harvest_job):
 
@@ -67,10 +73,10 @@ class StadtzhHarvester(HarvesterBase):
             id = self._save_harvest_object(metadata, harvest_job)
             ids.append(id)
 
-            if not os.path.isdir(os.path.join(self.METADATA_PATH, dataset)):
-                os.makedirs(os.path.join(self.METADATA_PATH, dataset))
+            if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
+                os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
 
-            with open(os.path.join(self.METADATA_PATH, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+            with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
                 meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                 log.debug('Metadata JSON created')
 
@@ -422,8 +428,8 @@ class StadtzhHarvester(HarvesterBase):
 
     def _create_diffs(self, package_dict):
         today = datetime.date.today()
-        new_metadata_path = os.path.join(self.METADATA_PATH, package_dict['id'], 'metadata-' + str(today))
-        prev_metadata_path = os.path.join(self.METADATA_PATH, package_dict['id'], 'metadata-previous')
+        new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-' + str(today))
+        prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-previous')
         diff_path = os.path.join(self.DIFF_PATH, str(today) + '-' + package_dict['id'] + '.html')
 
         if not os.path.isdir(self.DIFF_PATH):
@@ -539,3 +545,7 @@ class StadtzhHarvester(HarvesterBase):
     # ---
     # END COPY
     # ---
+
+
+class ConfigEntryNotFoundError(Exception):
+    pass
