@@ -577,7 +577,3 @@ class StadtzhHarvester(HarvesterBase):
     # ---
     # END COPY
     # ---
-
-
-class ConfigEntryNotFoundError(Exception):
-    pass
