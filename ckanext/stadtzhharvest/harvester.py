@@ -11,7 +11,7 @@ from ckan import model
 from ckan.model import Session
 from ckan.logic import action, get_action
 from ckan.lib.helpers import json
-from ckan.lib.munge import munge_title_to_name, munge_filename
+from ckan.lib.munge import munge_title_to_name, substitute_ascii_equivalents
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 
@@ -526,7 +526,7 @@ class StadtzhHarvester(HarvesterBase):
         # Move file around and make sure it's in the file-store
         for r in package_dict['resources']:
             old_filename = r['name']
-            r['name'] = munge_filename(r['name'])
+            r['name'] = substitute_ascii_equivalents(r['name'])
             if r['resource_type'] == 'file':
                 label = package_dict['datasetID'] + '/' + r['name']
                 file_contents = ''
