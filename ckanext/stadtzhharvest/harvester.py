@@ -355,7 +355,7 @@ class StadtzhHarvester(HarvesterBase):
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
                     html += '[' + label + '](' + url + ')\n\n'
-                return html
+            return html
 
     def _json_encode_attributes(self, properties):
         attributes = []
