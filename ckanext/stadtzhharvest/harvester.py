@@ -232,8 +232,8 @@ class StadtzhHarvester(HarvesterBase):
                 ('legalInformation', self._get(dataset_node, 'rechtsgrundlage')),
                 ('version', self._get(dataset_node, 'aktuelle_version')),
                 ('timeRange', self._get(dataset_node, 'zeitraum')),
-                ('comments', self._convert_comments(dataset_node)),
-                ('attributes', self._json_encode_attributes(self._get_attributes(dataset_node))),
+                ('sszBemerkungen', self._convert_comments(dataset_node)),
+                ('sszFields', self._json_encode_attributes(self._get_attributes(dataset_node))),
                 ('dataQuality', self._get(dataset_node, 'datenqualitaet'))
             ],
             'related': self._get_related(dataset_node)
