@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import os
+import os, re
 import datetime
 import difflib
 import shutil
@@ -57,29 +57,32 @@ class StadtzhHarvester(HarvesterBase):
 
         # foreach -> meta.xml -> create entry
         for dataset in datasets:
-            meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
-            if os.path.exists(meta_xml_file_path):
-                with open(meta_xml_file_path, 'r') as meta_xml:
-                    parser = etree.XMLParser(encoding='utf-8')
-                    dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                metadata = self._dropzone_get_metadata(dataset, dataset_node)
-            else:
-                metadata = {
-                    'datasetID': dataset,
-                    'title': dataset,
-                    'url': None,
-                    'resources': self._generate_resources_dict_array(dataset),
-                    'related': []
-                }
-            id = self._save_harvest_object(metadata, harvest_job)
-            ids.append(id)
+            log.debug(self._validate_package_id(dataset))
+            dataset_id = self._validate_package_id(dataset)
+            if dataset_id:
+                meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
+                if os.path.exists(meta_xml_file_path):
+                    with open(meta_xml_file_path, 'r') as meta_xml:
+                        parser = etree.XMLParser(encoding='utf-8')
+                        dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                    metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                else:
+                    metadata = {
+                        'datasetID': dataset_id,
+                        'title': dataset,
+                        'url': None,
+                        'resources': self._generate_resources_dict_array(dataset),
+                        'related': []
+                    }
+                id = self._save_harvest_object(metadata, harvest_job)
+                ids.append(id)
 
-            if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
-                os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
+                if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
+                    os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
 
-            with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
-                meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
-                log.debug('Metadata JSON created')
+                with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                    meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
+                    log.debug('Metadata JSON created')
 
         self._create_notifications_for_deleted_datasets()
 
@@ -314,12 +317,14 @@ class StadtzhHarvester(HarvesterBase):
                                 'resource_type': 'api'
                             })
             else:
-                resources.append({
-                    # 'url': '', # will be filled in the import stage
-                    'name': resource_file,
-                    'format': resource_file.split('.')[-1],
-                    'resource_type': 'file'
-                })
+                resource_file = self._validate_filename(resource_file)
+                if resource_file:
+                    resources.append({
+                        # 'url': '', # will be filled in the import stage
+                        'name': resource_file,
+                        'format': resource_file.split('.')[-1],
+                        'resource_type': 'file'
+                    })
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
         return sorted_resources
@@ -427,7 +432,9 @@ class StadtzhHarvester(HarvesterBase):
 
     def _diff_path(self, package_id):
         today = datetime.date.today()
-        return os.path.join(self.DIFF_PATH, str(today) + '-' + package_id + '.html')
+        package_id = self._validate_package_id(package_id)
+        if package_id:
+            return os.path.join(self.DIFF_PATH, str(today) + '-' + package_id + '.html')
 
     def _create_notifications_for_deleted_datasets(self):
         current_datasets = self._get_immediate_subdirectories(self.DATA_PATH)
@@ -451,62 +458,68 @@ class StadtzhHarvester(HarvesterBase):
                     log.debug('Wrote deleted notification to file `%s`' % path)
 
     def _create_notification_for_new_dataset(self, package_dict):
-        path = self._diff_path(package_dict['id'])
-        with open(path, 'w') as new_info:
-            new_info.write(
-                "<!DOCTYPE html>\n<html>\n<body>\n<h2>New dataset added: <a href=\""
-                + self.INTERNAL_SITE_URL + "/dataset/" + package_dict['id'] + "\">"
-                + package_dict['id'] + "</a></h2></body></html>\n"
-            )
-        log.debug('Wrote added dataset notification to file `%s`' % path)
+        package_id = self._validate_package_id(package_dict['id'])
+        if package_id:
+            path = self._diff_path(package_id)
+            with open(path, 'w') as new_info:
+                new_info.write(
+                    "<!DOCTYPE html>\n<html>\n<body>\n<h2>New dataset added: <a href=\""
+                    + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                    + package_id + "</a></h2></body></html>\n"
+                )
+            log.debug('Wrote added dataset notification to file `%s`' % path)
 
 
     def _create_diffs(self, package_dict):
-        new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-' + str(datetime.date.today()))
-        prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_dict['id'], 'metadata-previous')
+        package_id = self._validate_package_id(package_dict['id'])
+        if package_id:
+            new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-' + str(datetime.date.today()))
+            prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-previous')
 
-        if not os.path.isdir(self.DIFF_PATH):
-            os.makedirs(self.DIFF_PATH)
+            if not os.path.isdir(self.DIFF_PATH):
+                os.makedirs(self.DIFF_PATH)
 
-        if os.path.isfile(new_metadata_path):
-            if os.path.isfile(prev_metadata_path):
-                with open(prev_metadata_path) as prev_metadata:
-                    with open(new_metadata_path) as new_metadata:
-                        if prev_metadata.read() != new_metadata.read():
-                            with open(prev_metadata_path) as prev_metadata:
-                                with open(new_metadata_path) as new_metadata:
-                                    with open(self._diff_path(package_dict['id']), 'w') as diff:
-                                        diff.write(
-                                            "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
-                                            + self.INTERNAL_SITE_URL + "/dataset/" + package_dict['id'] + "\">"
-                                            + package_dict['id'] + "</a></h2></body></html>\n"
-                                        )
-                                        d = difflib.HtmlDiff(wrapcolumn=60)
-                                        umlauts = {
-                                            "\\u00e4": "ä",
-                                            "\\u00f6": "ö",
-                                            "\\u00fc": "ü",
-                                            "\\u00c4": "Ä",
-                                            "\\u00d6": "Ö",
-                                            "\\u00dc": "Ü",
-                                            "ISO-8859-1": "UTF-8"
-                                        }
-                                        html = d.make_file(prev_metadata, new_metadata, context=True, numlines=1)
-                                        for code in umlauts.keys():
-                                            html = html.replace(code, umlauts[code])
-                                        diff.write(html)
-                                        log.debug('Metadata diff generated for the dataset: ' + package_dict['id'])
-                        else:
-                            log.debug('No change in metadata for the dataset: ' + package_dict['id'])
-                os.remove(prev_metadata_path)
-                log.debug('Deleted previous day\'s metadata file.')
-            else:
+            if not os.path.isfile(new_metadata_path):
+                log.debug(new_metadata_path + ' Metadata JSON missing for the dataset: ' + package_id)
+
+            if not os.path.isfile(prev_metadata_path):
                 log.debug('No earlier metadata JSON')
 
-            os.rename(new_metadata_path, prev_metadata_path)
+            with open(prev_metadata_path) as prev_metadata:
+                with open(new_metadata_path) as new_metadata:
+                    prev = prev_metadata.read()
+                    new = new_metadata.read()
 
-        else:
-            log.debug(new_metadata_path + ' Metadata JSON missing for the dataset: ' + package_dict['id'])
+            if prev == new:
+                log.debug('No change in metadata for the dataset: ' + package_id)
+            else:
+                with open(prev_metadata_path) as prev_metadata:
+                    with open(new_metadata_path) as new_metadata:
+                        with open(self._diff_path(package_id), 'w') as diff:
+                            diff.write(
+                                "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
+                                + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                                + package_id + "</a></h2></body></html>\n"
+                            )
+                            d = difflib.HtmlDiff(wrapcolumn=60)
+                            umlauts = {
+                                "\\u00e4": "ä",
+                                "\\u00f6": "ö",
+                                "\\u00fc": "ü",
+                                "\\u00c4": "Ä",
+                                "\\u00d6": "Ö",
+                                "\\u00dc": "Ü",
+                                "ISO-8859-1": "UTF-8"
+                            }
+                            html = d.make_file(prev_metadata, new_metadata, context=True, numlines=1)
+                            for code in umlauts.keys():
+                                html = html.replace(code, umlauts[code])
+                            diff.write(html)
+                            log.debug('Metadata diff generated for the dataset: ' + package_id)
+
+            os.remove(prev_metadata_path)
+            log.debug('Deleted previous day\'s metadata file.')
+            os.rename(new_metadata_path, prev_metadata_path)
 
     def _find_or_create_organization(self, package_dict, context):
         # Find or create the organization the dataset should get assigned to.
@@ -525,12 +538,14 @@ class StadtzhHarvester(HarvesterBase):
     def _add_resources_to_filestore(self, package_dict):
         # Move file around and make sure it's in the file-store
         for r in package_dict['resources']:
+            # The resource filename has already been validated when added to the resources dict array.
             old_filename = r['name']
             r['name'] = substitute_ascii_equivalents(r['name'])
+            package_id = self._validate_package_id(package_dict['datasetID'])
             if r['resource_type'] == 'file':
-                label = package_dict['datasetID'] + '/' + r['name']
+                label = package_id + '/' + r['name']
                 file_contents = ''
-                with open(os.path.join(self.DATA_PATH, package_dict['datasetID'], self.META_DIR, old_filename)) as contents:
+                with open(os.path.join(self.DATA_PATH, package_id, self.META_DIR, old_filename)) as contents:
                     file_contents = contents.read()
                 params = {
                     'filename-original': 'the original file name',
@@ -538,6 +553,23 @@ class StadtzhHarvester(HarvesterBase):
                 }
                 r['url'] = self.CKAN_SITE_URL + '/storage/f/' + label
                 self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
+
+    def _validate_package_id(self, package_id):
+        match = re.match('^[A-Za-z0-9_]+$', package_id)
+        if not match:
+            log.debug('Package id %s contains disallowed characters' % package_id)
+            return False
+        else:
+            return package_id
+
+    def _validate_filename(self, filename):
+        match = re.match('^[A-Za-z0-9_ ]+(\.[A-Za-z]*)?$', filename)
+        if not match:
+            log.debug('Filename %s not added as it contains disallowed characters' % filename)
+            return False
+        else:
+            return filename
+
 
     # ---
     # COPIED FROM THE CKAN STORAGE CONTROLLER
