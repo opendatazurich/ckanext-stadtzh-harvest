@@ -349,18 +349,18 @@ class StadtzhHarvester(HarvesterBase):
         comments = node.find('bemerkungen')
         if comments is not None:
             log.debug(comments.tag + ' ' + str(comments.attrib))
-            html = ''
+            markdown = ''
             for comment in comments:
                 if self._get(comment, 'titel'):
-                    html += '**' + self._get(comment, 'titel') + '**\n\n'
+                    markdown += '**' + self._get(comment, 'titel') + '**\n\n'
                 if self._get(comment, 'text'):
-                    html += self._get(comment, 'text') + '\n\n'
+                    markdown += self._get(comment, 'text') + '\n\n'
                 link = comment.find('link')
                 if link is not None:
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
-                    html += '[' + label + '](' + url + ')\n\n'
-            return html
+                    markdown += '[' + label + '](' + url + ')\n\n'
+            return markdown
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -440,7 +440,9 @@ class StadtzhHarvester(HarvesterBase):
         current_datasets = self._get_immediate_subdirectories(self.DATA_PATH)
         cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.METADATA_DIR))
         for package_id in cached_datasets:
-            if package_id not in current_datasets:
+            # Validated package_id can only contain alphanumerics and underscores
+            package_id = self._validate_package_id(package_dict['id'])
+            if package_id and package_id not in current_datasets:
                 log.debug('Dataset `%s` has been deleted' % package_id)
                 # delete the metadata directory
                 metadata_dir = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
@@ -458,6 +460,7 @@ class StadtzhHarvester(HarvesterBase):
                     log.debug('Wrote deleted notification to file `%s`' % path)
 
     def _create_notification_for_new_dataset(self, package_dict):
+        # Validated package_id can only contain alphanumerics and underscores
         package_id = self._validate_package_id(package_dict['id'])
         if package_id:
             path = self._diff_path(package_id)
@@ -471,6 +474,7 @@ class StadtzhHarvester(HarvesterBase):
 
 
     def _create_diffs(self, package_dict):
+        # Validated package_id can only contain alphanumerics and underscores
         package_id = self._validate_package_id(package_dict['id'])
         if package_id:
             new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-' + str(datetime.date.today()))
@@ -555,7 +559,7 @@ class StadtzhHarvester(HarvesterBase):
                 self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
 
     def _validate_package_id(self, package_id):
-        match = re.match('^[A-Za-z0-9_]+$', package_id)
+        match = re.match('^[\w]+$', package_id)
         if not match:
             log.debug('Package id %s contains disallowed characters' % package_id)
             return False
@@ -563,11 +567,13 @@ class StadtzhHarvester(HarvesterBase):
             return package_id
 
     def _validate_filename(self, filename):
-        match = re.match('^[A-Za-z0-9_ ]+(\.[A-Za-z]*)?$', filename)
+        log.debug(filename)
+        match = re.match('^[\w\- .]+$', substitute_ascii_equivalents(filename))
         if not match:
             log.debug('Filename %s not added as it contains disallowed characters' % filename)
             return False
         else:
+            log.debug(filename)
             return filename
 
 
