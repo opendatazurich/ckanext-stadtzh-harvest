@@ -441,7 +441,7 @@ class StadtzhHarvester(HarvesterBase):
         cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.METADATA_DIR))
         for package_id in cached_datasets:
             # Validated package_id can only contain alphanumerics and underscores
-            package_id = self._validate_package_id(package_dict['id'])
+            package_id = self._validate_package_id(package_id)
             if package_id and package_id not in current_datasets:
                 log.debug('Dataset `%s` has been deleted' % package_id)
                 # delete the metadata directory
@@ -567,13 +567,11 @@ class StadtzhHarvester(HarvesterBase):
             return package_id
 
     def _validate_filename(self, filename):
-        log.debug(filename)
         match = re.match('^[\w\- .]+$', substitute_ascii_equivalents(filename))
         if not match:
             log.debug('Filename %s not added as it contains disallowed characters' % filename)
             return False
         else:
-            log.debug(filename)
             return filename
 
 
