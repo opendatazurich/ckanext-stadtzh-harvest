@@ -360,7 +360,8 @@ class StadtzhHarvester(HarvesterBase):
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
                     markdown += '[' + label + '](' + url + ')\n\n'
-            return markdown
+            if self._validate_comment(markdown):
+                return self._validate_comment(markdown)
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -568,11 +569,27 @@ class StadtzhHarvester(HarvesterBase):
 
     def _validate_filename(self, filename):
         match = re.match('^[\w\- .]+$', substitute_ascii_equivalents(filename))
+        if len(filename) == 0:
+            log.debug('Filename is empty.')
+            return False
         if not match:
             log.debug('Filename %s not added as it contains disallowed characters' % filename)
             return False
         else:
             return filename
+
+    def _validate_comment(self, markdown):
+        # Comments can contain complex URLs, so validating against a short whitelist of characters is impractical.
+        # Validate that they do not contain any HTML tags.
+        match = re.match('^[<>]+$', markdown)
+        if len(markdown) == 0:
+            log.debug('Comment is empty.')
+            return False
+        if match:
+            log.debug('Comment %s not added as it contains disallowed characters' % comment)
+            return False
+        else:
+            return markdown
 
 
     # ---
