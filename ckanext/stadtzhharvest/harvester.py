@@ -19,6 +19,13 @@ import logging
 log = logging.getLogger(__name__)
 
 
+class InvalidCommentError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+
 class StadtzhHarvester(HarvesterBase):
     '''
     BaseHarvester for the City of Zurich
@@ -304,7 +311,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
-            if resource_file == u'link.xml':
+            if resource_file == 'link.xml':
                 with open(os.path.join(self.DATA_PATH, dataset, self.META_DIR, resource_file), 'r') as links_xml:
                     parser = etree.XMLParser(encoding='utf-8')
                     links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
@@ -360,8 +367,10 @@ class StadtzhHarvester(HarvesterBase):
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
                     markdown += '[' + label + '](' + url + ')\n\n'
-            if self._validate_comment(markdown):
+            try:
                 return self._validate_comment(markdown)
+            except InvalidCommentError:
+                return ''
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -481,8 +490,9 @@ class StadtzhHarvester(HarvesterBase):
             new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-' + str(datetime.date.today()))
             prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-previous')
 
-            if not os.path.isdir(self.DIFF_PATH):
-                os.makedirs(self.DIFF_PATH)
+            for path in [self.DIFF_PATH, new_metadata_path, prev_metadata_path]:
+                if not os.path.isdir(path):
+                    os.makedirs(path)
 
             if not os.path.isfile(new_metadata_path):
                 log.debug(new_metadata_path + ' Metadata JSON missing for the dataset: ' + package_id)
@@ -581,13 +591,13 @@ class StadtzhHarvester(HarvesterBase):
     def _validate_comment(self, markdown):
         # Comments can contain complex URLs, so validating against a short whitelist of characters is impractical.
         # Validate that they do not contain any HTML tags.
-        match = re.match('^[<>]+$', markdown)
+        match = re.search('[<>]+', markdown)
         if len(markdown) == 0:
             log.debug('Comment is empty.')
-            return False
+            return ''
         if match:
-            log.debug('Comment %s not added as it contains disallowed characters' % comment)
-            return False
+            log.debug('Comment not added as it contains disallowed characters: %s' % markdown)
+            raise InvalidCommentError(markdown)
         else:
             return markdown
 
@@ -631,3 +641,4 @@ class StadtzhHarvester(HarvesterBase):
     # ---
     # END COPY
     # ---
+
