@@ -553,8 +553,10 @@ class StadtzhHarvester(HarvesterBase):
     def _add_resources_to_filestore(self, package_dict):
         # Move file around and make sure it's in the file-store
         for r in package_dict['resources']:
-            # The resource filename has already been validated when added to the resources dict array.
-            old_filename = r['name']
+            old_filename = self._validate_filename(r['name'])
+            if not old_filename:
+                log.debug('Resource not added.')
+                continue
             r['name'] = substitute_ascii_equivalents(r['name'])
             package_id = self._validate_package_id(package_dict['datasetID'])
             if r['resource_type'] == 'file':
