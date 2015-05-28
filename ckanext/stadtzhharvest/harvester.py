@@ -490,8 +490,11 @@ class StadtzhHarvester(HarvesterBase):
             new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-' + str(datetime.date.today()))
             prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-previous')
 
-            for path in [self.DIFF_PATH, new_metadata_path, prev_metadata_path]:
-                if not os.path.isdir(path):
+            if not os.path.isdir(self.DIFF_PATH):
+                os.makedirs(self.DIFF_PATH)
+
+            for path in [new_metadata_path, prev_metadata_path]:
+                if not os.path.isfile(path):
                     os.makedirs(path)
 
             if not os.path.isfile(new_metadata_path):
