@@ -498,9 +498,15 @@ class StadtzhHarvester(HarvesterBase):
 
             if not os.path.isfile(new_metadata_file):
                 log.debug(new_metadata_file + ' Metadata JSON missing for the dataset: ' + package_id)
+                with open(new_metadata_file, 'w') as new_metadata:
+                    new_metadata.write('')
+                log.debug('Created new empty metadata file.')
 
             if not os.path.isfile(prev_metadata_file):
-                log.debug('No earlier metadata JSON')
+                log.debug('No earlier metadata JSON for the dataset: ' + package_id)
+                with open(prev_metadata_file, 'w') as prev_metadata:
+                    prev_metadata.write('')
+                log.debug('Created new empty metadata file.')
 
             with open(prev_metadata_file) as prev_metadata:
                 with open(new_metadata_file) as new_metadata:
