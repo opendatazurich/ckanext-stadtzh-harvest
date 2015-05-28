@@ -559,6 +559,10 @@ class StadtzhHarvester(HarvesterBase):
                 continue
             r['name'] = substitute_ascii_equivalents(r['name'])
             package_id = self._validate_package_id(package_dict['datasetID'])
+
+            if not package_id:
+                log.debug('Resources not added to package %s as the package id contained disallowed characters' % package_id)
+
             if r['resource_type'] == 'file':
                 label = package_id + '/' + r['name']
                 file_contents = ''
@@ -572,8 +576,9 @@ class StadtzhHarvester(HarvesterBase):
                 self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
 
     def _validate_package_id(self, package_id):
-        match = re.match('^[\w]+$', package_id)
-        if not match:
+        # Validate that they do not contain any HTML tags.
+        match = re.search('[<>]+', package_id)
+        if match:
             log.debug('Package id %s contains disallowed characters' % package_id)
             return False
         else:
