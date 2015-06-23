@@ -148,7 +148,7 @@ class StadtzhHarvester(HarvesterBase):
             self._save_object_error(
                 (
                     'Unable to get content for package: %s: %r / %s'
-                    % (datasetID, e, traceback.format_exc())
+                    % (harvest_object.guid, e, traceback.format_exc())
                 ),
                 harvest_object
             )
