@@ -4,6 +4,7 @@ import os, re
 import datetime
 import difflib
 import shutil
+import traceback
 from lxml import etree
 from ofs import get_impl
 from pylons import config
@@ -56,46 +57,59 @@ class StadtzhHarvester(HarvesterBase):
             raise Exception("'%s' not found in config" % e.message)
 
     def _gather_datasets(self, harvest_job):
-
         ids = []
+        try:
+            # list directories in dropzone folder
+            datasets = self._remove_hidden_files(os.listdir(self.DATA_PATH))
 
-        # list directories in dropzone folder
-        datasets = self._remove_hidden_files(os.listdir(self.DATA_PATH))
+            # foreach -> meta.xml -> create entry
+            for dataset in datasets:
+                log.debug(self._validate_package_id(dataset))
+                dataset_id = self._validate_package_id(dataset)
+                if dataset_id:
+                    meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
+                    if os.path.exists(meta_xml_file_path):
+                        with open(meta_xml_file_path, 'r') as meta_xml:
+                            parser = etree.XMLParser(encoding='utf-8')
+                            dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                        metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                    else:
+                        metadata = {
+                            'datasetID': dataset_id,
+                            'title': dataset,
+                            'url': None,
+                            'resources': self._generate_resources_dict_array(dataset),
+                            'related': []
+                        }
+                    id = self._save_harvest_object(metadata, harvest_job)
+                    ids.append(id)
 
-        # foreach -> meta.xml -> create entry
-        for dataset in datasets:
-            log.debug(self._validate_package_id(dataset))
-            dataset_id = self._validate_package_id(dataset)
-            if dataset_id:
-                meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
-                if os.path.exists(meta_xml_file_path):
-                    with open(meta_xml_file_path, 'r') as meta_xml:
-                        parser = etree.XMLParser(encoding='utf-8')
-                        dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                    metadata = self._dropzone_get_metadata(dataset, dataset_node)
-                else:
-                    metadata = {
-                        'datasetID': dataset_id,
-                        'title': dataset,
-                        'url': None,
-                        'resources': self._generate_resources_dict_array(dataset),
-                        'related': []
-                    }
-                id = self._save_harvest_object(metadata, harvest_job)
-                ids.append(id)
+                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
+                        os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
 
-                if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
-                    os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
+                    with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                        meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
+                        log.debug('Metadata JSON created')
 
-                with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
-                    meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
-                    log.debug('Metadata JSON created')
+            self._create_notifications_for_deleted_datasets()
 
-        self._create_notifications_for_deleted_datasets()
-
-        return ids
+            return ids
+        except Exception, e:
+            log.exception(e)
+            self._save_gather_error(
+                'Unable to get content from folder: %s: %s / %s'
+                % (self.DATA_PATH, str(e), traceback.format_exc()),
+                harvest_job
+            )
 
     def _fetch_datasets(self, harvest_object):
+        if not harvest_object:
+            log.error('No harvest object received')
+            self._save_object_error(
+                'No harvest object received',
+                harvest_object
+            )
+            return False
         # Get the URL
         datasetID = json.loads(harvest_object.content)['datasetID']
         log.debug(harvest_object.content)
@@ -107,20 +121,38 @@ class StadtzhHarvester(HarvesterBase):
             return True
         except Exception, e:
             log.exception(e)
+            self._save_object_error(
+                (
+                    'Unable to get content for package: %s: %r / %s'
+                    % (datasetID, e, traceback.format_exc())
+                ),
+                harvest_object
+            )
+            return False
 
     def _import_datasets(self, harvest_object):
         if not harvest_object:
             log.error('No harvest object received')
+            self._save_object_error(
+                'No harvest object received',
+                harvest_object
+            )
             return False
 
         try:
             self._import_package(harvest_object)
             Session.commit()
-
+            return True
         except Exception, e:
             log.exception(e)
-
-        return True
+            self._save_object_error(
+                (
+                    'Unable to get content for package: %s: %r / %s'
+                    % (datasetID, e, traceback.format_exc())
+                ),
+                harvest_object
+            )
+            return False
 
     def _import_package(self, harvest_object):
         package_dict = json.loads(harvest_object.content)
