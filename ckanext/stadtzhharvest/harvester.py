@@ -81,9 +81,6 @@ class StadtzhHarvester(HarvesterBase):
                             'resources': self._generate_resources_dict_array(dataset),
                             'related': []
                         }
-                    id = self._save_harvest_object(metadata, harvest_job)
-                    ids.append(id)
-
                     if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
                         os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
 
@@ -91,8 +88,10 @@ class StadtzhHarvester(HarvesterBase):
                         meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                         log.debug('Metadata JSON created')
 
-            self._create_notifications_for_deleted_datasets()
+                    id = self._save_harvest_object(metadata, harvest_job)
+                    ids.append(id)
 
+            self._create_notifications_for_deleted_datasets()
             return ids
         except Exception, e:
             log.exception(e)
@@ -101,6 +100,7 @@ class StadtzhHarvester(HarvesterBase):
                 % (self.DATA_PATH, str(e), traceback.format_exc()),
                 harvest_job
             )
+	    return []
 
     def _fetch_datasets(self, harvest_object):
         if not harvest_object:
