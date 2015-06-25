@@ -519,29 +519,37 @@ class StadtzhHarvester(HarvesterBase):
         # Validated package_id can only contain alphanumerics and underscores
         package_id = self._validate_package_id(package_dict['id'])
         if package_id:
-            new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-' + str(datetime.date.today()))
-            prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id, 'metadata-previous')
+            new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
+            prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
+            new_metadata_file = os.path.join(new_metadata_path, 'metadata-' + str(datetime.date.today()))
+            prev_metadata_file = os.path.join(new_metadata_path, 'metadata-previous')
 
             for path in [self.DIFF_PATH, new_metadata_path, prev_metadata_path]:
                 if not os.path.isdir(path):
                     os.makedirs(path)
 
-            if not os.path.isfile(new_metadata_path):
-                log.debug(new_metadata_path + ' Metadata JSON missing for the dataset: ' + package_id)
+            if not os.path.isfile(new_metadata_file):
+                log.debug(new_metadata_file + ' Metadata JSON missing for the dataset: ' + package_id)
+                with open(new_metadata_file, 'w') as new_metadata:
+                    new_metadata.write('')
+                log.debug('Created new empty metadata file.')
 
-            if not os.path.isfile(prev_metadata_path):
-                log.debug('No earlier metadata JSON')
+            if not os.path.isfile(prev_metadata_file):
+                log.debug('No earlier metadata JSON for the dataset: ' + package_id)
+                with open(prev_metadata_file, 'w') as prev_metadata:
+                    prev_metadata.write('')
+                log.debug('Created new empty metadata file.')
 
-            with open(prev_metadata_path) as prev_metadata:
-                with open(new_metadata_path) as new_metadata:
+            with open(prev_metadata_file) as prev_metadata:
+                with open(new_metadata_file) as new_metadata:
                     prev = prev_metadata.read()
                     new = new_metadata.read()
 
             if prev == new:
                 log.debug('No change in metadata for the dataset: ' + package_id)
             else:
-                with open(prev_metadata_path) as prev_metadata:
-                    with open(new_metadata_path) as new_metadata:
+                with open(prev_metadata_file) as prev_metadata:
+                    with open(new_metadata_file) as new_metadata:
                         with open(self._diff_path(package_id), 'w') as diff:
                             diff.write(
                                 "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
@@ -564,9 +572,9 @@ class StadtzhHarvester(HarvesterBase):
                             diff.write(html)
                             log.debug('Metadata diff generated for the dataset: ' + package_id)
 
-            os.remove(prev_metadata_path)
+            os.remove(prev_metadata_file)
             log.debug('Deleted previous day\'s metadata file.')
-            os.rename(new_metadata_path, prev_metadata_path)
+            os.rename(new_metadata_file, prev_metadata_file)
 
     def _find_or_create_organization(self, package_dict, context):
         # Find or create the organization the dataset should get assigned to.
