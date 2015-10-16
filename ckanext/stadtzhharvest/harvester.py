@@ -56,6 +56,15 @@ class StadtzhHarvester(HarvesterBase):
         except KeyError as e:
             raise Exception("'%s' not found in config" % e.message)
 
+    def gather_stage(self, harvest_job):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
+    def fetch_stage(self, harvest_object):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
+    def import_stage(self, harvest_object):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
     def _gather_datasets(self, harvest_job):
         ids = []
         try:
