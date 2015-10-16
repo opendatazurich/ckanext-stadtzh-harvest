@@ -188,7 +188,11 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
         if package:
-            self._create_diffs(package_dict)
+            # package has already been imported.
+            try:
+                self._create_diffs(package_dict)
+            except AttributeError:
+                pass
         else:
             self._create_notification_for_new_dataset(package_dict)
 
