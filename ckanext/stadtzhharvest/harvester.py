@@ -177,21 +177,28 @@ class StadtzhHarvester(HarvesterBase):
 
         self._find_or_create_organization(package_dict, context)
 
-        # Insert the package only when it's not already in CKAN, but move the resources anyway.
+        # Insert package if not already in CKAN or if it's allowed to be updated automatically
+        # but move the resources anyway.
         package = model.Package.get(package_dict['id'])
         self._add_resources_to_filestore(package_dict)
 
-        if package:
-            # package has already been imported.
-            try:
-                self._create_diffs(package_dict)
-            except AttributeError:
-                pass
-        else:
+        if not package or self._import_updated_packages():
             result = self._create_or_update_package(package_dict, harvest_object)
             self._related_create_or_update(package_dict['name'], package_dict['related'])
-            log.debug('Dataset `%s` has been added' % package_dict['id'])
+            log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
+
+        if package:
+            self._create_diffs(package_dict)
+        else:
             self._create_notification_for_new_dataset(package_dict)
+
+    def _import_updated_packages(self):
+        '''
+        Define wheter packages may be updated automatically using this harvester.
+        If not, only new packages are imported.
+        This method should be overridden in sub-classes accordingly
+        '''
+        return False
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
