@@ -56,6 +56,15 @@ class StadtzhHarvester(HarvesterBase):
         except KeyError as e:
             raise Exception("'%s' not found in config" % e.message)
 
+    def gather_stage(self, harvest_job):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
+    def fetch_stage(self, harvest_object):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
+    def import_stage(self, harvest_object):
+        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+
     def _gather_datasets(self, harvest_job):
         ids = []
         try:
@@ -168,9 +177,16 @@ class StadtzhHarvester(HarvesterBase):
 
         self._find_or_create_organization(package_dict, context)
 
-        # Insert the package only when it's not already in CKAN, but move the resources anyway.
-        package = model.Package.get(package_dict['id'])
+        # Always update files of resources in filestore
         self._add_resources_to_filestore(package_dict)
+
+        # import the package if it does not yet exists (i.e. it's a new package)
+        # or if this harvester is allowed to update packages
+        package = model.Package.get(package_dict['id'])
+        if not package or self._import_updated_packages():
+            result = self._create_or_update_package(package_dict, harvest_object)
+            self._related_create_or_update(package_dict['name'], package_dict['related'])
+            log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
         if package:
             # package has already been imported.
@@ -179,10 +195,15 @@ class StadtzhHarvester(HarvesterBase):
             except AttributeError:
                 pass
         else:
-            result = self._create_or_update_package(package_dict, harvest_object)
-            self._related_create_or_update(package_dict['name'], package_dict['related'])
-            log.debug('Dataset `%s` has been added' % package_dict['id'])
             self._create_notification_for_new_dataset(package_dict)
+
+    def _import_updated_packages(self):
+        '''
+        Define wheter packages may be updated automatically using this harvester.
+        If not, only new packages are imported.
+        This method should be overridden in sub-classes accordingly
+        '''
+        return False
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
