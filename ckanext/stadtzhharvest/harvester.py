@@ -185,8 +185,11 @@ class StadtzhHarvester(HarvesterBase):
         package = model.Package.get(package_dict['id'])
         if not package or self._import_updated_packages():
             result = self._create_or_update_package(package_dict, harvest_object)
-            self._related_create_or_update(package_dict['name'], package_dict['related'])
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
+
+        # Update "Related items" only the first time, do not update via harvester
+        if not package:
+            self._related_create_or_update(package_dict['name'], package_dict['related'])
 
         if package:
             # package has already been imported.
