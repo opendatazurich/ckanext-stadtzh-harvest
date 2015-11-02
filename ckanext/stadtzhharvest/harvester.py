@@ -78,10 +78,13 @@ class StadtzhHarvester(HarvesterBase):
                 if dataset_id:
                     meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
                     if os.path.exists(meta_xml_file_path):
-                        with open(meta_xml_file_path, 'r') as meta_xml:
-                            parser = etree.XMLParser(encoding='utf-8')
-                            dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                        metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                        try:
+                            with open(meta_xml_file_path, 'r') as meta_xml:
+                                parser = etree.XMLParser(encoding='utf-8')
+                                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                            metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                        except:
+                            continue
                     else:
                         metadata = {
                             'datasetID': dataset_id,
