@@ -326,7 +326,7 @@ class StadtzhHarvester(HarvesterBase):
         '''
         cleaned_file_list = []
         for file in file_list:
-            if not file.startswith('.') and os.path.exists(file):
+            if not file.startswith('.'):
                 cleaned_file_list.append(file)
         return cleaned_file_list
 
