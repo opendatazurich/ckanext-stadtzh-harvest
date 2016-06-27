@@ -6,11 +6,13 @@ import difflib
 import shutil
 import traceback
 from lxml import etree
-from ofs import get_impl
+from cgi import FieldStorage
 from pylons import config
 from ckan import model
 from ckan.model import Session
 from ckan.logic import action, get_action
+import ckan.plugins.toolkit as tk
+from ckan import plugins as p
 from ckan.lib.helpers import json
 from ckan.lib.munge import munge_title_to_name, substitute_ascii_equivalents
 from ckanext.harvest.harvesters import HarvesterBase
@@ -171,6 +173,10 @@ class StadtzhHarvester(HarvesterBase):
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
 
+        # remove all resources - they are added later
+        if 'resources' in package_dict:
+            del package_dict['resources']
+
         user = model.User.get(self.config['user'])
         context = {
             'model': model,
@@ -180,9 +186,6 @@ class StadtzhHarvester(HarvesterBase):
 
         self._find_or_create_organization(package_dict, context)
 
-        # Always update files of resources in filestore
-        self._add_resources_to_filestore(package_dict)
-
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
         package = model.Package.get(package_dict['id'])
@@ -190,9 +193,16 @@ class StadtzhHarvester(HarvesterBase):
             result = self._create_or_update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
-        # Update "Related items" only the first time, do not update via harvester
+        # make sure the resources are anyway
+        resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+        for resource in resources:
+            resource['package_id'] = package_dict['id']
+            resource_id = get_action('resource_create')(context, resource)['id']
+            log.debug('Dataset resource `%s` has been created' % resource_id)
+
+        # Update "showcases" only the first time, do not update via harvester
         if not package:
-            self._related_create_or_update(package_dict['name'], package_dict['related'])
+            self._showcase_create_or_update(package_dict['id'], package_dict['related'], harvest_object)
 
         if package:
             # package has already been imported.
@@ -291,21 +301,18 @@ class StadtzhHarvester(HarvesterBase):
             'license_url': 'http://opendefinition.org/licenses/cc-zero/',
             'tags': self._generate_tags(dataset_node),
             'groups': self._dropzone_get_groups(dataset_node),
-            'resources': self._generate_resources_dict_array(dataset_id),
-            'extras': [
-                ('spatialRelationship', self._get(dataset_node, 'raeumliche_beziehung')),
-                ('dateFirstPublished', self._get(dataset_node, 'erstmalige_veroeffentlichung')),
-                ('dateLastUpdated', self._get(dataset_node, 'aktualisierungsdatum')),
-                ('updateInterval', self._get_update_interval(dataset_node)),
-                ('dataType', self._get_data_type(dataset_node)),
-                ('legalInformation', self._get(dataset_node, 'rechtsgrundlage')),
-                ('version', self._get(dataset_node, 'aktuelle_version')),
-                ('timeRange', self._get(dataset_node, 'zeitraum')),
-                ('sszBemerkungen', self._convert_comments(dataset_node)),
-                ('sszFields', self._json_encode_attributes(self._get_attributes(dataset_node))),
-                ('dataQuality', self._get(dataset_node, 'datenqualitaet'))
-            ],
-            'related': self._get_related(dataset_node)
+            'spatialRelationship': self._get(dataset_node, 'raeumliche_beziehung'),
+            'dateFirstPublished': self._get(dataset_node, 'erstmalige_veroeffentlichung'),
+            'dateLastUpdated': self._get(dataset_node, 'aktualisierungsdatum'),
+            'updateInterval': self._get_update_interval(dataset_node),
+            'dataType': self._get_data_type(dataset_node),
+            'legalInformation': self._get(dataset_node, 'rechtsgrundlage'),
+            'version': self._get(dataset_node, 'aktuelle_version'),
+            'timeRange': self._get(dataset_node, 'zeitraum'),
+            'sszBemerkungen': self._convert_comments(dataset_node),
+            'sszFields': self._json_encode_attributes(self._get_attributes(dataset_node)),
+            'dataQuality': self._get(dataset_node, 'datenqualitaet'),
+            'related': self._get_related(dataset_node),
         }
 
     def _get_update_interval(self, dataset_node):
@@ -359,7 +366,7 @@ class StadtzhHarvester(HarvesterBase):
             return 1
         return cmp(order[x_format], order[y_format])
 
-    def _generate_resources_dict_array(self, dataset):
+    def _generate_resources_dict_array(self, dataset, include_files=False):
         '''
         Given a dataset folder, it'll return an array of resource metadata
         '''
@@ -385,12 +392,19 @@ class StadtzhHarvester(HarvesterBase):
             else:
                 resource_file = self._validate_filename(resource_file)
                 if resource_file:
-                    resources.append({
-                        # 'url': '', # will be filled in the import stage
+                    resource_dict = {
                         'name': resource_file,
+                        'url': '',
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
-                    })
+                    }
+                    if include_files:
+                        f = open(os.path.join(self.DATA_PATH, dataset, self.META_DIR, resource_file), 'r')
+                        field_storage = FieldStorage()
+                        field_storage.file = f
+                        field_storage.filename = f.name
+                        resource_dict['upload'] = field_storage
+                    resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
         return sorted_resources
@@ -462,38 +476,49 @@ class StadtzhHarvester(HarvesterBase):
                         title = description
                     related.append({
                         'title': title,
-                        'type': related_type,
-                        'description': description,
+                        'name': munge_title_to_name(title),
+                        'notes': description,
                         'url': self._get(item, 'url')
                     })
         return related
 
-    def _related_create_or_update(self, dataset_id, data):
+    def _showcase_create_or_update(self, dataset_id, data, harvest_object):
         context = {
             'model': model,
             'session': Session,
             'user': self.config['user']
         }
 
-        related_items = {}
-        data_dict = {
-            'id': dataset_id
-        }
-        for related in action.get.related_list(context, data_dict):
-            related_items[related['url']] = related
-
         for entry in data:
-            entry['dataset_id'] = dataset_id
-            if entry['url'] in related_items.keys():
-                entry = dict(related_items[entry['url']].items() + entry.items())
-                log.debug('Updating related %s' % entry)
-                action.update.related_update(context, entry)
-            else:
+            try:
+                # check if we already have a showcase with the given URL
+                existing_showcase = get_action('package_search')(
+                    data_dict={'fq': '+dataset_type:showcase +url:"{0}"'.format(entry['url'])})
+                if existing_showcase['count'] > 0:
+                    showcase = existing_showcase['results'][0]
+                else:
+                    # create a new showcase
+                    try:
+                        log.debug('Creating showcase %s' % entry)
+                        showcase = get_action('ckanext_showcase_create')(context, entry)
+                        log.debug('Showcase created: %s' % showcase)
+                    except tk.ValidationError, e:
+                        self._save_object_error(
+                            (
+                                'Unable to create showcase: %s (%s, %s)'
+                                % (entry, e, traceback.format_exc())
+                            ),
+                            harvest_object
+                        )
                 try:
-                    log.debug('Creating related %s' % entry)
-                    action.create.related_create(context, entry)
-                except Exception, e:
-                    log.exception(e)
+                    # associate showcase with dataset
+                    assoc_dict = {'package_id': dataset_id, 'showcase_id': showcase['id']}
+                    assoc_result = get_action('ckanext_showcase_package_association_create')(context, assoc_dict)
+                    log.debug('Showcase association created: %s' % assoc_result)
+                except tk.ValidationError:
+                    log.exception("Could not create association")
+            except Exception, e:
+                log.exception(e)
 
     def _get_immediate_subdirectories(self, directory):
         return [name for name in os.listdir(directory)
@@ -617,31 +642,6 @@ class StadtzhHarvester(HarvesterBase):
             organization = get_action('organization_create')(context, data_dict)
             package_dict['owner_org'] = organization['id']
 
-    def _add_resources_to_filestore(self, package_dict):
-        # Move file around and make sure it's in the file-store
-        for r in package_dict['resources']:
-            old_filename = self._validate_filename(r['name'])
-            if not old_filename:
-                log.debug('Resource not added.')
-                continue
-            r['name'] = substitute_ascii_equivalents(r['name'])
-            package_id = self._validate_package_id(package_dict['datasetID'])
-
-            if not package_id:
-                log.debug('Resources not added to package %s as the package id contained disallowed characters' % package_id)
-
-            if r['resource_type'] == 'file':
-                label = package_id + '/' + r['name']
-                file_contents = ''
-                with open(os.path.join(self.DATA_PATH, package_id, self.META_DIR, old_filename)) as contents:
-                    file_contents = contents.read()
-                params = {
-                    'filename-original': 'the original file name',
-                    'uploaded-by': self.config['user']
-                }
-                r['url'] = self.CKAN_SITE_URL + '/storage/f/' + label
-                self.get_ofs().put_stream(self.BUCKET, label, file_contents, params)
-
     def _validate_package_id(self, package_id):
         # Validate that they do not contain any HTML tags.
         match = re.search('[<>]+', package_id)
@@ -674,45 +674,3 @@ class StadtzhHarvester(HarvesterBase):
             raise InvalidCommentError(markdown)
         else:
             return markdown
-
-
-    # ---
-    # COPIED FROM THE CKAN STORAGE CONTROLLER
-    # ---
-
-    def create_pairtree_marker(self, folder):
-        """ Creates the pairtree marker for tests if it doesn't exist """
-        if not folder[:-1] == '/':
-            folder = folder + '/'
-
-        directory = os.path.dirname(folder)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        target = os.path.join(directory, 'pairtree_version0_1')
-        if os.path.exists(target):
-            return
-
-        open(target, 'wb').close()
-
-    def get_ofs(self):
-        """Return a configured instance of the appropriate OFS driver.
-        """
-        storage_backend = config['ofs.impl']
-        kw = {}
-        for k, v in config.items():
-            if not k.startswith('ofs.') or k == 'ofs.impl':
-                continue
-            kw[k[4:]] = v
-
-        # Make sure we have created the marker file to avoid pairtree issues
-        if storage_backend == 'pairtree' and 'storage_dir' in kw:
-            self.create_pairtree_marker(kw['storage_dir'])
-
-        ofs = get_impl(storage_backend)(**kw)
-        return ofs
-
-    # ---
-    # END COPY
-    # ---
-
