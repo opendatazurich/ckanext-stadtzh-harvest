@@ -11,6 +11,7 @@ from pylons import config
 from ckan import model
 from ckan.model import Session
 from ckan.logic import action, get_action
+import ckan.plugins.toolkit as tk
 from ckan import plugins as p
 from ckan.lib.helpers import json
 from ckan.lib.munge import munge_title_to_name, substitute_ascii_equivalents
@@ -201,7 +202,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # Update "showcases" only the first time, do not update via harvester
         if not package:
-            self._showcase_create_or_update(package_dict['id'], package_dict['related'])
+            self._showcase_create_or_update(package_dict['id'], package_dict['related'], harvest_object)
 
         if package:
             # package has already been imported.
@@ -481,7 +482,7 @@ class StadtzhHarvester(HarvesterBase):
                     })
         return related
 
-    def _showcase_create_or_update(self, dataset_id, data):
+    def _showcase_create_or_update(self, dataset_id, data, harvest_object):
         context = {
             'model': model,
             'session': Session,
@@ -490,10 +491,32 @@ class StadtzhHarvester(HarvesterBase):
 
         for entry in data:
             try:
-                log.debug('Creating showcase %s' % entry)
-                showcase = get_action('ckanext_showcase_create')(context, entry)
-                assoc_dict = {'package_id': dataset_id, 'showcase_id': showcase['id']}
-                get_action('showcase_package_association_create')(context, assoc_dict)
+                # check if we already have a showcase with the given URL
+                existing_showcase = get_action('package_search')(
+                    data_dict={'fq': '+dataset_type:showcase +url:"{0}"'.format(entry['url'])})
+                if existing_showcase['count'] > 0:
+                    showcase = existing_showcase['results'][0]
+                else:
+                    # create a new showcase
+                    try:
+                        log.debug('Creating showcase %s' % entry)
+                        showcase = get_action('ckanext_showcase_create')(context, entry)
+                        log.debug('Showcase created: %s' % showcase)
+                    except tk.ValidationError, e:
+                        self._save_object_error(
+                            (
+                                'Unable to create showcase: %s (%s, %s)'
+                                % (entry, e, traceback.format_exc())
+                            ),
+                            harvest_object
+                        )
+                try:
+                    # associate showcase with dataset
+                    assoc_dict = {'package_id': dataset_id, 'showcase_id': showcase['id']}
+                    assoc_result = get_action('ckanext_showcase_package_association_create')(context, assoc_dict)
+                    log.debug('Showcase association created: %s' % assoc_result)
+                except tk.ValidationError:
+                    log.exception("Could not create association")
             except Exception, e:
                 log.exception(e)
 
