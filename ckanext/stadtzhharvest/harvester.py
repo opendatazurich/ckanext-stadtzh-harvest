@@ -172,11 +172,6 @@ class StadtzhHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-
-        # remove all resources - they are added later
-        if 'resources' in package_dict:
-            del package_dict['resources']
-
         user = model.User.get(self.config['user'])
         context = {
             'model': model,
@@ -184,16 +179,35 @@ class StadtzhHarvester(HarvesterBase):
             'user': self.config['user']
         }
 
+        # get existing package if it exists
+        try:
+            existing_package = self._find_existing_package(package_dict)
+        except tk.ObjectNotFound:
+            existing_package = None  # package does not exist
+
+        # remove all resources - they are added later
+        if 'resources' in package_dict:
+            del package_dict['resources']
+
+        # try to remove all current resources of this package
+        if existing_package:
+            for resource in existing_package['resources']:
+                try:
+                    replace_upload = get_action('resource_update')(context, {'id': resource['id'], 'url': 'https://data.stadt-zuerich.ch/filenotfound', 'clear_upload': 'true'})
+                    result = get_action('resource_delete')(context, {'id': resource['id']})
+                    log.debug('Dataset resource has been deleted: %s' % result)
+                except:
+                    log.exception("Could not delete resource: %s" % resource)
+
         self._find_or_create_organization(package_dict, context)
 
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
-        package = model.Package.get(package_dict['id'])
-        if not package or self._import_updated_packages():
+        if not existing_package or self._import_updated_packages():
             result = self._create_or_update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
-        # make sure the resources are anyway
+        # make sure the resources are anyway added
         resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
         for resource in resources:
             resource['package_id'] = package_dict['id']
@@ -201,10 +215,10 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Dataset resource `%s` has been created' % resource_id)
 
         # Update "showcases" only the first time, do not update via harvester
-        if not package:
+        if not existing_package:
             self._showcase_create_or_update(package_dict['id'], package_dict['related'], harvest_object)
 
-        if package:
+        if existing_package:
             # package has already been imported.
             try:
                 self._create_diffs(package_dict)
