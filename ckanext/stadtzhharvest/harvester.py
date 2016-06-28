@@ -275,10 +275,7 @@ class StadtzhHarvester(HarvesterBase):
             group_titles = categories.split(', ')
             groups = []
             for title in group_titles:
-                if title == u'Bauen und Wohnen':
-                    name = u'bauen-wohnen'
-                else:
-                    name = title.lower().replace(u'ö', u'oe').replace(u'ä', u'ae')
+                name = munge_title_to_name(title)
                 groups.append((name, title))
             return self._get_group_ids(groups)
         else:
