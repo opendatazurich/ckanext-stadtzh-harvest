@@ -85,7 +85,13 @@ class StadtzhHarvester(HarvesterBase):
                                 parser = etree.XMLParser(encoding='utf-8')
                                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
                             metadata = self._dropzone_get_metadata(dataset, dataset_node)
-                        except:
+                        except Exception, e:
+                            log.exception(e)
+                            self._save_gather_error(
+                                'Could not parse metadata: %s / %s'
+                                % (str(e), traceback.format_exc()),
+                                harvest_job
+                            )
                             continue
                     else:
                         metadata = {
@@ -265,8 +271,8 @@ class StadtzhHarvester(HarvesterBase):
         }
         groups = []
         for name, title in group_list:
+            data_dict = {'id': name}
             try:
-                data_dict = {'id': name}
                 group_id = get_action('group_show')(context, data_dict)['id']
                 groups.append(group_id)
                 log.debug('Added group %s' % name)
@@ -275,8 +281,13 @@ class StadtzhHarvester(HarvesterBase):
                 data_dict['title'] = title
                 data_dict['image_url'] = self.CKAN_SITE_URL + '/kategorien/' + name + '.png'
                 log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
-                group_id = get_action('group_create')(context, data_dict)['id']
-                groups.append(group_id)
+                try:
+                    group = get_action('group_create')(context, data_dict)
+                    log.debug("Created group %s" % group)
+                    groups.append(group['id'])
+                except:
+                    log.debug('Couldn\'t create group: %s' % (traceback.format_exc()))
+                    raise
 
         return groups
 
