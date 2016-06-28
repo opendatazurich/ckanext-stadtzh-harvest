@@ -191,19 +191,32 @@ class StadtzhHarvester(HarvesterBase):
         except tk.ObjectNotFound:
             existing_package = None  # package does not exist
 
-        # remove all resources - they are added later
-        if 'resources' in package_dict:
-            del package_dict['resources']
-
-        # try to remove all current resources of this package
+        # update existing resources, delete old ones, create new ones
+        action_dict = {} 
         if existing_package:
-            for resource in existing_package['resources']:
-                try:
-                    replace_upload = get_action('resource_update')(context, {'id': resource['id'], 'url': 'https://data.stadt-zuerich.ch/filenotfound', 'clear_upload': 'true'})
-                    result = get_action('resource_delete')(context, {'id': resource['id']})
-                    log.debug('Dataset resource has been deleted: %s' % result)
-                except:
-                    log.exception("Could not delete resource: %s" % resource)
+            old_resources = existing_package['resources']
+            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+
+            for r in new_resources:
+                action = {'action': 'create', 'new_resource': r, 'old_resource': None}
+                for old in old_resources:
+                    if old['name'] == r['name']:
+                        action['action'] = 'update'
+                        action['old_resource'] = old
+                        break
+                action_dict[r['name']] = action
+
+            for old in old_resources:
+                if old['name'] not in action_dict:
+                    action_dict[old['name']] = {'action': 'delete', 'old_resource': old}
+        else:
+            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+            for r in new_resources:
+                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
+
+        # Start the actions!
+        if 'resources' in existing_package: 
+            package_dict['resources'] = existing_package['resources']
 
         self._find_or_create_organization(package_dict, context)
 
@@ -213,12 +226,34 @@ class StadtzhHarvester(HarvesterBase):
             result = self._create_or_update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
-        # make sure the resources are anyway added
-        resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-        for resource in resources:
-            resource['package_id'] = package_dict['id']
-            resource_id = get_action('resource_create')(context, resource)['id']
-            log.debug('Dataset resource `%s` has been created' % resource_id)
+        # handle all resources (create, update, delete)
+        for res_name, action in action_dict.iteritems():
+            log.debug("Resource %s, action: %s" % (res_name, action))
+            if action['action'] == 'create':
+                resource = dict(action['new_resource'])
+                resource['package_id'] = package_dict['id']
+                resource_id = get_action('resource_create')(context, resource)['id']
+                log.debug('Dataset resource `%s` has been created' % resource_id)
+            elif action['action'] == 'update':
+                resource = dict(action['old_resource'])
+                resource['package_id'] = package_dict['id']
+                resource['upload'] = action['new_resource']['upload']
+                log.debug("Trying to update resource: %s" % resource)
+                resource_id = get_action('resource_update')(context, resource)['id']
+                log.debug('Dataset resource `%s` has been updated' % resource_id)
+            elif action['action'] == 'delete':
+                replace_upload = get_action('resource_update')(
+                    context,
+                    {
+                        'id': action['old_resource']['id'],
+                        'url': 'https://data.stadt-zuerich.ch/filenotfound',
+                        'clear_upload': 'true'
+                    }
+                )
+                result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
+                log.debug('Dataset resource has been deleted: %s' % result)
+            else:
+                log.debug('Unknown action, we should never reach this point')
 
         # Update "showcases" only the first time, do not update via harvester
         if not existing_package:
