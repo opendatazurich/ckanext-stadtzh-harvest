@@ -85,7 +85,13 @@ class StadtzhHarvester(HarvesterBase):
                                 parser = etree.XMLParser(encoding='utf-8')
                                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
                             metadata = self._dropzone_get_metadata(dataset, dataset_node)
-                        except:
+                        except Exception, e:
+                            log.exception(e)
+                            self._save_gather_error(
+                                'Could not parse metadata: %s / %s'
+                                % (str(e), traceback.format_exc()),
+                                harvest_job
+                            )
                             continue
                     else:
                         metadata = {
@@ -172,11 +178,6 @@ class StadtzhHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-
-        # remove all resources - they are added later
-        if 'resources' in package_dict:
-            del package_dict['resources']
-
         user = model.User.get(self.config['user'])
         context = {
             'model': model,
@@ -184,27 +185,81 @@ class StadtzhHarvester(HarvesterBase):
             'user': self.config['user']
         }
 
+        # get existing package if it exists
+        try:
+            existing_package = self._find_existing_package(package_dict)
+        except tk.ObjectNotFound:
+            existing_package = None  # package does not exist
+
+        # update existing resources, delete old ones, create new ones
+        action_dict = {} 
+        if existing_package:
+            old_resources = existing_package['resources']
+            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+
+            for r in new_resources:
+                action = {'action': 'create', 'new_resource': r, 'old_resource': None}
+                for old in old_resources:
+                    if old['name'] == r['name']:
+                        action['action'] = 'update'
+                        action['old_resource'] = old
+                        break
+                action_dict[r['name']] = action
+
+            for old in old_resources:
+                if old['name'] not in action_dict:
+                    action_dict[old['name']] = {'action': 'delete', 'old_resource': old}
+        else:
+            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+            for r in new_resources:
+                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
+
+        # Start the actions!
+        if 'resources' in existing_package: 
+            package_dict['resources'] = existing_package['resources']
+
         self._find_or_create_organization(package_dict, context)
 
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
-        package = model.Package.get(package_dict['id'])
-        if not package or self._import_updated_packages():
+        if not existing_package or self._import_updated_packages():
             result = self._create_or_update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
 
-        # make sure the resources are anyway
-        resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-        for resource in resources:
-            resource['package_id'] = package_dict['id']
-            resource_id = get_action('resource_create')(context, resource)['id']
-            log.debug('Dataset resource `%s` has been created' % resource_id)
+        # handle all resources (create, update, delete)
+        for res_name, action in action_dict.iteritems():
+            log.debug("Resource %s, action: %s" % (res_name, action))
+            if action['action'] == 'create':
+                resource = dict(action['new_resource'])
+                resource['package_id'] = package_dict['id']
+                resource_id = get_action('resource_create')(context, resource)['id']
+                log.debug('Dataset resource `%s` has been created' % resource_id)
+            elif action['action'] == 'update':
+                resource = dict(action['old_resource'])
+                resource['package_id'] = package_dict['id']
+                resource['upload'] = action['new_resource']['upload']
+                log.debug("Trying to update resource: %s" % resource)
+                resource_id = get_action('resource_update')(context, resource)['id']
+                log.debug('Dataset resource `%s` has been updated' % resource_id)
+            elif action['action'] == 'delete':
+                replace_upload = get_action('resource_update')(
+                    context,
+                    {
+                        'id': action['old_resource']['id'],
+                        'url': 'https://data.stadt-zuerich.ch/filenotfound',
+                        'clear_upload': 'true'
+                    }
+                )
+                result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
+                log.debug('Dataset resource has been deleted: %s' % result)
+            else:
+                log.debug('Unknown action, we should never reach this point')
 
         # Update "showcases" only the first time, do not update via harvester
-        if not package:
+        if not existing_package:
             self._showcase_create_or_update(package_dict['id'], package_dict['related'], harvest_object)
 
-        if package:
+        if existing_package:
             # package has already been imported.
             try:
                 self._create_diffs(package_dict)
@@ -251,8 +306,8 @@ class StadtzhHarvester(HarvesterBase):
         }
         groups = []
         for name, title in group_list:
+            data_dict = {'id': name}
             try:
-                data_dict = {'id': name}
                 group_id = get_action('group_show')(context, data_dict)['id']
                 groups.append(group_id)
                 log.debug('Added group %s' % name)
@@ -261,8 +316,13 @@ class StadtzhHarvester(HarvesterBase):
                 data_dict['title'] = title
                 data_dict['image_url'] = self.CKAN_SITE_URL + '/kategorien/' + name + '.png'
                 log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
-                group_id = get_action('group_create')(context, data_dict)['id']
-                groups.append(group_id)
+                try:
+                    group = get_action('group_create')(context, data_dict)
+                    log.debug("Created group %s" % group)
+                    groups.append(group['id'])
+                except:
+                    log.debug('Couldn\'t create group: %s' % (traceback.format_exc()))
+                    raise
 
         return groups
 
