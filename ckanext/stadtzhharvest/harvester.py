@@ -215,7 +215,7 @@ class StadtzhHarvester(HarvesterBase):
                 action_dict[r['name']] = {'action': 'create', 'new_resource': r}
 
         # Start the actions!
-        if 'resources' in existing_package: 
+        if existing_package and 'resources' in existing_package: 
             package_dict['resources'] = existing_package['resources']
 
         self._find_or_create_organization(package_dict, context)
