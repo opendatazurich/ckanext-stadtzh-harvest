@@ -88,8 +88,8 @@ class StadtzhHarvester(HarvesterBase):
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
-                                'Could not parse metadata: %s / %s'
-                                % (str(e), traceback.format_exc()),
+                                'Could not parse metadata in %s: %s / %s'
+                                % (meta_xml_file_path, str(e), traceback.format_exc()),
                                 harvest_job
                             )
                             continue
