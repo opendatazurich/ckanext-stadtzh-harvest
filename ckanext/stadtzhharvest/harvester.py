@@ -193,7 +193,7 @@ class StadtzhHarvester(HarvesterBase):
         except tk.ObjectNotFound:
             existing_package = None  # package does not exist
 
-        # remove showcases from pkg_dict
+        # remove related from pkg_dict
         showcases = package_dict['related']
         del package_dict['related']
 
