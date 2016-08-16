@@ -5,6 +5,7 @@ import datetime
 import difflib
 import shutil
 import traceback
+import uuid
 from lxml import etree
 from cgi import FieldStorage
 from pylons import config
@@ -17,6 +18,7 @@ from ckan.lib.helpers import json
 from ckan.lib.munge import munge_title_to_name, substitute_ascii_equivalents
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
+from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 
 import logging
 log = logging.getLogger(__name__)
@@ -72,6 +74,7 @@ class StadtzhHarvester(HarvesterBase):
         try:
             # list directories in dropzone folder
             datasets = self._remove_hidden_files(os.listdir(self.DATA_PATH))
+            log.debug("Directories in %s: %s" % (self.DATA_PATH, datasets))
 
             # foreach -> meta.xml -> create entry
             for dataset in datasets:
@@ -99,7 +102,6 @@ class StadtzhHarvester(HarvesterBase):
                             'title': dataset,
                             'url': None,
                             'resources': self._generate_resources_dict_array(dataset),
-                            'related': []
                         }
                     if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
                         os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
@@ -191,6 +193,10 @@ class StadtzhHarvester(HarvesterBase):
         except tk.ObjectNotFound:
             existing_package = None  # package does not exist
 
+        # remove related from pkg_dict
+        showcases = package_dict['related']
+        del package_dict['related']
+
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
         if existing_package:
@@ -222,9 +228,22 @@ class StadtzhHarvester(HarvesterBase):
 
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
-        if not existing_package or self._import_updated_packages():
-            result = self._create_or_update_package(package_dict, harvest_object)
-            log.debug('Dataset `%s` has been added or updated' % package_dict['id'])
+        if not existing_package:
+            self._create_package(package_dict, harvest_object)
+            self._create_notification_for_new_dataset(package_dict)
+            self._showcase_create_or_update(package_dict['id'], showcases, harvest_object)
+            log.debug('Dataset `%s` has been added' % package_dict['id'])
+        elif self._import_updated_packages():
+            # Don't change the dataset name even if the title has
+            package_dict['name'] = existing_package['name']
+            package_dict['id'] = existing_package['id']
+            self._update_package(package_dict, harvest_object)
+            self._showcase_create_or_update(package_dict['id'], showcases, harvest_object)
+            log.debug('Dataset `%s` has been updated' % package_dict['id'])
+        
+        # create diffs if there is a previous package
+        if existing_package:
+            self._create_diffs(package_dict)
 
         # handle all resources (create, update, delete)
         for res_name, action in action_dict.iteritems():
@@ -255,18 +274,99 @@ class StadtzhHarvester(HarvesterBase):
             else:
                 log.debug('Unknown action, we should never reach this point')
 
-        # Update "showcases" only the first time, do not update via harvester
-        if not existing_package:
-            self._showcase_create_or_update(package_dict['id'], package_dict['related'], harvest_object)
 
-        if existing_package:
-            # package has already been imported.
-            try:
-                self._create_diffs(package_dict)
-            except AttributeError:
-                pass
-        else:
-            self._create_notification_for_new_dataset(package_dict)
+    def _create_package(self, dataset, harvest_object):
+        # Get the last harvested object (if any)
+        previous_object = model.Session.query(HarvestObject) \
+                                       .filter(HarvestObject.guid==harvest_object.guid) \
+                                       .filter(HarvestObject.current==True) \
+                                       .first()
+        
+        # Flag previous object as not current anymore
+        if previous_object:
+            previous_object.current = False
+            previous_object.add()
+        
+        # Flag this object as the current one
+        harvest_object.current = True
+        harvest_object.add()
+
+        theme_plugin = StadtzhThemePlugin()
+        package_schema = theme_plugin.create_package_schema()
+    
+        # We need to explicitly provide a package ID
+        dataset['id'] = unicode(uuid.uuid4())
+        package_schema['id'] = [unicode]
+        
+        context = {
+            'user': self.config['user'],
+            'return_id_only': True,
+            'ignore_auth': True,
+            'schema': package_schema,
+        }
+
+    
+        # Save reference to the package on the object
+        harvest_object.package_id = dataset['id']
+        harvest_object.add()
+    
+        # Defer constraints and flush so the dataset can be indexed with
+        # the harvest object id (on the after_show hook from the harvester
+        # plugin)
+        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')
+        model.Session.flush()
+    
+        try:
+            p.toolkit.get_action('package_create')(context, dataset)
+        except p.toolkit.ValidationError, e:
+            self._save_object_error('Create validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+            return False
+    
+        log.info('Created dataset %s', dataset['name'])
+        
+        model.Session.commit()
+        
+        return True
+
+    def _update_package(self, dataset, harvest_object):
+        # Get the last harvested object (if any)
+        previous_object = model.Session.query(HarvestObject) \
+                                       .filter(HarvestObject.guid==harvest_object.guid) \
+                                       .filter(HarvestObject.current==True) \
+                                       .first()
+        
+        # Flag previous object as not current anymore
+        if previous_object:
+            previous_object.current = False
+            previous_object.add()
+        
+        # Flag this object as the current one
+        harvest_object.current = True
+        harvest_object.add()
+
+        theme_plugin = StadtzhThemePlugin()
+        context = {
+            'user': self.config['user'],
+            'return_id_only': True,
+            'ignore_auth': True,
+            'schema': theme_plugin.update_package_schema(),
+        }
+
+        # Save reference to the package on the object
+        harvest_object.package_id = dataset['id']
+        harvest_object.add()
+    
+        try:
+            get_action('package_update')(context, dataset)
+        except p.toolkit.ValidationError, e:
+            self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+            return False
+    
+        log.info('Updated dataset %s', dataset['name'])
+        
+        model.Session.commit()
+        
+        return True
 
     def _import_updated_packages(self):
         '''
@@ -309,7 +409,7 @@ class StadtzhHarvester(HarvesterBase):
             data_dict = {'id': name}
             try:
                 group_id = get_action('group_show')(context, data_dict)['id']
-                groups.append(group_id)
+                groups.append({'name': group_id})
                 log.debug('Added group %s' % name)
             except:
                 data_dict['name'] = name
@@ -319,7 +419,7 @@ class StadtzhHarvester(HarvesterBase):
                 try:
                     group = get_action('group_create')(context, data_dict)
                     log.debug("Created group %s" % group)
-                    groups.append(group['id'])
+                    groups.append({'name': group['id']})
                 except:
                     log.debug('Couldn\'t create group: %s' % (traceback.format_exc()))
                     raise
@@ -401,7 +501,7 @@ class StadtzhHarvester(HarvesterBase):
         tags = []
         if dataset_node.find('schlagworte') is not None and dataset_node.find('schlagworte').text:
             for tag in dataset_node.find('schlagworte').text.split(', '):
-                tags.append(tag)
+                tags.append({'name': tag})
         log.debug('Added tags: %s' % str(tags))
         return tags
 
@@ -625,9 +725,11 @@ class StadtzhHarvester(HarvesterBase):
 
 
     def _create_diffs(self, package_dict):
-        # Validated package_id can only contain alphanumerics and underscores
-        package_id = self._validate_package_id(package_dict['id'])
-        if package_id:
+        try:
+            # Validated package_id can only contain alphanumerics and underscores
+            package_id = self._validate_package_id(package_dict['id'])
+            if not package_id:
+                raise ValueError("Package ID '%s' is not valid" % package_dict['id'])
             new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
             prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
             new_metadata_file = os.path.join(new_metadata_path, 'metadata-' + str(datetime.date.today()))
@@ -684,6 +786,8 @@ class StadtzhHarvester(HarvesterBase):
             os.remove(prev_metadata_file)
             log.debug('Deleted previous day\'s metadata file.')
             os.rename(new_metadata_file, prev_metadata_file)
+        except AttributeError:
+            pass
 
     def _find_or_create_organization(self, package_dict, context):
         # Find or create the organization the dataset should get assigned to.
