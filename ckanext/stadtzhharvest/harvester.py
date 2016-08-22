@@ -180,7 +180,6 @@ class StadtzhHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-        user = model.User.get(self.config['user'])
         context = {
             'model': model,
             'session': Session,
@@ -398,7 +397,6 @@ class StadtzhHarvester(HarvesterBase):
         If a group does not exist in CKAN, create it.
         '''
 
-        user = model.User.get(self.config['user'])
         context = {
             'model': model,
             'session': Session,
