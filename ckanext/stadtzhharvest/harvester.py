@@ -194,10 +194,12 @@ class StadtzhHarvester(HarvesterBase):
 
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
-        if existing_package:
+        new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+        if not existing_package:
+            for r in new_resources:
+                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
+        else:
             old_resources = existing_package['resources']
-            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-
             for r in new_resources:
                 action = {'action': 'create', 'new_resource': r, 'old_resource': None}
                 for old in old_resources:
@@ -210,10 +212,6 @@ class StadtzhHarvester(HarvesterBase):
             for old in old_resources:
                 if old['name'] not in action_dict:
                     action_dict[old['name']] = {'action': 'delete', 'old_resource': old}
-        else:
-            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-            for r in new_resources:
-                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
 
         # Start the actions!
         if existing_package and 'resources' in existing_package: 
@@ -249,7 +247,14 @@ class StadtzhHarvester(HarvesterBase):
             elif action['action'] == 'update':
                 resource = dict(action['old_resource'])
                 resource['package_id'] = package_dict['id']
-                resource['upload'] = action['new_resource']['upload']
+
+                if 'upload' in action['new_resource']:
+                    # if the resource is an upload, replace the file
+                    resource['upload'] = action['new_resource']['upload']
+                elif action['new_resource']['resource_type'] == 'api':
+                    # for APIs, update the URL
+                    resource['url'] = action['new_resource']['url']
+
                 log.debug("Trying to update resource: %s" % resource)
                 resource_id = get_action('resource_update')(context, resource)['id']
                 log.debug('Dataset resource `%s` has been updated' % resource_id)
