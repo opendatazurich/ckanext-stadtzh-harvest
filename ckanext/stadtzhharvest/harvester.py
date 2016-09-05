@@ -238,39 +238,43 @@ class StadtzhHarvester(HarvesterBase):
 
         # handle all resources (create, update, delete)
         for res_name, action in action_dict.iteritems():
-            log.debug("Resource %s, action: %s" % (res_name, action))
-            if action['action'] == 'create':
-                resource = dict(action['new_resource'])
-                resource['package_id'] = package_dict['id']
-                resource_id = get_action('resource_create')(context, resource)['id']
-                log.debug('Dataset resource `%s` has been created' % resource_id)
-            elif action['action'] == 'update':
-                resource = dict(action['old_resource'])
-                resource['package_id'] = package_dict['id']
+            try:
+                log.debug("Resource %s, action: %s" % (res_name, action))
+                if action['action'] == 'create':
+                    resource = dict(action['new_resource'])
+                    resource['package_id'] = package_dict['id']
+                    resource_id = get_action('resource_create')(context, resource)['id']
+                    log.debug('Dataset resource `%s` has been created' % resource_id)
+                elif action['action'] == 'update':
+                    resource = dict(action['old_resource'])
+                    resource['package_id'] = package_dict['id']
 
-                if 'upload' in action['new_resource']:
-                    # if the resource is an upload, replace the file
-                    resource['upload'] = action['new_resource']['upload']
-                elif action['new_resource']['resource_type'] == 'api':
-                    # for APIs, update the URL
-                    resource['url'] = action['new_resource']['url']
+                    if 'upload' in action['new_resource']:
+                        # if the resource is an upload, replace the file
+                        resource['upload'] = action['new_resource']['upload']
+                    elif action['new_resource']['resource_type'] == 'api':
+                        # for APIs, update the URL
+                        resource['url'] = action['new_resource']['url']
 
-                log.debug("Trying to update resource: %s" % resource)
-                resource_id = get_action('resource_update')(context, resource)['id']
-                log.debug('Dataset resource `%s` has been updated' % resource_id)
-            elif action['action'] == 'delete':
-                replace_upload = get_action('resource_update')(
-                    context,
-                    {
-                        'id': action['old_resource']['id'],
-                        'url': 'https://data.stadt-zuerich.ch/filenotfound',
-                        'clear_upload': 'true'
-                    }
-                )
-                result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
-                log.debug('Dataset resource has been deleted: %s' % result)
-            else:
-                log.debug('Unknown action, we should never reach this point')
+                    log.debug("Trying to update resource: %s" % resource)
+                    resource_id = get_action('resource_update')(context, resource)['id']
+                    log.debug('Dataset resource `%s` has been updated' % resource_id)
+                elif action['action'] == 'delete':
+                    replace_upload = get_action('resource_update')(
+                        context,
+                        {
+                            'id': action['old_resource']['id'],
+                            'url': 'https://data.stadt-zuerich.ch/filenotfound',
+                            'clear_upload': 'true'
+                        }
+                    )
+                    result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
+                    log.debug('Dataset resource has been deleted: %s' % result)
+                else:
+                    raise ValueError('Unknown action, we should never reach this point')
+            except Exception, e:
+                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], str(e)), harvest_object, 'Import')
+                continue
 
 
     def _create_package(self, dataset, harvest_object):
