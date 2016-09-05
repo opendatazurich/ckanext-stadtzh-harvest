@@ -192,10 +192,6 @@ class StadtzhHarvester(HarvesterBase):
         except tk.ObjectNotFound:
             existing_package = None  # package does not exist
 
-        # remove related from pkg_dict
-        showcases = package_dict['related']
-        del package_dict['related']
-
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
         if existing_package:
@@ -230,14 +226,12 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
-            self._showcase_create_or_update(package_dict['id'], showcases, harvest_object)
             log.debug('Dataset `%s` has been added' % package_dict['id'])
         elif self._import_updated_packages():
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
             self._update_package(package_dict, harvest_object)
-            self._showcase_create_or_update(package_dict['id'], showcases, harvest_object)
             log.debug('Dataset `%s` has been updated' % package_dict['id'])
         
         # create diffs if there is a previous package
@@ -467,7 +461,6 @@ class StadtzhHarvester(HarvesterBase):
             'sszBemerkungen': self._convert_comments(dataset_node),
             'sszFields': self._json_encode_attributes(self._get_attributes(dataset_node)),
             'dataQuality': self._get(dataset_node, 'datenqualitaet'),
-            'related': self._get_related(dataset_node),
         }
 
     def _get_update_interval(self, dataset_node):
@@ -616,64 +609,6 @@ class StadtzhHarvester(HarvesterBase):
             speak_name = attribut.find('sprechenderfeldname').text
             attributes.append(('%s (technisch: %s)' % (speak_name, tech_name), attribut.find('feldbeschreibung').text))
         return attributes
-
-    def _get_related(self, xpath):
-        related = []
-        for element, related_type in [('anwendungen', 'Applikation'),
-                                      ('publikationen', 'Publikation')]:
-            related_list = xpath.find(element)
-            if related_list is not None:
-                for item in related_list:
-                    title = self._get(item, 'titel')
-                    description = self._get(item, 'beschreibung')
-                    # title is mandatory so use description if it is empty
-                    if not title:
-                        title = description
-                    related.append({
-                        'title': title,
-                        'name': munge_title_to_name(title),
-                        'notes': description,
-                        'url': self._get(item, 'url')
-                    })
-        return related
-
-    def _showcase_create_or_update(self, dataset_id, data, harvest_object):
-        context = {
-            'model': model,
-            'session': Session,
-            'user': self.config['user']
-        }
-
-        for entry in data:
-            try:
-                # check if we already have a showcase with the given URL
-                existing_showcase = get_action('package_search')(
-                    data_dict={'fq': '+dataset_type:showcase +url:"{0}"'.format(entry['url'])})
-                if existing_showcase['count'] > 0:
-                    showcase = existing_showcase['results'][0]
-                else:
-                    # create a new showcase
-                    try:
-                        log.debug('Creating showcase %s' % entry)
-                        showcase = get_action('ckanext_showcase_create')(context, entry)
-                        log.debug('Showcase created: %s' % showcase)
-                    except tk.ValidationError, e:
-                        self._save_object_error(
-                            (
-                                'Unable to create showcase: %s (%s, %s)'
-                                % (entry, e, traceback.format_exc())
-                            ),
-                            harvest_object
-                        )
-                try:
-                    # associate showcase with dataset
-                    assoc_dict = {'package_id': dataset_id, 'showcase_id': showcase['id']}
-                    assoc_result = get_action('ckanext_showcase_package_association_create')(context, assoc_dict)
-                    log.debug('Showcase association created: %s' % assoc_result)
-                except tk.ValidationError:
-                    log.exception("Could not create association")
-            except Exception, e:
-                log.exception(e)
 
     def _get_immediate_subdirectories(self, directory):
         return [name for name in os.listdir(directory)
