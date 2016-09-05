@@ -275,24 +275,10 @@ class StadtzhHarvester(HarvesterBase):
             except Exception, e:
                 self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], str(e)), harvest_object, 'Import')
                 continue
+        return True
 
 
     def _create_package(self, dataset, harvest_object):
-        # Get the last harvested object (if any)
-        previous_object = model.Session.query(HarvestObject) \
-                                       .filter(HarvestObject.guid==harvest_object.guid) \
-                                       .filter(HarvestObject.current==True) \
-                                       .first()
-        
-        # Flag previous object as not current anymore
-        if previous_object:
-            previous_object.current = False
-            previous_object.add()
-        
-        # Flag this object as the current one
-        harvest_object.current = True
-        harvest_object.add()
-
         theme_plugin = StadtzhThemePlugin()
         package_schema = theme_plugin.create_package_schema()
     
@@ -307,6 +293,9 @@ class StadtzhHarvester(HarvesterBase):
             'schema': package_schema,
         }
 
+        # Flag this object as the current one
+        harvest_object.current = True
+        harvest_object.add()
     
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
@@ -357,6 +346,8 @@ class StadtzhHarvester(HarvesterBase):
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
         harvest_object.add()
+
+        model.Session.flush()
     
         try:
             get_action('package_update')(context, dataset)
