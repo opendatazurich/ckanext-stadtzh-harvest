@@ -225,7 +225,7 @@ class StadtzhHarvester(HarvesterBase):
             self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
             log.debug('Dataset `%s` has been added' % package_dict['id'])
-        elif self._import_updated_packages():
+        else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
@@ -330,35 +330,35 @@ class StadtzhHarvester(HarvesterBase):
         if previous_object:
             previous_object.current = False
             previous_object.add()
-        
+
         # Flag this object as the current one
         harvest_object.current = True
         harvest_object.add()
 
-        theme_plugin = StadtzhThemePlugin()
-        context = {
-            'user': self.config['user'],
-            'return_id_only': True,
-            'ignore_auth': True,
-            'schema': theme_plugin.update_package_schema(),
-        }
-
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
         harvest_object.add()
-
-        model.Session.flush()
-    
-        try:
-            get_action('package_update')(context, dataset)
-        except p.toolkit.ValidationError, e:
-            self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
-            return False
-    
-        log.info('Updated dataset %s', dataset['name'])
         
         model.Session.commit()
-        
+
+        # only update pkg if this harvester allows it
+        if self._import_updated_packages():
+            theme_plugin = StadtzhThemePlugin()
+            context = {
+                'user': self.config['user'],
+                'return_id_only': True,
+                'ignore_auth': True,
+                'schema': theme_plugin.update_package_schema(),
+            }
+            try:
+                get_action('package_update')(context, dataset)
+            except p.toolkit.ValidationError, e:
+                self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+                return False
+            log.info('Updated dataset %s', dataset['name'])
+        else:
+            log.info('Dataset %s *not* updated because _import_updated_packages is False', dataset['name'])
+
         return True
 
     def _import_updated_packages(self):
