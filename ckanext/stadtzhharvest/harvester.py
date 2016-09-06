@@ -194,10 +194,12 @@ class StadtzhHarvester(HarvesterBase):
 
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
-        if existing_package:
+        new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+        if not existing_package:
+            for r in new_resources:
+                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
+        else:
             old_resources = existing_package['resources']
-            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-
             for r in new_resources:
                 action = {'action': 'create', 'new_resource': r, 'old_resource': None}
                 for old in old_resources:
@@ -210,10 +212,6 @@ class StadtzhHarvester(HarvesterBase):
             for old in old_resources:
                 if old['name'] not in action_dict:
                     action_dict[old['name']] = {'action': 'delete', 'old_resource': old}
-        else:
-            new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
-            for r in new_resources:
-                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
 
         # Start the actions!
         if existing_package and 'resources' in existing_package: 
@@ -227,7 +225,7 @@ class StadtzhHarvester(HarvesterBase):
             self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
             log.debug('Dataset `%s` has been added' % package_dict['id'])
-        elif self._import_updated_packages():
+        else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
@@ -240,50 +238,47 @@ class StadtzhHarvester(HarvesterBase):
 
         # handle all resources (create, update, delete)
         for res_name, action in action_dict.iteritems():
-            log.debug("Resource %s, action: %s" % (res_name, action))
-            if action['action'] == 'create':
-                resource = dict(action['new_resource'])
-                resource['package_id'] = package_dict['id']
-                resource_id = get_action('resource_create')(context, resource)['id']
-                log.debug('Dataset resource `%s` has been created' % resource_id)
-            elif action['action'] == 'update':
-                resource = dict(action['old_resource'])
-                resource['package_id'] = package_dict['id']
-                resource['upload'] = action['new_resource']['upload']
-                log.debug("Trying to update resource: %s" % resource)
-                resource_id = get_action('resource_update')(context, resource)['id']
-                log.debug('Dataset resource `%s` has been updated' % resource_id)
-            elif action['action'] == 'delete':
-                replace_upload = get_action('resource_update')(
-                    context,
-                    {
-                        'id': action['old_resource']['id'],
-                        'url': 'https://data.stadt-zuerich.ch/filenotfound',
-                        'clear_upload': 'true'
-                    }
-                )
-                result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
-                log.debug('Dataset resource has been deleted: %s' % result)
-            else:
-                log.debug('Unknown action, we should never reach this point')
+            try:
+                log.debug("Resource %s, action: %s" % (res_name, action))
+                if action['action'] == 'create':
+                    resource = dict(action['new_resource'])
+                    resource['package_id'] = package_dict['id']
+                    resource_id = get_action('resource_create')(context, resource)['id']
+                    log.debug('Dataset resource `%s` has been created' % resource_id)
+                elif action['action'] == 'update':
+                    resource = dict(action['old_resource'])
+                    resource['package_id'] = package_dict['id']
+
+                    if 'upload' in action['new_resource']:
+                        # if the resource is an upload, replace the file
+                        resource['upload'] = action['new_resource']['upload']
+                    elif action['new_resource']['resource_type'] == 'api':
+                        # for APIs, update the URL
+                        resource['url'] = action['new_resource']['url']
+
+                    log.debug("Trying to update resource: %s" % resource)
+                    resource_id = get_action('resource_update')(context, resource)['id']
+                    log.debug('Dataset resource `%s` has been updated' % resource_id)
+                elif action['action'] == 'delete':
+                    replace_upload = get_action('resource_update')(
+                        context,
+                        {
+                            'id': action['old_resource']['id'],
+                            'url': 'https://data.stadt-zuerich.ch/filenotfound',
+                            'clear_upload': 'true'
+                        }
+                    )
+                    result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
+                    log.debug('Dataset resource has been deleted: %s' % result)
+                else:
+                    raise ValueError('Unknown action, we should never reach this point')
+            except Exception, e:
+                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], str(e)), harvest_object, 'Import')
+                continue
+        return True
 
 
     def _create_package(self, dataset, harvest_object):
-        # Get the last harvested object (if any)
-        previous_object = model.Session.query(HarvestObject) \
-                                       .filter(HarvestObject.guid==harvest_object.guid) \
-                                       .filter(HarvestObject.current==True) \
-                                       .first()
-        
-        # Flag previous object as not current anymore
-        if previous_object:
-            previous_object.current = False
-            previous_object.add()
-        
-        # Flag this object as the current one
-        harvest_object.current = True
-        harvest_object.add()
-
         theme_plugin = StadtzhThemePlugin()
         package_schema = theme_plugin.create_package_schema()
     
@@ -298,6 +293,9 @@ class StadtzhHarvester(HarvesterBase):
             'schema': package_schema,
         }
 
+        # Flag this object as the current one
+        harvest_object.current = True
+        harvest_object.add()
     
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
@@ -332,33 +330,35 @@ class StadtzhHarvester(HarvesterBase):
         if previous_object:
             previous_object.current = False
             previous_object.add()
-        
+
         # Flag this object as the current one
         harvest_object.current = True
         harvest_object.add()
 
-        theme_plugin = StadtzhThemePlugin()
-        context = {
-            'user': self.config['user'],
-            'return_id_only': True,
-            'ignore_auth': True,
-            'schema': theme_plugin.update_package_schema(),
-        }
-
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
         harvest_object.add()
-    
-        try:
-            get_action('package_update')(context, dataset)
-        except p.toolkit.ValidationError, e:
-            self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
-            return False
-    
-        log.info('Updated dataset %s', dataset['name'])
         
         model.Session.commit()
-        
+
+        # only update pkg if this harvester allows it
+        if self._import_updated_packages():
+            theme_plugin = StadtzhThemePlugin()
+            context = {
+                'user': self.config['user'],
+                'return_id_only': True,
+                'ignore_auth': True,
+                'schema': theme_plugin.update_package_schema(),
+            }
+            try:
+                get_action('package_update')(context, dataset)
+            except p.toolkit.ValidationError, e:
+                self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+                return False
+            log.info('Updated dataset %s', dataset['name'])
+        else:
+            log.info('Dataset %s *not* updated because _import_updated_packages is False', dataset['name'])
+
         return True
 
     def _import_updated_packages(self):
