@@ -11,7 +11,7 @@ from cgi import FieldStorage
 from pylons import config
 from ckan import model
 from ckan.model import Session
-from ckan.logic import action, get_action
+from ckan.logic import action, get_action, NotFound
 import ckan.plugins.toolkit as tk
 from ckan import plugins as p
 from ckan.lib.helpers import json
@@ -186,11 +186,22 @@ class StadtzhHarvester(HarvesterBase):
             'user': self.config['user']
         }
 
-        # get existing package if it exists
+        # check if package already exists and migrate old packages to new ones if needed
         try:
-            existing_package = self._find_existing_package(package_dict)
-        except tk.ObjectNotFound:
-            existing_package = None  # package does not exist
+            existing_package = get_action('package_show')(context.copy(), {'id': package_dict['id']})
+            if 'extras' in existing_package and existing_package['extras']:
+                try:
+                    for extra in existing_package['extras']:
+                        existing_package[extra['key']] = extra['value']
+                    del existing_package['extras']
+                    existing_package = get_action('package_update')(context.copy(), existing_package)
+                    log.debug('Successfully migrated old package %s' % existing_package['name'])
+                except Exception, e:
+                    self._save_object_error('Error while migrating old pkg %s: %s' % (existing_package['name'], traceback.format_exc()), harvest_object, 'Import')
+        except NotFound:
+            existing_package = None
+            log.debug('Could not find pkg %s' % package_dict['name'])
+                
 
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
@@ -243,7 +254,7 @@ class StadtzhHarvester(HarvesterBase):
                 if action['action'] == 'create':
                     resource = dict(action['new_resource'])
                     resource['package_id'] = package_dict['id']
-                    resource_id = get_action('resource_create')(context, resource)['id']
+                    resource_id = get_action('resource_create')(context.copy(), resource)['id']
                     log.debug('Dataset resource `%s` has been created' % resource_id)
                 elif action['action'] == 'update':
                     resource = dict(action['old_resource'])
@@ -257,24 +268,25 @@ class StadtzhHarvester(HarvesterBase):
                         resource['url'] = action['new_resource']['url']
 
                     log.debug("Trying to update resource: %s" % resource)
-                    resource_id = get_action('resource_update')(context, resource)['id']
+                    resource_id = get_action('resource_update')(context.copy(), resource)['id']
                     log.debug('Dataset resource `%s` has been updated' % resource_id)
                 elif action['action'] == 'delete':
                     replace_upload = get_action('resource_update')(
-                        context,
+                        context.copy(),
                         {
                             'id': action['old_resource']['id'],
                             'url': 'https://data.stadt-zuerich.ch/filenotfound',
                             'clear_upload': 'true'
                         }
                     )
-                    result = get_action('resource_delete')(context, {'id': action['old_resource']['id']})
+                    result = get_action('resource_delete')(context.copy(), {'id': action['old_resource']['id']})
                     log.debug('Dataset resource has been deleted: %s' % result)
                 else:
                     raise ValueError('Unknown action, we should never reach this point')
             except Exception, e:
-                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], str(e)), harvest_object, 'Import')
+                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], traceback.format_exc()), harvest_object, 'Import')
                 continue
+        Session.commit()
         return True
 
 
@@ -338,8 +350,6 @@ class StadtzhHarvester(HarvesterBase):
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
         harvest_object.add()
-        
-        model.Session.commit()
 
         # only update pkg if this harvester allows it
         if self._import_updated_packages():
@@ -359,6 +369,7 @@ class StadtzhHarvester(HarvesterBase):
         else:
             log.info('Dataset %s *not* updated because _import_updated_packages is False', dataset['name'])
 
+        model.Session.commit()
         return True
 
     def _import_updated_packages(self):
