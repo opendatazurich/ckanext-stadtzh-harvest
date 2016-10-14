@@ -186,7 +186,7 @@ class StadtzhHarvester(HarvesterBase):
             'user': self.config['user']
         }
 
-	    # check if package already exists and migrate old packages to new ones if needed
+        # check if package already exists and migrate old packages to new ones if needed
         try:
             existing_package = get_action('package_show')(context.copy(), {'id': package_dict['id']})
             if 'extras' in existing_package and existing_package['extras']:
