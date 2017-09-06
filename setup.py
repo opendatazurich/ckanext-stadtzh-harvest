@@ -5,7 +5,7 @@ version = '0.0'
 setup(
     name='ckanext-stadtzh-harvest',
     version=version,
-    description="CKAN Harvester Base for the City of Zurich",
+    description="CKAN Harvester for the City of Zurich",
     long_description="""\
     """,
     classifiers=[],
@@ -24,6 +24,7 @@ setup(
     ],
     entry_points=
     """
+    [ckan.plugins]
     stadtzh_harvester=ckanext.stadtzhharvest.harvester:StadtzhHarvester
     """,
 )
