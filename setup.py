@@ -24,5 +24,6 @@ setup(
     ],
     entry_points=
     """
+    stadtzh_harvester=ckanext.stadtzhharvest.harvester:StadtzhHarvester
     """,
 )
