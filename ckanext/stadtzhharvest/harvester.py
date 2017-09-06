@@ -33,7 +33,7 @@ class InvalidCommentError(Exception):
 
 class StadtzhHarvester(HarvesterBase):
     '''
-    BaseHarvester for the City of Zurich
+    Harvester for the City of Zurich
     '''
 
     ORGANIZATION = {
@@ -42,46 +42,75 @@ class StadtzhHarvester(HarvesterBase):
         'it': u'it_Stadt Zürich',
         'en': u'en_Stadt Zürich',
     }
-    LANG_CODES = ['de', 'fr', 'it', 'en']
-
-    config = {
-        'user': u'harvest'
-    }
-
-    META_DIR = ''
-    BUCKET = 'default'
 
     def __init__(self, **kwargs):
         HarvesterBase.__init__(self, **kwargs)
         try:
-            self.INTERNAL_SITE_URL = config['ckan.site_url_internal']
             self.CKAN_SITE_URL = config['ckan.site_url']
             self.DIFF_PATH = config['metadata.diffpath']
         except KeyError as e:
             raise Exception("'%s' not found in config" % e.message)
 
+    def info(self):
+        return {
+            'name': 'stadtzh_harvester',
+            'title': 'Harvester for the City of Zurich',
+            'description': 'Harvester for the DWH and GEO dropzones of the City of Zurich'
+        }
+
+    def validate_config(self, config_str):
+        config_obj = json.loads(config_str)
+        self._validate_string_config(config_obj, 'data_path', required=True)
+        self._validate_string_config(config_obj, 'metadata_dir', required=True)
+        self._validate_string_config(config_obj, 'metafile_dir')
+        self._validate_boolean_config(config_obj, 'update_datasets')
+
+        return config_obj
+    
+    def _validate_string_config(self, source, field, required=False):
+        if field in source:
+            value = source[field]
+            if not isinstance(value, basestring):
+                raise ValueError('%s must be a string' % field)
+        elif required:
+            raise ValueError('%s is required' % field)
+
+    def _validate_boolean_config(self, source, field, required=True):
+        if field in source:
+            value = source[field]
+            if not isinstance(value, bool):
+                raise ValueError('%s must be a boolean' % field)
+        elif required:
+            raise ValueError('%s is required' % field)
+
+    def _set_config(self, config_str):
+        self.config = json.loads(config_str)
+
+        if 'user' not in self.config:
+            self.config['user'] = 'harvest'
+        if 'metafile_dir' not in self.config:
+            self.config['metafile_dir'] = ''
+        if 'update_datasets' not in self.config:
+            self.config['update_datasets'] = False
+
+        log.debug('Using config: %r' % self.config)
+
     def gather_stage(self, harvest_job):
-        raise NotImplementedError("This is only a base harvester, use one of its childs") 
+        log.debug('In StadtzhHarvester gather_stage')
+        self._set_config(harvest_job.source.config)
 
-    def fetch_stage(self, harvest_object):
-        raise NotImplementedError("This is only a base harvester, use one of its childs") 
-
-    def import_stage(self, harvest_object):
-        raise NotImplementedError("This is only a base harvester, use one of its childs") 
-
-    def _gather_datasets(self, harvest_job):
         ids = []
         try:
             # list directories in dropzone folder
-            datasets = self._remove_hidden_files(os.listdir(self.DATA_PATH))
-            log.debug("Directories in %s: %s" % (self.DATA_PATH, datasets))
+            datasets = self._remove_hidden_files(os.listdir(self.config['data_path']))
+            log.debug("Directories in %s: %s" % (self.config['data_path'], datasets))
 
             # foreach -> meta.xml -> create entry
             for dataset in datasets:
                 log.debug(self._validate_package_id(dataset))
                 dataset_id = self._validate_package_id(dataset)
                 if dataset_id:
-                    meta_xml_file_path = os.path.join(self.DATA_PATH, dataset, self.META_DIR, 'meta.xml')
+                    meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
                     if os.path.exists(meta_xml_file_path):
                         try:
                             with open(meta_xml_file_path, 'r') as meta_xml:
@@ -103,10 +132,10 @@ class StadtzhHarvester(HarvesterBase):
                             'url': None,
                             'resources': self._generate_resources_dict_array(dataset),
                         }
-                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset)):
-                        os.makedirs(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset))
+                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset)):
+                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset))
 
-                    with open(os.path.join(self.DIFF_PATH, self.METADATA_DIR, dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
                         meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                         log.debug('Metadata JSON created')
 
@@ -119,40 +148,20 @@ class StadtzhHarvester(HarvesterBase):
             log.exception(e)
             self._save_gather_error(
                 'Unable to get content from folder: %s: %s / %s'
-                % (self.DATA_PATH, str(e), traceback.format_exc()),
+                % (self.config['data_path'], str(e), traceback.format_exc()),
                 harvest_job
             )
 	    return []
 
-    def _fetch_datasets(self, harvest_object):
-        if not harvest_object:
-            log.error('No harvest object received')
-            self._save_object_error(
-                'No harvest object received',
-                harvest_object
-            )
-            return False
-        # Get the URL
-        datasetID = json.loads(harvest_object.content)['datasetID']
-        log.debug(harvest_object.content)
+    def fetch_stage(self, harvest_object):
+        log.debug('In StadtzhHarvester fetch_stage')
+        # Nothing to do here
+        return True
 
-        # Get contents
-        try:
-            harvest_object.save()
-            log.debug('successfully processed ' + datasetID)
-            return True
-        except Exception, e:
-            log.exception(e)
-            self._save_object_error(
-                (
-                    'Unable to get content for package: %s: %r / %s'
-                    % (datasetID, e, traceback.format_exc())
-                ),
-                harvest_object
-            )
-            return False
+    def import_stage(self, harvest_object):
+        log.debug('In StadtzhHarvester import_stage')
+        self._set_config(harvest_object.job.source.config)
 
-    def _import_datasets(self, harvest_object):
         if not harvest_object:
             log.error('No harvest object received')
             self._save_object_error(
@@ -189,15 +198,6 @@ class StadtzhHarvester(HarvesterBase):
         # check if package already exists and migrate old packages to new ones if needed
         try:
             existing_package = get_action('package_show')(context.copy(), {'id': package_dict['id']})
-            if 'extras' in existing_package and existing_package['extras']:
-                try:
-                    for extra in existing_package['extras']:
-                        existing_package[extra['key']] = extra['value']
-                    del existing_package['extras']
-                    existing_package = get_action('package_update')(context.copy(), existing_package)
-                    log.debug('Successfully migrated old package %s' % existing_package['name'])
-                except Exception, e:
-                    self._save_object_error('Error while migrating old pkg %s: %s' % (existing_package['name'], traceback.format_exc()), harvest_object, 'Import')
         except NotFound:
             existing_package = None
             log.debug('Could not find pkg %s' % package_dict['name'])
@@ -352,7 +352,7 @@ class StadtzhHarvester(HarvesterBase):
         harvest_object.add()
 
         # only update pkg if this harvester allows it
-        if self._import_updated_packages():
+        if self.config['update_datasets']:
             theme_plugin = StadtzhThemePlugin()
             context = {
                 'user': self.config['user'],
@@ -367,18 +367,10 @@ class StadtzhHarvester(HarvesterBase):
                 return False
             log.info('Updated dataset %s', dataset['name'])
         else:
-            log.info('Dataset %s *not* updated because _import_updated_packages is False', dataset['name'])
+            log.info('Dataset %s *not* updated because update_datasets config is set to `false`', dataset['name'])
 
         model.Session.commit()
         return True
-
-    def _import_updated_packages(self):
-        '''
-        Define wheter packages may be updated automatically using this harvester.
-        If not, only new packages are imported.
-        This method should be overridden in sub-classes accordingly
-        '''
-        return False
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
@@ -530,14 +522,14 @@ class StadtzhHarvester(HarvesterBase):
         Given a dataset folder, it'll return an array of resource metadata
         '''
         resources = []
-        resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.DATA_PATH, dataset, self.META_DIR))
-                                                    if os.path.isfile(os.path.join(self.DATA_PATH, dataset, self.META_DIR, f))))
+        resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir']))
+                                                    if os.path.isfile(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], f))))
         log.debug(resource_files)
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
             if resource_file == 'link.xml':
-                with open(os.path.join(self.DATA_PATH, dataset, self.META_DIR, resource_file), 'r') as links_xml:
+                with open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r') as links_xml:
                     parser = etree.XMLParser(encoding='utf-8')
                     links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
                     for link in links:
@@ -558,7 +550,7 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-                        f = open(os.path.join(self.DATA_PATH, dataset, self.META_DIR, resource_file), 'r')
+                        f = open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r')
                         field_storage = FieldStorage()
                         field_storage.file = f
                         field_storage.filename = f.name
@@ -632,15 +624,15 @@ class StadtzhHarvester(HarvesterBase):
             return os.path.join(self.DIFF_PATH, str(today) + '-' + package_id + '.html')
 
     def _create_notifications_for_deleted_datasets(self):
-        current_datasets = self._get_immediate_subdirectories(self.DATA_PATH)
-        cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.METADATA_DIR))
+        current_datasets = self._get_immediate_subdirectories(self.config['data_path'])
+        cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.config['metadata_dir']))
         for package_id in cached_datasets:
             # Validated package_id can only contain alphanumerics and underscores
             package_id = self._validate_package_id(package_id)
             if package_id and package_id not in current_datasets:
                 log.debug('Dataset `%s` has been deleted' % package_id)
                 # delete the metadata directory
-                metadata_dir = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
+                metadata_dir = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
                 # only send notification if there is a package in CKAN
@@ -649,7 +641,7 @@ class StadtzhHarvester(HarvesterBase):
                     with open(path, 'w') as deleted_info:
                         deleted_info.write(
                             "<!DOCTYPE html>\n<html>\n<body>\n<h2>Dataset deleted: <a href=\""
-                            + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                            + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
                             + package_id + "</a></h2></body></html>\n"
                         )
                     log.debug('Wrote deleted notification to file `%s`' % path)
@@ -662,7 +654,7 @@ class StadtzhHarvester(HarvesterBase):
             with open(path, 'w') as new_info:
                 new_info.write(
                     "<!DOCTYPE html>\n<html>\n<body>\n<h2>New dataset added: <a href=\""
-                    + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                    + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
                     + package_id + "</a></h2></body></html>\n"
                 )
             log.debug('Wrote added dataset notification to file `%s`' % path)
@@ -674,8 +666,8 @@ class StadtzhHarvester(HarvesterBase):
             package_id = self._validate_package_id(package_dict['id'])
             if not package_id:
                 raise ValueError("Package ID '%s' is not valid" % package_dict['id'])
-            new_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
-            prev_metadata_path = os.path.join(self.DIFF_PATH, self.METADATA_DIR, package_id)
+            new_metadata_path = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
+            prev_metadata_path = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
             new_metadata_file = os.path.join(new_metadata_path, 'metadata-' + str(datetime.date.today()))
             prev_metadata_file = os.path.join(new_metadata_path, 'metadata-previous')
 
@@ -708,7 +700,7 @@ class StadtzhHarvester(HarvesterBase):
                         with open(self._diff_path(package_id), 'w') as diff:
                             diff.write(
                                 "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
-                                + self.INTERNAL_SITE_URL + "/dataset/" + package_id + "\">"
+                                + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
                                 + package_id + "</a></h2></body></html>\n"
                             )
                             d = difflib.HtmlDiff(wrapcolumn=60)
