@@ -65,7 +65,7 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'metafile_dir')
         self._validate_boolean_config(config_obj, 'update_datasets')
 
-        return config_obj
+        return config_str
     
     def _validate_string_config(self, source, field, required=False):
         if field in source:
