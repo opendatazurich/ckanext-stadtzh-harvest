@@ -124,6 +124,7 @@ class StadtzhHarvester(HarvesterBase):
                                 except IOError as e:
                                     error = e
                                     tries -= 1
+                                    log.exception("Error occured when opening %s: %r (tries left: %s)" % (meta_xml_file_path, e, tries))
                                 else:
                                     break
                             if not tries:
@@ -539,29 +540,33 @@ class StadtzhHarvester(HarvesterBase):
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
+            resource_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file)
             if resource_file == 'link.xml':
                 tries = 10
                 error = None
+                links = []
                 while tries:
                     try:
-                        with open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r') as links_xml:
+                        with open(resource_path, 'r') as links_xml:
                             parser = etree.XMLParser(encoding='utf-8')
                             links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
-                            for link in links:
-                                if link.find('url').text != "" and link.find('url').text is not None:
-                                    resources.append({
-                                        'url': link.find('url').text,
-                                        'name': link.find('lable').text,
-                                        'format': link.find('type').text,
-                                        'resource_type': 'api'
-                                    })
                     except IOError as e:
                         error = e
                         tries -= 1
+                        log.exception("Error occured when opening %s: %r (tries left: %s)" % (resource_path, e, tries))
                     else:
                         break
                 if not tries:
                     raise error
+
+                for link in links:
+                    if link.find('url').text != "" and link.find('url').text is not None:
+                        resources.append({
+                            'url': link.find('url').text,
+                            'name': link.find('lable').text,
+                            'format': link.find('type').text,
+                            'resource_type': 'api'
+                        })
             else:
                 resource_file = self._validate_filename(resource_file)
                 if resource_file:
@@ -576,7 +581,7 @@ class StadtzhHarvester(HarvesterBase):
                         error = None
                         while tries:
                             try:
-                                f = open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r')
+                                f = open(resource_path, 'r')
                                 field_storage = FieldStorage()
                                 field_storage.file = f
                                 field_storage.filename = f.name
@@ -584,6 +589,7 @@ class StadtzhHarvester(HarvesterBase):
                             except IOError as e:
                                 error = e
                                 tries -= 1
+                                log.exception("Error occured when opening %s: %r (tries left: %s)" % (resource_path, e, tries))
                             else:
                                 break
                         if not tries:
