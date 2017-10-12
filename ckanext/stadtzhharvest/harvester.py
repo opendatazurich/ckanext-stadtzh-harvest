@@ -113,10 +113,21 @@ class StadtzhHarvester(HarvesterBase):
                     meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
                     if os.path.exists(meta_xml_file_path):
                         try:
-                            with open(meta_xml_file_path, 'r') as meta_xml:
-                                parser = etree.XMLParser(encoding='utf-8')
-                                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                            tries = 10
+                            error = None
+                            while tries:
+                                try:
+                                    with open(meta_xml_file_path, 'r') as meta_xml:
+                                        parser = etree.XMLParser(encoding='utf-8')
+                                        dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                                    metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                                except IOError as e:
+                                    error = e
+                                    tries -= 1
+                                else:
+                                    break
+                            if not tries:
+                                raise error
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
@@ -529,17 +540,28 @@ class StadtzhHarvester(HarvesterBase):
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
             if resource_file == 'link.xml':
-                with open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r') as links_xml:
-                    parser = etree.XMLParser(encoding='utf-8')
-                    links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
-                    for link in links:
-                        if link.find('url').text != "" and link.find('url').text is not None:
-                            resources.append({
-                                'url': link.find('url').text,
-                                'name': link.find('lable').text,
-                                'format': link.find('type').text,
-                                'resource_type': 'api'
-                            })
+                tries = 10
+                error = None
+                while tries:
+                    try:
+                        with open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r') as links_xml:
+                            parser = etree.XMLParser(encoding='utf-8')
+                            links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
+                            for link in links:
+                                if link.find('url').text != "" and link.find('url').text is not None:
+                                    resources.append({
+                                        'url': link.find('url').text,
+                                        'name': link.find('lable').text,
+                                        'format': link.find('type').text,
+                                        'resource_type': 'api'
+                                    })
+                    except IOError as e:
+                        error = e
+                        tries -= 1
+                    else:
+                        break
+                if not tries:
+                    raise error
             else:
                 resource_file = self._validate_filename(resource_file)
                 if resource_file:
@@ -550,11 +572,22 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-                        f = open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r')
-                        field_storage = FieldStorage()
-                        field_storage.file = f
-                        field_storage.filename = f.name
-                        resource_dict['upload'] = field_storage
+                        tries = 10
+                        error = None
+                        while tries:
+                            try:
+                                f = open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r')
+                                field_storage = FieldStorage()
+                                field_storage.file = f
+                                field_storage.filename = f.name
+                                resource_dict['upload'] = field_storage
+                            except IOError as e:
+                                error = e
+                                tries -= 1
+                            else:
+                                break
+                        if not tries:
+                            raise error
                     resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
