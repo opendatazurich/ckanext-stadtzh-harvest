@@ -6,6 +6,7 @@ import difflib
 import shutil
 import traceback
 import uuid
+from contextlib import contextmanager
 from lxml import etree
 from cgi import FieldStorage
 from pylons import config
@@ -29,6 +30,27 @@ class InvalidCommentError(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
+
+
+@contextmanager
+def retry_open_file(path, mode, tries=10, close=True):
+    error = None
+    while tries:
+	try:
+	    the_file = open(path, mode)
+	except IOError as e:
+	    error = e
+	    tries -= 1
+            log.exception("Error occured when opening %s: %r (tries left: %s)" % (path, e, tries))
+	else:
+	    break
+    if not tries:
+        if not the_file.closed:
+            the_file.close()
+	raise error
+    yield the_file
+    if close:
+        the_file.close()
 
 
 class StadtzhHarvester(HarvesterBase):
@@ -113,22 +135,10 @@ class StadtzhHarvester(HarvesterBase):
                     meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
                     if os.path.exists(meta_xml_file_path):
                         try:
-                            tries = 10
-                            error = None
-                            while tries:
-                                try:
-                                    with open(meta_xml_file_path, 'r') as meta_xml:
-                                        parser = etree.XMLParser(encoding='utf-8')
-                                        dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                                    metadata = self._dropzone_get_metadata(dataset, dataset_node)
-                                except IOError as e:
-                                    error = e
-                                    tries -= 1
-                                    log.exception("Error occured when opening %s: %r (tries left: %s)" % (meta_xml_file_path, e, tries))
-                                else:
-                                    break
-                            if not tries:
-                                raise error
+                            with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
+                                parser = etree.XMLParser(encoding='utf-8')
+                                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                            metadata = self._dropzone_get_metadata(dataset, dataset_node)
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
@@ -542,31 +552,18 @@ class StadtzhHarvester(HarvesterBase):
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
             resource_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file)
             if resource_file == 'link.xml':
-                tries = 10
-                error = None
-                links = []
-                while tries:
-                    try:
-                        with open(resource_path, 'r') as links_xml:
-                            parser = etree.XMLParser(encoding='utf-8')
-                            links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
-                    except IOError as e:
-                        error = e
-                        tries -= 1
-                        log.exception("Error occured when opening %s: %r (tries left: %s)" % (resource_path, e, tries))
-                    else:
-                        break
-                if not tries:
-                    raise error
+                with retry_open_file(resource_path, 'r') as links_xml:
+                    parser = etree.XMLParser(encoding='utf-8')
+                    links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
 
-                for link in links:
-                    if link.find('url').text != "" and link.find('url').text is not None:
-                        resources.append({
-                            'url': link.find('url').text,
-                            'name': link.find('lable').text,
-                            'format': link.find('type').text,
-                            'resource_type': 'api'
-                        })
+                    for link in links:
+                        if link.find('url').text != "" and link.find('url').text is not None:
+                            resources.append({
+                                'url': link.find('url').text,
+                                'name': link.find('lable').text,
+                                'format': link.find('type').text,
+                                'resource_type': 'api'
+                            })
             else:
                 resource_file = self._validate_filename(resource_file)
                 if resource_file:
@@ -577,23 +574,11 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-                        tries = 10
-                        error = None
-                        while tries:
-                            try:
-                                f = open(resource_path, 'r')
-                                field_storage = FieldStorage()
-                                field_storage.file = f
-                                field_storage.filename = f.name
-                                resource_dict['upload'] = field_storage
-                            except IOError as e:
-                                error = e
-                                tries -= 1
-                                log.exception("Error occured when opening %s: %r (tries left: %s)" % (resource_path, e, tries))
-                            else:
-                                break
-                        if not tries:
-                            raise error
+                        with retry_open_file(resource_path, 'r', close=False) as f:
+                            field_storage = FieldStorage()
+                            field_storage.file = f
+                            field_storage.filename = f.name
+                            resource_dict['upload'] = field_storage
                     resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
