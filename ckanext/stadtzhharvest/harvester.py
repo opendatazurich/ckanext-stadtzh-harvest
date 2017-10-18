@@ -154,10 +154,10 @@ class StadtzhHarvester(HarvesterBase):
                             'url': None,
                             'resources': self._generate_resources_dict_array(dataset),
                         }
-                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset)):
-                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset))
+                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id)):
+                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id))
 
-                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
                         meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                         log.debug('Metadata JSON created')
 
