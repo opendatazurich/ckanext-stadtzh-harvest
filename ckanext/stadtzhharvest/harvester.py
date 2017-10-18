@@ -306,7 +306,7 @@ class StadtzhHarvester(HarvesterBase):
                 else:
                     raise ValueError('Unknown action, we should never reach this point')
             except Exception, e:
-                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], traceback.format_exc()), harvest_object, 'Import')
+                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
                 continue
         Session.commit()
         return True
