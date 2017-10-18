@@ -6,6 +6,7 @@ import difflib
 import shutil
 import traceback
 import uuid
+from contextlib import contextmanager
 from lxml import etree
 from cgi import FieldStorage
 from pylons import config
@@ -29,6 +30,34 @@ class InvalidCommentError(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
+
+
+@contextmanager
+def retry_open_file(path, mode, tries=10, close=True):
+    """
+    This file-opening context manager is needed for flaky WebDAV connections
+    We randomly get "IOError: [Errno 5] Input/output error", therefore this cm
+    simply retries to open the file several times.
+    The `close` parameter is needed for the cgi.FieldStorage, which requires an 
+    open file handle
+    """
+    error = None
+    while tries:
+	try:
+	    the_file = open(path, mode)
+	except IOError as e:
+	    error = e
+	    tries -= 1
+            log.exception("Error occured when opening %s: %r (tries left: %s)" % (path, e, tries))
+	else:
+	    break
+    if not tries:
+        if not the_file.closed:
+            the_file.close()
+	raise error
+    yield the_file
+    if close:
+        the_file.close()
 
 
 class StadtzhHarvester(HarvesterBase):
@@ -113,10 +142,10 @@ class StadtzhHarvester(HarvesterBase):
                     meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
                     if os.path.exists(meta_xml_file_path):
                         try:
-                            with open(meta_xml_file_path, 'r') as meta_xml:
+                            with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
                                 parser = etree.XMLParser(encoding='utf-8')
                                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                            metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
@@ -128,14 +157,15 @@ class StadtzhHarvester(HarvesterBase):
                     else:
                         metadata = {
                             'datasetID': dataset_id,
+                            'datasetFolder': dataset,
                             'title': dataset,
                             'url': None,
                             'resources': self._generate_resources_dict_array(dataset),
                         }
-                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset)):
-                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset))
+                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id)):
+                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id))
 
-                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
                         meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
                         log.debug('Metadata JSON created')
 
@@ -205,7 +235,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
-        new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+        new_resources = self._generate_resources_dict_array(package_dict['datasetFolder'], include_files=True)
         if not existing_package:
             for r in new_resources:
                 action_dict[r['name']] = {'action': 'create', 'new_resource': r}
@@ -284,7 +314,7 @@ class StadtzhHarvester(HarvesterBase):
                 else:
                     raise ValueError('Unknown action, we should never reach this point')
             except Exception, e:
-                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %s' % (action, res_name, package_dict['name'], traceback.format_exc()), harvest_object, 'Import')
+                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
                 continue
         Session.commit()
         return True
@@ -436,13 +466,14 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return []
 
-    def _dropzone_get_metadata(self, dataset_id, dataset_node):
+    def _dropzone_get_metadata(self, dataset_id, dataset_folder, dataset_node):
         '''
         For the given dataset node return the metadata dict.
         '''
 
         return {
             'datasetID': dataset_id,
+            'datasetFolder': dataset_folder,
             'title': dataset_node.find('titel').text,
             'url': self._get(dataset_node, 'lieferant'),
             'notes': dataset_node.find('beschreibung').text,
@@ -528,10 +559,12 @@ class StadtzhHarvester(HarvesterBase):
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
+            resource_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file)
             if resource_file == 'link.xml':
-                with open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r') as links_xml:
+                with retry_open_file(resource_path, 'r') as links_xml:
                     parser = etree.XMLParser(encoding='utf-8')
                     links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
+
                     for link in links:
                         if link.find('url').text != "" and link.find('url').text is not None:
                             resources.append({
@@ -550,11 +583,11 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-                        f = open(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file), 'r')
-                        field_storage = FieldStorage()
-                        field_storage.file = f
-                        field_storage.filename = f.name
-                        resource_dict['upload'] = field_storage
+                        with retry_open_file(resource_path, 'r', close=False) as f:
+                            field_storage = FieldStorage()
+                            field_storage.file = f
+                            field_storage.filename = f.name
+                            resource_dict['upload'] = field_storage
                     resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
@@ -746,7 +779,7 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Package id %s contains disallowed characters' % package_id)
             return False
         else:
-            return package_id
+            return munge_title_to_name(package_id)
 
     def _validate_filename(self, filename):
         # Validate that they do not contain any HTML tags.
