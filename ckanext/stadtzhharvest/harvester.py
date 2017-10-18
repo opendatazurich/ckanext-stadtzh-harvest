@@ -138,7 +138,7 @@ class StadtzhHarvester(HarvesterBase):
                             with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
                                 parser = etree.XMLParser(encoding='utf-8')
                                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset, dataset_node)
+                            metadata = self._dropzone_get_metadata(dataset_id, dataset_node)
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
@@ -770,7 +770,7 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Package id %s contains disallowed characters' % package_id)
             return False
         else:
-            return package_id
+            return munge_title_to_name(package_id)
 
     def _validate_filename(self, filename):
         # Validate that they do not contain any HTML tags.
