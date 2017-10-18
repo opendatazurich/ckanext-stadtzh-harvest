@@ -138,7 +138,7 @@ class StadtzhHarvester(HarvesterBase):
                             with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
                                 parser = etree.XMLParser(encoding='utf-8')
                                 dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset_id, dataset_node)
+                            metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
                         except Exception, e:
                             log.exception(e)
                             self._save_gather_error(
@@ -150,6 +150,7 @@ class StadtzhHarvester(HarvesterBase):
                     else:
                         metadata = {
                             'datasetID': dataset_id,
+                            'datasetFolder': dataset,
                             'title': dataset,
                             'url': None,
                             'resources': self._generate_resources_dict_array(dataset),
@@ -227,7 +228,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # update existing resources, delete old ones, create new ones
         action_dict = {} 
-        new_resources = self._generate_resources_dict_array(package_dict['id'], include_files=True)
+        new_resources = self._generate_resources_dict_array(package_dict['datasetFolder'], include_files=True)
         if not existing_package:
             for r in new_resources:
                 action_dict[r['name']] = {'action': 'create', 'new_resource': r}
@@ -458,13 +459,14 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return []
 
-    def _dropzone_get_metadata(self, dataset_id, dataset_node):
+    def _dropzone_get_metadata(self, dataset_id, dataset_folder, dataset_node):
         '''
         For the given dataset node return the metadata dict.
         '''
 
         return {
             'datasetID': dataset_id,
+            'datasetFolder': dataset_folder,
             'title': dataset_node.find('titel').text,
             'url': self._get(dataset_node, 'lieferant'),
             'notes': dataset_node.find('beschreibung').text,
