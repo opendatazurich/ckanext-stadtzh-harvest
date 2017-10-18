@@ -34,6 +34,13 @@ class InvalidCommentError(Exception):
 
 @contextmanager
 def retry_open_file(path, mode, tries=10, close=True):
+    """
+    This file-opening context manager is needed for flaky WebDAV connections
+    We randomly get "IOError: [Errno 5] Input/output error", therefore this cm
+    simply retries to open the file several times.
+    The `close` parameter is needed for the cgi.FieldStorage, which requires an 
+    open file handle
+    """
     error = None
     while tries:
 	try:
