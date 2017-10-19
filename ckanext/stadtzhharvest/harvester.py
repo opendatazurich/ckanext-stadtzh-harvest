@@ -427,6 +427,7 @@ class StadtzhHarvester(HarvesterBase):
         context = {
             'model': model,
             'session': Session,
+            'ignore_auth': True,
             'user': self.config['user']
         }
         groups = []
