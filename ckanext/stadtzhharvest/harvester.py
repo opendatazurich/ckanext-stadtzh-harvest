@@ -763,13 +763,16 @@ class StadtzhHarvester(HarvesterBase):
         # Find or create the organization the dataset should get assigned to.
         try:
             data_dict = {
+                'id': munge_title_to_name(self.ORGANIZATION['de']),
+            }
+            package_dict['owner_org'] = get_action('organization_show')(context.copy(), data_dict)['id']
+        except:
+            data_dict = {
                 'permission': 'edit_group',
                 'id': munge_title_to_name(self.ORGANIZATION['de']),
                 'name': munge_title_to_name(self.ORGANIZATION['de']),
                 'title': self.ORGANIZATION['de']
             }
-            package_dict['owner_org'] = get_action('organization_show')(context.copy(), data_dict)['id']
-        except:
             organization = get_action('organization_create')(context.copy(), data_dict)
             package_dict['owner_org'] = organization['id']
 
