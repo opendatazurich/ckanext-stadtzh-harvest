@@ -258,7 +258,7 @@ class StadtzhHarvester(HarvesterBase):
         if existing_package and 'resources' in existing_package: 
             package_dict['resources'] = existing_package['resources']
 
-        self._find_or_create_organization(package_dict, context)
+        self._find_or_create_organization(package_dict, context.copy())
 
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
@@ -434,7 +434,7 @@ class StadtzhHarvester(HarvesterBase):
         for name, title in group_list:
             data_dict = {'id': name}
             try:
-                group_id = get_action('group_show')(context, data_dict)['id']
+                group_id = get_action('group_show')(context.copy(), data_dict)['id']
                 groups.append({'name': group_id})
                 log.debug('Added group %s' % name)
             except:
@@ -443,7 +443,7 @@ class StadtzhHarvester(HarvesterBase):
                 data_dict['image_url'] = self.CKAN_SITE_URL + '/kategorien/' + name + '.png'
                 log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
                 try:
-                    group = get_action('group_create')(context, data_dict)
+                    group = get_action('group_create')(context.copy(), data_dict)
                     log.debug("Created group %s" % group)
                     groups.append({'name': group['id']})
                 except:
@@ -768,9 +768,9 @@ class StadtzhHarvester(HarvesterBase):
                 'name': munge_title_to_name(self.ORGANIZATION['de']),
                 'title': self.ORGANIZATION['de']
             }
-            package_dict['owner_org'] = get_action('organization_show')(context, data_dict)['id']
+            package_dict['owner_org'] = get_action('organization_show')(context.copy(), data_dict)['id']
         except:
-            organization = get_action('organization_create')(context, data_dict)
+            organization = get_action('organization_create')(context.copy(), data_dict)
             package_dict['owner_org'] = organization['id']
 
     def _validate_package_id(self, package_id):
