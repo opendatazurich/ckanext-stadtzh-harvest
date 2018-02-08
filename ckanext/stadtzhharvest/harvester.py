@@ -6,6 +6,7 @@ import difflib
 import shutil
 import traceback
 import uuid
+import hashlib
 from contextlib import contextmanager
 from lxml import etree
 from cgi import FieldStorage
@@ -584,11 +585,24 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
+			# calculate the SHA1 hash of this file
+                        BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+                        sha1 = hashlib.sha1()
+                        with retry_open_file(resource_path, 'rb') as f:
+                            while True:
+                                data = f.read(BUF_SIZE)
+                                if not data:
+                                    break
+                                sha1.update(data)
+                            resource_dict['hash'] = sha1.hexdigest()
+
+                        # add file to FieldStorage
                         with retry_open_file(resource_path, 'r', close=False) as f:
                             field_storage = FieldStorage()
                             field_storage.file = f
                             field_storage.filename = f.name
                             resource_dict['upload'] = field_storage
+
                     resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
