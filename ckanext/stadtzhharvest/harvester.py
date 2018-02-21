@@ -569,8 +569,13 @@ class StadtzhHarvester(HarvesterBase):
 
                     for link in links:
                         if link.find('url').text != "" and link.find('url').text is not None:
+                            # generate hash for URL
+                            url = link.find('url').text
+                            sha1. hashlib.sha1()
+                            sha1.update(url)
                             resources.append({
-                                'url': link.find('url').text,
+                                'url': url,
+                                'hash': sha1.hexdigest(),
                                 'name': link.find('lable').text,
                                 'format': link.find('type').text,
                                 'resource_type': 'api'
