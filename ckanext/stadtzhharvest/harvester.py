@@ -6,6 +6,7 @@ import difflib
 import shutil
 import traceback
 import uuid
+import hashlib
 from contextlib import contextmanager
 from lxml import etree
 from cgi import FieldStorage
@@ -93,6 +94,7 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'metadata_dir', required=True)
         self._validate_string_config(config_obj, 'metafile_dir')
         self._validate_boolean_config(config_obj, 'update_datasets')
+        self._validate_boolean_config(config_obj, 'update_date_last_modified')
 
         return config_str
     
@@ -121,6 +123,8 @@ class StadtzhHarvester(HarvesterBase):
             self.config['metafile_dir'] = ''
         if 'update_datasets' not in self.config:
             self.config['update_datasets'] = False
+        if 'update_date_last_modified' not in self.config:
+            self.config['update_date_last_modified'] = False
 
         log.debug('Using config: %r' % self.config)
 
@@ -234,9 +238,11 @@ class StadtzhHarvester(HarvesterBase):
                 
 
         # update existing resources, delete old ones, create new ones
+        resources_changed = False
         action_dict = {} 
         new_resources = self._generate_resources_dict_array(package_dict['datasetFolder'], include_files=True)
         if not existing_package:
+            resources_changed = True
             for r in new_resources:
                 action_dict[r['name']] = {'action': 'create', 'new_resource': r}
         else:
@@ -247,6 +253,10 @@ class StadtzhHarvester(HarvesterBase):
                     if old['name'] == r['name']:
                         action['action'] = 'update'
                         action['old_resource'] = old
+
+                        # check if the resource changed
+                        if r.get('hash') and old.get('hash') and r['hash'] != old['hash']:
+                            resources_changed = True
                         break
                 action_dict[r['name']] = action
 
@@ -263,19 +273,38 @@ class StadtzhHarvester(HarvesterBase):
         # import the package if it does not yet exists (i.e. it's a new package)
         # or if this harvester is allowed to update packages
         if not existing_package:
-            self._create_package(package_dict, harvest_object)
+            dataset_id = self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
             log.debug('Dataset `%s` has been added' % package_dict['id'])
         else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
-            self._update_package(package_dict, harvest_object)
+            dataset_id = self._update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been updated' % package_dict['id'])
         
         # create diffs if there is a previous package
         if existing_package:
             self._create_diffs(package_dict)
+
+        # set the date_last_modified if any resource changed
+        if self.config['update_date_last_modified'] and resources_changed:
+            theme_plugin = StadtzhThemePlugin()
+            package_schema = theme_plugin.update_package_schema()
+            context = {
+                'user': self.config['user'],
+                'ignore_auth': True,
+                'schema': package_schema,
+            }
+            today = datetime.datetime.now().strftime('%d.%m.%Y')
+            try:
+                get_action('package_patch')(context, {'id': dataset_id, 'dateLastUpdated': today})
+            except p.toolkit.ValidationError, e:
+                self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+                return False
+            log.info('Updated dateLastUpdated to %s', today)
+        else:
+            log.info('dateLastUpdated *not* updated because update_date_last_modified config is set to `false`')
 
         # handle all resources (create, update, delete)
         for res_name, action in action_dict.iteritems():
@@ -296,6 +325,8 @@ class StadtzhHarvester(HarvesterBase):
                     elif action['new_resource']['resource_type'] == 'api':
                         # for APIs, update the URL
                         resource['url'] = action['new_resource']['url']
+                    # update the hash
+                    resource['hash'] = action['new_resource'].get('hash')
 
                     log.debug("Trying to update resource: %s" % resource)
                     resource_id = get_action('resource_update')(context.copy(), resource)['id']
@@ -359,7 +390,7 @@ class StadtzhHarvester(HarvesterBase):
         
         model.Session.commit()
         
-        return True
+        return dataset['id']
 
     def _update_package(self, dataset, harvest_object):
         # Get the last harvested object (if any)
@@ -381,6 +412,12 @@ class StadtzhHarvester(HarvesterBase):
         harvest_object.package_id = dataset['id']
         harvest_object.add()
 
+        # Defer constraints and flush so the dataset can be indexed with
+        # the harvest object id (on the after_show hook from the harvester
+        # plugin)
+        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')
+        model.Session.flush()
+
         # only update pkg if this harvester allows it
         if self.config['update_datasets']:
             theme_plugin = StadtzhThemePlugin()
@@ -400,7 +437,7 @@ class StadtzhHarvester(HarvesterBase):
             log.info('Dataset %s *not* updated because update_datasets config is set to `false`', dataset['name'])
 
         model.Session.commit()
-        return True
+        return dataset['id']
 
     def _save_harvest_object(self, metadata, harvest_job):
         '''
@@ -568,8 +605,13 @@ class StadtzhHarvester(HarvesterBase):
 
                     for link in links:
                         if link.find('url').text != "" and link.find('url').text is not None:
+                            # generate hash for URL
+                            url = link.find('url').text
+                            sha1 = hashlib.sha1()
+                            sha1.update(url)
                             resources.append({
-                                'url': link.find('url').text,
+                                'url': url,
+                                'hash': sha1.hexdigest(),
                                 'name': link.find('lable').text,
                                 'format': link.find('type').text,
                                 'resource_type': 'api'
@@ -584,11 +626,24 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
+			# calculate the SHA1 hash of this file
+                        BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+                        sha1 = hashlib.sha1()
+                        with retry_open_file(resource_path, 'rb') as f:
+                            while True:
+                                data = f.read(BUF_SIZE)
+                                if not data:
+                                    break
+                                sha1.update(data)
+                            resource_dict['hash'] = sha1.hexdigest()
+
+                        # add file to FieldStorage
                         with retry_open_file(resource_path, 'r', close=False) as f:
                             field_storage = FieldStorage()
                             field_storage.file = f
                             field_storage.filename = f.name
                             resource_dict['upload'] = field_storage
+
                     resources.append(resource_dict)
 
         sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
