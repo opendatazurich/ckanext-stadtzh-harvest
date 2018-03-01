@@ -239,16 +239,16 @@ class StadtzhHarvester(HarvesterBase):
 
         # update existing resources, delete old ones, create new ones
         resources_changed = False
-        action_dict = {} 
+        actions = []
         new_resources = self._generate_resources_dict_array(package_dict['datasetFolder'], include_files=True)
         if not existing_package:
             resources_changed = True
             for r in new_resources:
-                action_dict[r['name']] = {'action': 'create', 'new_resource': r}
+                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name']})
         else:
             old_resources = existing_package['resources']
             for r in new_resources:
-                action = {'action': 'create', 'new_resource': r, 'old_resource': None}
+                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name']}
                 for old in old_resources:
                     if old['name'] == r['name']:
                         action['action'] = 'update'
@@ -258,11 +258,11 @@ class StadtzhHarvester(HarvesterBase):
                         if r.get('hash') and old.get('hash') and r['hash'] != old['hash']:
                             resources_changed = True
                         break
-                action_dict[r['name']] = action
+                actions.append(action)
 
             for old in old_resources:
-                if old['name'] not in action_dict:
-                    action_dict[old['name']] = {'action': 'delete', 'old_resource': old}
+                if not filter(lambda action: action['res_name'] == old['name'], actions):
+                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name']})
 
         # Start the actions!
         if existing_package and 'resources' in existing_package: 
@@ -307,13 +307,16 @@ class StadtzhHarvester(HarvesterBase):
             log.info('dateLastUpdated *not* updated because update_date_last_modified config is set to `false`')
 
         # handle all resources (create, update, delete)
-        for res_name, action in action_dict.iteritems():
+        resource_ids = []
+        for action in actions:
+            res_name = action['res_name']
             try:
                 log.debug("Resource %s, action: %s" % (res_name, action))
                 if action['action'] == 'create':
                     resource = dict(action['new_resource'])
                     resource['package_id'] = package_dict['id']
                     resource_id = get_action('resource_create')(context.copy(), resource)['id']
+                    resource_ids.append(resource_id)
                     log.debug('Dataset resource `%s` has been created' % resource_id)
                 elif action['action'] == 'update':
                     resource = dict(action['old_resource'])
@@ -330,6 +333,7 @@ class StadtzhHarvester(HarvesterBase):
 
                     log.debug("Trying to update resource: %s" % resource)
                     resource_id = get_action('resource_update')(context.copy(), resource)['id']
+                    resource_ids.append(resource_id)
                     log.debug('Dataset resource `%s` has been updated' % resource_id)
                 elif action['action'] == 'delete':
                     replace_upload = get_action('resource_update')(
@@ -347,6 +351,9 @@ class StadtzhHarvester(HarvesterBase):
             except Exception, e:
                 self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
                 continue
+
+        reorder = {'id': str(package_dict['id']), 'order': resource_ids}
+        tk.get_action('package_resource_reorder')(context.copy(), data_dict=reorder)
         Session.commit()
         return True
 
@@ -571,19 +578,24 @@ class StadtzhHarvester(HarvesterBase):
     def _sort_resource(self, x, y):
 
         order = {
-            'zip':  1,
+            'csv':  0,
+            'shp':  1,
             'wms':  2,
-            'wfs':  3,
-            'kmz':  4,
-            'json': 5
+            'wmts': 3,
+            'wfs':  4,
+            'json': 5,
+            'kmz':  6,
+            'pkgk': 7,
+            'gpkg': 8,
+            'zip':  9
         }
 
         x_format = x['format'].lower()
         y_format = y['format'].lower()
         if x_format not in order:
-            return -1
-        if y_format not in order:
             return 1
+        if y_format not in order:
+            return -1
         return cmp(order[x_format], order[y_format])
 
     def _generate_resources_dict_array(self, dataset, include_files=False):
