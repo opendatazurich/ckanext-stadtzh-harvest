@@ -20,7 +20,6 @@ setup(
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-        'lxml==2.2.4',
     ],
     entry_points=
     """
