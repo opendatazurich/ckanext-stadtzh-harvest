@@ -585,9 +585,14 @@ class StadtzhHarvester(HarvesterBase):
             'wfs':  4,
             'json': 5,
             'kmz':  6,
-            'pkgk': 7,
-            'gpkg': 8,
-            'zip':  9
+            'kml':  7,
+            'pkgk': 8,
+            'gpkg': 9,
+            'swp':  10,
+            'zip':  11,
+            'txt':  12,
+            'xlsx': 13,
+            'pdf':  14
         }
 
         x_format = x['format'].lower()
