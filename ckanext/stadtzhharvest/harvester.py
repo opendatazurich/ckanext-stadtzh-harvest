@@ -624,7 +624,7 @@ class StadtzhHarvester(HarvesterBase):
                         if link.find('url').text != "" and link.find('url').text is not None:
                             # generate hash for URL
                             url = link.find('url').text
-                            sha1 = hashlib.sha1()
+                            sha1 = hashlib.md5()
                             sha1.update(url)
                             resources.append({
                                 'url': url,
@@ -645,7 +645,7 @@ class StadtzhHarvester(HarvesterBase):
                     if include_files:
 			# calculate the SHA1 hash of this file
                         BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                        sha1 = hashlib.sha1()
+                        sha1 = hashlib.md5()
                         with retry_open_file(resource_path, 'rb') as f:
                             while True:
                                 data = f.read(BUF_SIZE)
