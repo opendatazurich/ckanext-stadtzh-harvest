@@ -117,8 +117,6 @@ class StadtzhHarvester(HarvesterBase):
     def _set_config(self, config_str):
         self.config = json.loads(config_str)
 
-        if 'user' not in self.config:
-            self.config['user'] = 'harvest'
         if 'metafile_dir' not in self.config:
             self.config['metafile_dir'] = ''
         if 'update_datasets' not in self.config:
@@ -206,7 +204,6 @@ class StadtzhHarvester(HarvesterBase):
 
         try:
             self._import_package(harvest_object)
-            Session.commit()
             return True
         except Exception, e:
             log.exception(e)
@@ -218,15 +215,20 @@ class StadtzhHarvester(HarvesterBase):
                 harvest_object
             )
             return False
+        finally:
+            Session.commit()
 
     def _import_package(self, harvest_object):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
+        # get the site user
+        site_user = tk.get_action('get_site_user')(
+                                  {'model': model, 'ignore_auth': True}, {})
         context = {
             'model': model,
             'session': Session,
-            'user': self.config['user']
+            'user': site_user['name'],
         }
 
         # check if package already exists and migrate old packages to new ones if needed
@@ -292,7 +294,7 @@ class StadtzhHarvester(HarvesterBase):
             theme_plugin = StadtzhThemePlugin()
             package_schema = theme_plugin.update_package_schema()
             context = {
-                'user': self.config['user'],
+                'user': site_user['name'],
                 'ignore_auth': True,
                 'schema': package_schema,
             }
@@ -366,8 +368,12 @@ class StadtzhHarvester(HarvesterBase):
         dataset['id'] = unicode(uuid.uuid4())
         package_schema['id'] = [unicode]
         
+
+        # get the site user
+        site_user = tk.get_action('get_site_user')(
+                                  {'model': model, 'ignore_auth': True}, {})
         context = {
-            'user': self.config['user'],
+            'user': site_user['name'],
             'return_id_only': True,
             'ignore_auth': True,
             'schema': package_schema,
@@ -428,8 +434,12 @@ class StadtzhHarvester(HarvesterBase):
         # only update pkg if this harvester allows it
         if self.config['update_datasets']:
             theme_plugin = StadtzhThemePlugin()
+
+            # get site user
+            site_user = tk.get_action('get_site_user')(
+                                      {'model': model, 'ignore_auth': True}, {})
             context = {
-                'user': self.config['user'],
+                'user': site_user['name'],
                 'return_id_only': True,
                 'ignore_auth': True,
                 'schema': theme_plugin.update_package_schema(),
@@ -467,12 +477,15 @@ class StadtzhHarvester(HarvesterBase):
         The list should contain group tuples: (name, title)
         If a group does not exist in CKAN, create it.
         '''
+        # get site user
+        site_user = tk.get_action('get_site_user')(
+                                  {'model': model, 'ignore_auth': True}, {})
 
         context = {
             'model': model,
             'session': Session,
             'ignore_auth': True,
-            'user': self.config['user']
+            'user': site_user['name'],
         }
         groups = []
         for name, title in group_list:
