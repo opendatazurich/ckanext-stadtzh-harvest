@@ -374,7 +374,7 @@ class StadtzhHarvester(HarvesterBase):
             'ignore_auth': True,
             'defer_commit': True,
         }
-	log.debug('Submitting resource %s to be datastore' % resource_id)
+	log.debug('Submitting resource %s to datastore' % resource_id)
 	tk.get_action('xloader_submit')(context, {
 	    'resource_id': resource_id,
 	    'ignore_hash': True,
