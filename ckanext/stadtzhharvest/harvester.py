@@ -246,11 +246,11 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             resources_changed = True
             for r in new_resources:
-                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name']})
+                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name'], 'datastore_submit': True})
         else:
             old_resources = existing_package['resources']
             for r in new_resources:
-                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name']}
+                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name'], 'datastore_submit': False}
                 for old in old_resources:
                     if old['name'] == r['name']:
                         action['action'] = 'update'
@@ -259,12 +259,13 @@ class StadtzhHarvester(HarvesterBase):
                         # check if the resource changed
                         if r.get('hash') and old.get('hash') and r['hash'] != old['hash']:
                             resources_changed = True
+                            action['datastore_submit'] = True
                         break
                 actions.append(action)
 
             for old in old_resources:
                 if not filter(lambda action: action['res_name'] == old['name'], actions):
-                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name']})
+                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name'], 'datastore_submit': False})
 
         # Start the actions!
         if existing_package and 'resources' in existing_package: 
@@ -313,6 +314,7 @@ class StadtzhHarvester(HarvesterBase):
         for action in actions:
             res_name = action['res_name']
             try:
+                resource_id = None
                 log.debug("Resource %s, action: %s" % (res_name, action))
                 if action['action'] == 'create':
                     resource = dict(action['new_resource'])
@@ -320,6 +322,7 @@ class StadtzhHarvester(HarvesterBase):
                     resource_id = get_action('resource_create')(context.copy(), resource)['id']
                     resource_ids.append(resource_id)
                     log.debug('Dataset resource `%s` has been created' % resource_id)
+
                 elif action['action'] == 'update':
                     resource = dict(action['old_resource'])
                     resource['package_id'] = package_dict['id']
@@ -337,6 +340,7 @@ class StadtzhHarvester(HarvesterBase):
                     resource_id = get_action('resource_update')(context.copy(), resource)['id']
                     resource_ids.append(resource_id)
                     log.debug('Dataset resource `%s` has been updated' % resource_id)
+
                 elif action['action'] == 'delete':
                     replace_upload = get_action('resource_update')(
                         context.copy(),
@@ -348,8 +352,13 @@ class StadtzhHarvester(HarvesterBase):
                     )
                     result = get_action('resource_delete')(context.copy(), {'id': action['old_resource']['id']})
                     log.debug('Dataset resource has been deleted: %s' % result)
+
                 else:
                     raise ValueError('Unknown action, we should never reach this point')
+
+		# submit to datastore
+                if resource_id and action['datastore_submit']:
+		    self._submit_to_datastore(resource_id)
             except Exception, e:
                 self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
                 continue
@@ -359,6 +368,17 @@ class StadtzhHarvester(HarvesterBase):
         Session.commit()
         return True
 
+    def _submit_to_datastore(self, resource_id):
+        context = {
+            'model': model,
+            'ignore_auth': True,
+            'defer_commit': True,
+        }
+	log.debug('Submitting resource %s to datastore' % resource_id)
+	tk.get_action('xloader_submit')(context, {
+	    'resource_id': resource_id,
+	    'ignore_hash': True,
+	})
 
     def _create_package(self, dataset, harvest_object):
         theme_plugin = StadtzhThemePlugin()
