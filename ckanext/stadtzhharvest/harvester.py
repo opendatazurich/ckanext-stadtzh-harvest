@@ -656,11 +656,11 @@ class StadtzhHarvester(HarvesterBase):
                         if link.find('url').text != "" and link.find('url').text is not None:
                             # generate hash for URL
                             url = link.find('url').text
-                            sha1 = hashlib.md5()
-                            sha1.update(url)
+                            md5 = hashlib.md5()
+                            md5.update(url)
                             resources.append({
                                 'url': url,
-                                'zh_hash': sha1.hexdigest(),
+                                'zh_hash': md5.hexdigest(),
                                 'name': link.find('lable').text,
                                 'format': link.find('type').text,
                                 'resource_type': 'api'
@@ -675,16 +675,16 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-			# calculate the SHA1 hash of this file
+			# calculate the hash of this file
                         BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                        sha1 = hashlib.md5()
+                        md5 = hashlib.md5()
                         with retry_open_file(resource_path, 'rb') as f:
                             while True:
                                 data = f.read(BUF_SIZE)
                                 if not data:
                                     break
-                                sha1.update(data)
-                            resource_dict['zh_hash'] = sha1.hexdigest()
+                                md5.update(data)
+                            resource_dict['zh_hash'] = md5.hexdigest()
 
                         # add file to FieldStorage
                         with retry_open_file(resource_path, 'r', close=False) as f:
