@@ -257,7 +257,7 @@ class StadtzhHarvester(HarvesterBase):
                         action['old_resource'] = old
 
                         # check if the resource changed
-                        if r.get('hash') and old.get('hash') and r['hash'] != old['hash']:
+                        if r.get('zh_hash') and old.get('zh_hash') and r['zh_hash'] != old['zh_hash']:
                             resources_changed = True
                             action['datastore_submit'] = True
                         break
@@ -334,7 +334,7 @@ class StadtzhHarvester(HarvesterBase):
                         # for APIs, update the URL
                         resource['url'] = action['new_resource']['url']
                     # update the hash
-                    resource['hash'] = action['new_resource'].get('hash')
+                    resource['zh_hash'] = action['new_resource'].get('zh_hash')
 
                     log.debug("Trying to update resource: %s" % resource)
                     resource_id = get_action('resource_update')(context.copy(), resource)['id']
@@ -377,7 +377,6 @@ class StadtzhHarvester(HarvesterBase):
 	log.debug('Submitting resource %s to datastore' % resource_id)
 	tk.get_action('xloader_submit')(context, {
 	    'resource_id': resource_id,
-	    'ignore_hash': True,
 	})
 
     def _create_package(self, dataset, harvest_object):
@@ -657,11 +656,11 @@ class StadtzhHarvester(HarvesterBase):
                         if link.find('url').text != "" and link.find('url').text is not None:
                             # generate hash for URL
                             url = link.find('url').text
-                            sha1 = hashlib.md5()
-                            sha1.update(url)
+                            md5 = hashlib.md5()
+                            md5.update(url)
                             resources.append({
                                 'url': url,
-                                'hash': sha1.hexdigest(),
+                                'zh_hash': md5.hexdigest(),
                                 'name': link.find('lable').text,
                                 'format': link.find('type').text,
                                 'resource_type': 'api'
@@ -676,16 +675,16 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-			# calculate the SHA1 hash of this file
+			# calculate the hash of this file
                         BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                        sha1 = hashlib.md5()
+                        md5 = hashlib.md5()
                         with retry_open_file(resource_path, 'rb') as f:
                             while True:
                                 data = f.read(BUF_SIZE)
                                 if not data:
                                     break
-                                sha1.update(data)
-                            resource_dict['hash'] = sha1.hexdigest()
+                                md5.update(data)
+                            resource_dict['zh_hash'] = md5.hexdigest()
 
                         # add file to FieldStorage
                         with retry_open_file(resource_path, 'r', close=False) as f:
