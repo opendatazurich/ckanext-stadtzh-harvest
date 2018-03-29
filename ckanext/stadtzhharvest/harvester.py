@@ -246,11 +246,11 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             resources_changed = True
             for r in new_resources:
-                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name'], 'datastore_submit': True})
+                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name']})
         else:
             old_resources = existing_package['resources']
             for r in new_resources:
-                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name'], 'datastore_submit': False}
+                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name']}
                 for old in old_resources:
                     if old['name'] == r['name']:
                         action['action'] = 'update'
@@ -259,13 +259,12 @@ class StadtzhHarvester(HarvesterBase):
                         # check if the resource changed
                         if r.get('zh_hash') and old.get('zh_hash') and r['zh_hash'] != old['zh_hash']:
                             resources_changed = True
-                            action['datastore_submit'] = True
                         break
                 actions.append(action)
 
             for old in old_resources:
                 if not filter(lambda action: action['res_name'] == old['name'], actions):
-                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name'], 'datastore_submit': False})
+                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name']})
 
         # Start the actions!
         if existing_package and 'resources' in existing_package: 
@@ -356,9 +355,6 @@ class StadtzhHarvester(HarvesterBase):
                 else:
                     raise ValueError('Unknown action, we should never reach this point')
 
-		# submit to datastore
-                if resource_id and action['datastore_submit']:
-		    self._submit_to_datastore(resource_id)
             except Exception, e:
                 self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
                 continue
@@ -367,17 +363,6 @@ class StadtzhHarvester(HarvesterBase):
         tk.get_action('package_resource_reorder')(context.copy(), data_dict=reorder)
         Session.commit()
         return True
-
-    def _submit_to_datastore(self, resource_id):
-        context = {
-            'model': model,
-            'ignore_auth': True,
-            'defer_commit': True,
-        }
-	log.debug('Submitting resource %s to datastore' % resource_id)
-	tk.get_action('xloader_submit')(context, {
-	    'resource_id': resource_id,
-	})
 
     def _create_package(self, dataset, harvest_object):
         theme_plugin = StadtzhThemePlugin()
