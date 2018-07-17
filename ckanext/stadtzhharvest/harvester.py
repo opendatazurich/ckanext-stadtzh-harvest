@@ -142,34 +142,10 @@ class StadtzhHarvester(HarvesterBase):
                 dataset_id = self._validate_package_id(dataset)
                 if dataset_id:
                     meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
-                    if os.path.exists(meta_xml_file_path):
-                        try:
-                            with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
-                                parser = etree.XMLParser(encoding='utf-8')
-                                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
-                        except Exception, e:
-                            log.exception(e)
-                            self._save_gather_error(
-                                'Could not parse metadata in %s: %s / %s'
-                                % (meta_xml_file_path, str(e), traceback.format_exc()),
-                                harvest_job
-                            )
-                            continue
-                    else:
-                        metadata = {
-                            'datasetID': dataset_id,
-                            'datasetFolder': dataset,
-                            'title': dataset,
-                            'url': None,
-                            'resources': self._generate_resources_dict_array(dataset),
-                        }
-                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id)):
-                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id))
-
-                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
-                        meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
-                        log.debug('Metadata JSON created')
+                    metadata = self._load_metadata_from_path(meta_xml_file_path)
+                    if not metadata:
+                        continue
+                    self._generate_diff_file(dataset_id, metadata)
 
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
@@ -184,6 +160,39 @@ class StadtzhHarvester(HarvesterBase):
                 harvest_job
             )
 	    return []
+
+    def _load_metadata_from_path(self, meta_xml_file_path):
+        metadata = None
+        if os.path.exists(meta_xml_file_path):
+            try:
+                with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
+                    parser = etree.XMLParser(encoding='utf-8')
+                    dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
+                metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
+            except Exception, e:
+                log.exception(e)
+                self._save_gather_error(
+                    'Could not parse metadata in %s: %s / %s'
+                    % (meta_xml_file_path, str(e), traceback.format_exc()),
+                    harvest_job
+                )
+        else:
+            metadata = {
+                'datasetID': dataset_id,
+                'datasetFolder': dataset,
+                'title': dataset,
+                'url': None,
+                'resources': self._generate_resources_dict_array(dataset),
+            }
+        return metadata
+
+    def _generate_diff_file(self, dataset_id, metadata):
+        if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id)):
+            os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id))
+
+        with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
+            meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
+            log.debug('Metadata JSON created')
 
     def fetch_stage(self, harvest_object):
         log.debug('In StadtzhHarvester fetch_stage')

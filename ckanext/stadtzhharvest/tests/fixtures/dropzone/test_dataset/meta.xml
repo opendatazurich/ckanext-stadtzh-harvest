@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datensammlung> 
+    <datensatz>
+        <titel>Administrative Einteilungen Stadt Zürich</titel>
+        <beschreibung><![CDATA[Die Administrativen Einteilungen umfassen die gebräuchlichsten räumlichen Einteilungen der Stadt Zürich.
+
+             Die Administrativen Einteilungen dienen den Dienststellen der Stadt Zürich als Grundlage für die verwaltungsinternen Aufgaben.]]></beschreibung>
+        <rechtsgrundlage>Kommunales Gesetz</rechtsgrundlage>
+        <raeumliche_beziehung>Stadt Zürich LV95</raeumliche_beziehung>
+        <aktualisierungsintervall>wöchentlich</aktualisierungsintervall>
+        <aktualisierungsdatum>09.09.2017</aktualisierungsdatum>
+        <datentyp>Einzeldaten</datentyp>
+        <erstmalige_veroeffentlichung></erstmalige_veroeffentlichung>
+        <kategorie>Basiskarten</kategorie>
+        <lieferant>Geomatik + Vermessung Zürich, Tiefbau- und Entsorgungsdepartement</lieferant>
+        <zeitraum>25.08.2017</zeitraum>
+        <quelle>Geoinformatik, Geomatik + Vermessung, Tiefbau- und Entsorgungsdepartement</quelle>
+        <aktuelle_version>1.0</aktuelle_version>
+        <datenqualitaet><![CDATA[]]></datenqualitaet>
+        <bemerkungen>
+            <bemerkung>
+                <titel>Genereller Hinweis zum Geodatensatz:</titel>
+                <text><![CDATA[Es handelt sich hierbei um einen Geodatensatz, welcher aus mehreren Geodatenelmenten besteht. Diese Geodatenelemente werden hier nicht im Detail beschrieben. Sie finden jedoch sämtliche Informationen - wie beispielsweise die Attributbeschreibungen - unter den aufgeführten Links, welche auf **Geocat** verweisen.]]>
+               </text>
+            </bemerkung>
+            <bemerkung>
+                <titel>Informationen zum Datensatz:</titel>
+                <text><![CDATA[Datenelemente werden nur im Datenformat ESRI SDE GDB beschrieben. 
+Zusätzliches Datenformat mit identischem Inhalt: Oracle SDO im Schema GEOZ_SDO. 
+Das Attribut OBJECTID ist nur im Datenformat ESRI SDE GDB vorhanden. Tabellen, die nur im Datenformat Oracle SDO vorkommen werden auch beschrieben.]]></text>
+            </bemerkung>
+            <bemerkung>
+                <titel>Datenerfassung:</titel>
+                <text><![CDATA[Die Nachführung der <a href="http://geometa.stzh.ch/geodatensatz/show?nbid=4963" target="_blank">Original-Daten</a> erfolgt bei Bedarf bzw. nach Auftrag der Datenherren durch die Mitarbeitenden von GeoZ. Die Daten werden anschliessend auf den GeoServer gespielt.]]></text>
+            </bemerkung>
+            <bemerkung>
+                <titel>Datengrundlage:</titel>
+                <text><![CDATA[Amtliche Vermessungsdaten der Stadt Zürich.]]></text>                
+            </bemerkung>
+            <bemerkung>
+                <titel>Geodatenelemente:</titel>
+                <text><![CDATA[Die vollständige Metadatenbeschreibung der Geodatenelemente finden Sie unter [«**Administrative Einteilungen Stadt Zürich»** auf Geocat.ch](https://www.geocat.ch/geonetwork/srv/ger/md.viewer#/full_view/569498cb-8f81-961a-0a7c-16c87fbcd61a).
+
+***ADM_UP_STZH_A***: 
+
+Einteilung Uebersichtsplan Stadt Zürich (57)
+
+***ADM_ZAEHLKREISE_BESCHR_P***: 
+
+Beschriftungspunkte der Zählkreise
+
+***ADM_HILFSGITTER_A***: 
+
+Hilfsgitter AV (40)
+
+***ADM_ZAEHLKREISE_A***: 
+
+Zählkreise (8). Die 8 Zählkreise bilden eine Obermenge der 12 Stadtkreise
+
+***ADM_NOTARIATSKREISE_A***: 
+
+Notariatskreise (11)
+
+***ADM_UP_KANTON_A***: 
+
+Einteilung Uebersichtsplan Kanton ZH (46)
+
+***ADM_VERMBEZIRKE_A***: 
+
+Vermessungsbezirke (21)
+
+***ADM_UP_KANTON_BESCHR_P***: 
+
+Beschriftungspunkte der Einteilung Uebersichtsplan Kanton ZH
+
+***ADM_NOTARIATSKREISE_BESCHR_P***: 
+
+Beschriftungspunkte der Notariatskreise
+
+***ADM_STADTKREISE_BESCHR_P***: 
+
+Beschriftungspunkte der Stadtkreise
+
+***ADM_BAUBLAETTER_BESCHR_P***: 
+
+Beschriftungspunkte der Baublätter
+
+***ADM_GEBIETSNAMEN_A***: 
+
+Gebietsnamen AV (2)
+
+***ADM_BAUBLAETTER_A***: 
+
+Baublätter (230)
+
+***ADM_ROEM_KATH_GDE_A***: 
+
+Römisch Katholische Kirchgemeinden
+
+***ADM_HILFSGITTER_BESCHR_P***: 
+
+Beschriftungspunkte der Hilfsgitter AV
+
+***ADM_VERMBEZIRKE_BESCHR_P***: 
+
+Beschriftungspunkte der Vermessungsbezirke
+
+***ADM_STATISTISCHE_QUARTIERE_B_P***: 
+
+Beschriftungspunkte der statistischen Quartiere
+
+***ADM_KA_EINTEILUNG_A***: 
+
+AfB Kreisarchitekteneinteilung (27)
+
+***ADM_UP_STZH_BESCHR_P***: 
+
+Beschriftungspunkte der alten Einteilung Uebersichtsplan Stadt Zürich
+
+***ADM_SCHULKREISE_A***: 
+
+Schulkreise (7)
+
+***ADM_ORTHOFOTOS_BESCHR_P***: 
+
+Beschriftungspunkte der Einteilung der Orthofotos von 2013
+
+***ADM_EV_REF_GDE_A***: 
+
+Evangelisch Reformierte Kirchgemeinden
+
+***ADM_GEBIETSNAMEN_BESCHR_P***: 
+
+Beschriftungspunkte der Gebietsnamen AV
+
+***ADM_KA_EINTEILUNG_BESCHR_P***: 
+
+Beschriftungspunkte der AfB Kreisarchitekteneinteilung
+
+***ADM_SCHULKREISE_BESCHR_P***: 
+
+Beschriftungspunkte der Schulkreise
+
+***ADM_VERWALTUNGSQUARTIERE_BES_P***: 
+
+Beschriftungspunkte der Verwaltungsquartiere
+
+***ADM_STADTPLANNETZ_A***: 
+
+Stadtplannetz Orell Füssli (525)
+
+***ADM_STATISTISCHE_QUARTIERE_A***: 
+
+Statistische Quartiere (34)
+
+***ADM_ORTHOFOTOS_A***: 
+
+Einteilung der Orthofotos von 2013 (459)
+
+***ADM_STADTKREISE_A***: 
+
+Stadtkreise (12)
+
+***ADM_STADTPLANNETZ_BESCHR_P***: 
+
+Beschriftungspunkte des Stadtplannetzes Orell Füssli
+
+***ADM_STATZONEN_BESCHR_P***: 
+
+Beschriftungspunkte der statistischen Zonen
+
+***ADM_VERWALTUNGSQUARTIERE_A***: 
+
+Verwaltungsquartiere (22)
+
+***ADM_STATZONEN_A***: 
+
+Statistische Zonen (216) 
+Die Statistischen Zonen entsprechen der kleinräumigsten Unterteilung der Administrativen Einheiten. Die Stadt Zürich ist in 12 Stadtkreise unterteilt, die wiederum aus den 34 Statistischen Stadtquartieren gebildet sind. Und die Statistischen Stadtquartiere sind wiederum in Statistische Zonen unterteilt worden. Jedes Quartier ist in 3 bis 16 Statistische Zonen aufgeteilt. Gekennzeichnet sind diese mit einer eindeutigen Nummer (Siehe unten StZNr), die sich aus der Stadtquartiernummer und einer Laufnummer zusammensetzt. Da es einfacher ist, sich den Namen eines Gebiets zu merken, hat Statistik Stadt Zürich allen einen - inoffiziellen - Namen gegeben. Bei der Namensvergabe wurden vor allem wichtige Plätze und Strassennamen verwendet, die bei der räumlichen Orientierung helfen sollen.
+
+Zweck:
+Die Statistischen Zonen stammen aus der Zeit, als bei den Volkszählungen noch Personen, sog. Zähler, die Befragungen machten. Damit alle Zähler etwa gleich viele Befragte zu befragen hatte, wurden Zählkreise gebildet, die dann zu Statistischen Zonen aggregiert wurden. Dies bedeutet, dass anhand der Statistischen Zonen Zeitreihen bis zu älteren Volkszählungsdaten gebildet werden könnten.
+
+***ADM_AFB_GEBIETE_A***: 
+
+AfB Kreisarchitekteneinteilung angereichert mit weiteren Daten. Dies ist eine temporäre Tabelle, bis die angereicherten Daten in der Featureklasse ADM_KA_EINTEILUNG_A  eingefügt werden. Dies sollte bis Ende 2016 erfolgt sein.
+
+***ADM_STATISTISCHE_QUARTIERE_MAP***: 
+
+Darstellungsebene der Statistischen Quartiere. Nur für Kartendarstellung verwenden. Die Geometrie ist vereinfacht und entspricht nicht der korrekten Lage.
+
+***ADM_STATZONEN_MAP***: 
+
+Darstellungsebene der Statistischen Zonen. Nur für Kartendarstellung verwenden. Die Geometrie ist vereinfacht und entspricht nicht der korrekten Lage.
+
+***ADM_STADTKREISE_V***: 
+
+Stadtkreise (12)
+Temporäres Element. Sicht auf ADM_STADTKREISE_A gemäss SSZ.
+
+***ADM_STATISTISCHE_QUARTIERE_V***: 
+
+Statistische Quartiere (34) 
+Temporäres Element. Sicht auf ADM_STATISTISCHE_QUARTIERE_A gemäss SSZ.
+
+***ADM_STATZONEN_V***: 
+
+Statistische Zonen (216) 
+Temporäres Element. Sicht auf ADM_STATZONEN_A gemäss SSZ.
+Die Statistischen Zonen entsprechen der kleinräumigsten Unterteilung der Administrativen Einheiten. Die Stadt Zürich ist in 12 Stadtkreise unterteilt, die wiederum aus den 34 Statistischen Stadtquartieren gebildet sind. Und die Statistischen Stadtquartiere sind wiederum in Statistische Zonen unterteilt worden. Jedes Quartier ist in 3 bis 16 Statistische Zonen aufgeteilt. Gekennzeichnet sind diese mit einer eindeutigen Nummer (Siehe unten StZNr), die sich aus der Stadtquartiernummer und einer Laufnummer zusammensetzt. Da es einfacher ist, sich den Namen eines Gebiets zu merken, hat Statistik Stadt Zürich allen einen - inoffiziellen - Namen gegeben. Bei der Namensvergabe wurden vor allem wichtige Plätze und Strassennamen verwendet, die bei der räumlichen Orientierung helfen sollen. 
+
+ Zweck: 
+ Die Statistischen Zonen stammen aus der Zeit, als bei den Volkszählungen noch Personen, sog. Zähler, die Befragungen machten. Damit alle Zähler etwa gleich viele Befragte zu befragen hatte, wurden Zählkreise gebildet, die dann zu Statistischen Zonen aggregiert wurden. Dies bedeutet, dass anhand der Statistischen Zonen Zeitreihen bis zu älteren Volkszählungsdaten gebildet werden könnten. 
+
+**Statisches Vorschaubild**
+
+![BildText](http://www.zueriplandocs.stadt-zuerich.ch/zueriplan_docs/geocat/569498cb-8f81-961a-0a7c-16c87fbcd61a.jpg)
+            ]]></text>  
+            </bemerkung>
+        </bemerkungen>
+        <schlagworte>gebietseinteilungen, quartiere, stadtquartiere, geodaten, vektordaten, polygondaten, punktdaten</schlagworte>
+        <attributliste> 
+        </attributliste>        
+    </datensatz>
+</datensammlung>
+
