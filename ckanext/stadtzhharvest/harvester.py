@@ -1,6 +1,7 @@
 # coding: utf-8
 
-import os, re
+import os
+import re
 import datetime
 import difflib
 import shutil
@@ -13,11 +14,11 @@ from cgi import FieldStorage
 from pylons import config
 from ckan import model
 from ckan.model import Session
-from ckan.logic import action, get_action, NotFound
+from ckan.logic import get_action, NotFound
 import ckan.plugins.toolkit as tk
 from ckan import plugins as p
 from ckan.lib.helpers import json
-from ckan.lib.munge import munge_title_to_name, substitute_ascii_equivalents
+from ckan.lib.munge import munge_title_to_name
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
@@ -25,10 +26,13 @@ from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 import logging
 log = logging.getLogger(__name__)
 
+FILE_NOT_FOUND_URL = 'https://data.stadt-zuerich.ch/filenotfound'
+
 
 class InvalidCommentError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
@@ -39,23 +43,26 @@ def retry_open_file(path, mode, tries=10, close=True):
     This file-opening context manager is needed for flaky WebDAV connections
     We randomly get "IOError: [Errno 5] Input/output error", therefore this cm
     simply retries to open the file several times.
-    The `close` parameter is needed for the cgi.FieldStorage, which requires an 
+    The `close` parameter is needed for the cgi.FieldStorage, which requires an
     open file handle
     """
     error = None
     while tries:
-	try:
-	    the_file = open(path, mode)
-	except IOError as e:
-	    error = e
-	    tries -= 1
-            log.exception("Error occured when opening %s: %r (tries left: %s)" % (path, e, tries))
-	else:
-	    break
+        try:
+            the_file = open(path, mode)
+        except IOError as e:
+            error = e
+            tries -= 1
+            log.exception(
+                "Error occured when opening %s: %r (tries left: %s)"
+                % (path, e, tries)
+            )
+        else:
+            break
     if not tries:
         if not the_file.closed:
             the_file.close()
-	raise error
+        raise error
     yield the_file
     if close:
         the_file.close()
@@ -85,7 +92,7 @@ class StadtzhHarvester(HarvesterBase):
         return {
             'name': 'stadtzh_harvester',
             'title': 'Harvester for the City of Zurich',
-            'description': 'Harvester for the DWH and GEO dropzones of the City of Zurich'
+            'description': 'Harvester for the DWH and GEO dropzones of the City of Zurich'  # noqa
         }
 
     def validate_config(self, config_str):
@@ -97,7 +104,7 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_boolean_config(config_obj, 'update_date_last_modified')
 
         return config_str
-    
+
     def _validate_string_config(self, source, field, required=False):
         if field in source:
             value = source[field]
@@ -133,43 +140,40 @@ class StadtzhHarvester(HarvesterBase):
         ids = []
         try:
             # list directories in dropzone folder
-            datasets = self._remove_hidden_files(os.listdir(self.config['data_path']))
-            log.debug("Directories in %s: %s" % (self.config['data_path'], datasets))
+            datasets = self._remove_hidden_files(
+                os.listdir(self.config['data_path'])
+            )
+            log.debug(
+                "Directories in %s: %s"
+                % (self.config['data_path'], datasets)
+            )
 
             # foreach -> meta.xml -> create entry
             for dataset in datasets:
                 log.debug(self._validate_package_id(dataset))
                 dataset_id = self._validate_package_id(dataset)
                 if dataset_id:
-                    meta_xml_file_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], 'meta.xml')
-                    if os.path.exists(meta_xml_file_path):
-                        try:
-                            with retry_open_file(meta_xml_file_path, 'r') as meta_xml:
-                                parser = etree.XMLParser(encoding='utf-8')
-                                dataset_node = etree.fromstring(meta_xml.read(), parser=parser).find('datensatz')
-                            metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
-                        except Exception, e:
-                            log.exception(e)
-                            self._save_gather_error(
-                                'Could not parse metadata in %s: %s / %s'
-                                % (meta_xml_file_path, str(e), traceback.format_exc()),
-                                harvest_job
-                            )
-                            continue
-                    else:
-                        metadata = {
-                            'datasetID': dataset_id,
-                            'datasetFolder': dataset,
-                            'title': dataset,
-                            'url': None,
-                            'resources': self._generate_resources_dict_array(dataset),
-                        }
-                    if not os.path.isdir(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id)):
-                        os.makedirs(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id))
-
-                    with open(os.path.join(self.DIFF_PATH, self.config['metadata_dir'], dataset_id, 'metadata-' + str(datetime.date.today())), 'w') as meta_json:
-                        meta_json.write(json.dumps(metadata, sort_keys=True, indent=4, separators=(',', ': ')))
-                        log.debug('Metadata JSON created')
+                    meta_xml_path = os.path.join(
+                        self.config['data_path'],
+                        dataset,
+                        self.config['metafile_dir'],
+                        'meta.xml'
+                    )
+                    try:
+                        metadata = self._load_metadata_from_path(
+                            meta_xml_path,
+                            dataset_id,
+                            dataset
+                        )
+                    except Exception, e:
+                        log.exception(e)
+                        self._save_gather_error(
+                            'Could not parse metadata in %s: %s / %s'
+                            % (meta_xml_path, str(e), traceback.format_exc()),
+                            harvest_job
+                        )
+                        continue
+                    self._generate_diff_file(dataset_id, metadata)
 
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
@@ -183,7 +187,54 @@ class StadtzhHarvester(HarvesterBase):
                 % (self.config['data_path'], str(e), traceback.format_exc()),
                 harvest_job
             )
-	    return []
+            return []
+
+    def _load_metadata_from_path(self, meta_xml_path, dataset_id, dataset):
+        metadata = None
+        if os.path.exists(meta_xml_path):
+            with retry_open_file(meta_xml_path, 'r') as meta_xml:
+                parser = etree.XMLParser(encoding='utf-8')
+                meta_xml = etree.fromstring(meta_xml.read(), parser=parser)
+                dataset_node = meta_xml.find('datensatz')
+            metadata = self._dropzone_get_metadata(
+                dataset_id,
+                dataset,
+                dataset_node
+            )
+        else:
+            metadata = {
+                'datasetID': dataset_id,
+                'datasetFolder': dataset,
+                'title': dataset,
+                'url': None,
+                'resources': self._generate_resources_dict_array(dataset),
+            }
+        return metadata
+
+    def _generate_diff_file(self, dataset_id, metadata):
+        dataset_diff_path = os.path.join(
+            self.DIFF_PATH,
+            self.config['metadata_dir'],
+            dataset_id
+        )
+        if not os.path.isdir(dataset_diff_path):
+            os.makedirs(dataset_diff_path)
+
+        diff_file = os.path.join(
+            self.DIFF_PATH,
+            self.config['metadata_dir'],
+            dataset_id, 'metadata-' + str(datetime.date.today())
+        )
+        with open(diff_file, 'w') as meta_json:
+            meta_json.write(
+                json.dumps(
+                    metadata,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                )
+            )
+            log.debug('Metadata JSON created')
 
     def fetch_stage(self, harvest_object):
         log.debug('In StadtzhHarvester fetch_stage')
@@ -222,57 +273,23 @@ class StadtzhHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-        # get the site user
-        site_user = tk.get_action('get_site_user')(
-                                  {'model': model, 'ignore_auth': True}, {})
-        context = {
-            'model': model,
-            'session': Session,
-            'user': site_user['name'],
-        }
+        context = self._create_new_context()
 
-        # check if package already exists and migrate old packages to new ones if needed
-        try:
-            existing_package = get_action('package_show')(context.copy(), {'id': package_dict['id']})
-        except NotFound:
-            existing_package = None
-            log.debug('Could not find pkg %s' % package_dict['name'])
-                
+        # check if package already exists and
+        existing_package = self._get_existing_package(package_dict)
 
         # update existing resources, delete old ones, create new ones
-        resources_changed = False
-        actions = []
-        new_resources = self._generate_resources_dict_array(package_dict['datasetFolder'], include_files=True)
-        if not existing_package:
-            resources_changed = True
-            for r in new_resources:
-                actions.append({'action': 'create', 'new_resource': r, 'res_name': r['name']})
-        else:
-            old_resources = existing_package['resources']
-            for r in new_resources:
-                action = {'action': 'create', 'new_resource': r, 'old_resource': None, 'res_name': r['name']}
-                for old in old_resources:
-                    if old['name'] == r['name']:
-                        action['action'] = 'update'
-                        action['old_resource'] = old
+        actions, resources_changed = self._resources_actions(
+            package_dict,
+            existing_package
+        )
 
-                        # check if the resource changed
-                        if r.get('zh_hash') and old.get('zh_hash') and r['zh_hash'] != old['zh_hash']:
-                            resources_changed = True
-                        break
-                actions.append(action)
-
-            for old in old_resources:
-                if not filter(lambda action: action['res_name'] == old['name'], actions):
-                    actions.append({'action': 'delete', 'old_resource': old, 'res_name': old['name']})
-
-        # Start the actions!
-        if existing_package and 'resources' in existing_package: 
+        if existing_package and 'resources' in existing_package:
             package_dict['resources'] = existing_package['resources']
 
         self._find_or_create_organization(package_dict, context.copy())
 
-        # import the package if it does not yet exists (i.e. it's a new package)
+        # import the package if it does not yet exists => it's a new package
         # or if this harvester is allowed to update packages
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
@@ -284,7 +301,7 @@ class StadtzhHarvester(HarvesterBase):
             package_dict['id'] = existing_package['id']
             dataset_id = self._update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been updated' % package_dict['id'])
-        
+
         # create diffs if there is a previous package
         if existing_package:
             self._create_diffs(package_dict)
@@ -293,23 +310,106 @@ class StadtzhHarvester(HarvesterBase):
         if self.config['update_date_last_modified'] and resources_changed:
             theme_plugin = StadtzhThemePlugin()
             package_schema = theme_plugin.update_package_schema()
-            context = {
-                'user': site_user['name'],
-                'ignore_auth': True,
-                'schema': package_schema,
-            }
+            schema_context = self._create_new_context()
+            schema_context['ignore_auth'] = True
+            schema_context['schema'] = package_schema
             today = datetime.datetime.now().strftime('%d.%m.%Y')
             try:
-                get_action('package_patch')(context, {'id': dataset_id, 'dateLastUpdated': today})
+                get_action('package_patch')(
+                    schema_context,
+                    {'id': dataset_id, 'dateLastUpdated': today}
+                )
             except p.toolkit.ValidationError, e:
-                self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+                self._save_object_error(
+                    'Update validation Error: %s' % str(e.error_summary),
+                    harvest_object,
+                    'Import'
+                )
                 return False
             log.info('Updated dateLastUpdated to %s', today)
         else:
-            log.info('dateLastUpdated *not* updated because update_date_last_modified config is set to `false`')
+            log.info(
+                'dateLastUpdated *not* updated because '
+                'update_date_last_modified config is set to `false`'
+            )
 
         # handle all resources (create, update, delete)
+        resource_ids = self._import_resources(
+            actions,
+            package_dict,
+            harvest_object
+        )
+
+        reorder = {'id': str(package_dict['id']), 'order': resource_ids}
+        tk.get_action('package_resource_reorder')(
+            context.copy(),
+            data_dict=reorder
+        )
+        Session.commit()
+        return True
+
+    def _get_existing_package(self, package_dict):
+        context = self._create_new_context()
+        try:
+            existing_package = get_action('package_show')(
+                context,
+                {'id': package_dict['id']}
+            )
+        except NotFound:
+            existing_package = None
+            log.debug('Could not find pkg %s' % package_dict['name'])
+        return existing_package
+
+    def _resources_actions(self, package_dict, existing_package):
+        resources_changed = False
+        actions = []
+        new_resources = self._generate_resources_dict_array(
+            package_dict['datasetFolder'],
+            include_files=True
+        )
+        if not existing_package:
+            resources_changed = True
+            for r in new_resources:
+                actions.append({
+                    'action': 'create',
+                    'new_resource': r,
+                    'res_name': r['name']
+                })
+        else:
+            old_resources = existing_package['resources']
+            for r in new_resources:
+                action = {
+                    'action': 'create',
+                    'new_resource': r,
+                    'old_resource': None,
+                    'res_name': r['name']
+                }
+                for old in old_resources:
+                    if old['name'] == r['name']:
+                        action['action'] = 'update'
+                        action['old_resource'] = old
+
+                        # check if the resource changed
+                        if (r.get('zh_hash') and old.get('zh_hash')
+                                and r['zh_hash'] != old['zh_hash']):
+                            resources_changed = True
+                        break
+                actions.append(action)
+
+            for old in old_resources:
+                if not filter(
+                        lambda action: action['res_name'] == old['name'],
+                        actions):
+                    actions.append({
+                        'action': 'delete',
+                        'old_resource': old,
+                        'res_name': old['name']
+                    })
+        return (actions, resources_changed)
+
+    def _import_resources(self, actions, package_dict, harvest_object):
         resource_ids = []
+        context = self._create_new_context()
         for action in actions:
             res_name = action['res_name']
             try:
@@ -318,9 +418,15 @@ class StadtzhHarvester(HarvesterBase):
                 if action['action'] == 'create':
                     resource = dict(action['new_resource'])
                     resource['package_id'] = package_dict['id']
-                    resource_id = get_action('resource_create')(context.copy(), resource)['id']
+                    resource_id = get_action('resource_create')(
+                        context.copy(),
+                        resource
+                    )['id']
                     resource_ids.append(resource_id)
-                    log.debug('Dataset resource `%s` has been created' % resource_id)
+                    log.debug(
+                        'Dataset resource `%s` has been created'
+                        % resource_id
+                    )
 
                 elif action['action'] == 'update':
                     resource = dict(action['old_resource'])
@@ -336,42 +442,78 @@ class StadtzhHarvester(HarvesterBase):
                     resource['zh_hash'] = action['new_resource'].get('zh_hash')
 
                     log.debug("Trying to update resource: %s" % resource)
-                    resource_id = get_action('resource_update')(context.copy(), resource)['id']
+                    resource_id = get_action('resource_update')(
+                        context.copy(),
+                        resource
+                    )['id']
                     resource_ids.append(resource_id)
-                    log.debug('Dataset resource `%s` has been updated' % resource_id)
+                    log.debug(
+                        'Dataset resource `%s` has been updated'
+                        % resource_id
+                    )
 
                 elif action['action'] == 'delete':
                     replace_upload = get_action('resource_update')(
                         context.copy(),
                         {
                             'id': action['old_resource']['id'],
-                            'url': 'https://data.stadt-zuerich.ch/filenotfound',
+                            'url': FILE_NOT_FOUND_URL,
                             'clear_upload': 'true'
                         }
                     )
-                    result = get_action('resource_delete')(context.copy(), {'id': action['old_resource']['id']})
-                    log.debug('Dataset resource has been deleted: %s' % result)
+                    log.debug(
+                        'Dataset resource has been cleared: %s'
+                        % replace_upload
+                    )
+
+                    result = get_action('resource_delete')(
+                        context.copy(),
+                        {'id': action['old_resource']['id']}
+                    )
+                    log.debug(
+                        'Dataset resource has been deleted: %s'
+                        % result
+                    )
 
                 else:
-                    raise ValueError('Unknown action, we should never reach this point')
+                    raise ValueError(
+                        'Unknown action, we should never reach this point'
+                    )
 
             except Exception, e:
-                self._save_object_error('Error while handling action %s for resource %s in pkg %s: %r %s' % (action, res_name, package_dict['name'], e, traceback.format_exc()), harvest_object, 'Import')
+                self._save_object_error(
+                    'Error while handling action %s for resource %s in pkg %s: %r %s'  # noqa
+                    % (
+                        action,
+                        res_name,
+                        package_dict['name'],
+                        e,
+                        traceback.format_exc()
+                    ),
+                    harvest_object,
+                    'Import'
+                )
                 continue
+        return resource_ids
 
-        reorder = {'id': str(package_dict['id']), 'order': resource_ids}
-        tk.get_action('package_resource_reorder')(context.copy(), data_dict=reorder)
-        Session.commit()
-        return True
+    def _create_new_context(self):
+        # get the site user
+        site_user = tk.get_action('get_site_user')(
+                                  {'model': model, 'ignore_auth': True}, {})
+        context = {
+            'model': model,
+            'session': Session,
+            'user': site_user['name'],
+        }
+        return context
 
     def _create_package(self, dataset, harvest_object):
         theme_plugin = StadtzhThemePlugin()
         package_schema = theme_plugin.create_package_schema()
-    
+
         # We need to explicitly provide a package ID
         dataset['id'] = unicode(uuid.uuid4())
         package_schema['id'] = [unicode]
-        
 
         # get the site user
         site_user = tk.get_action('get_site_user')(
@@ -386,36 +528,42 @@ class StadtzhHarvester(HarvesterBase):
         # Flag this object as the current one
         harvest_object.current = True
         harvest_object.add()
-    
+
         # Save reference to the package on the object
         harvest_object.package_id = dataset['id']
         harvest_object.add()
-    
+
         # Defer constraints and flush so the dataset can be indexed with
         # the harvest object id (on the after_show hook from the harvester
         # plugin)
-        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')
+        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')  # noqa
         model.Session.flush()
-    
+
         try:
             p.toolkit.get_action('package_create')(context, dataset)
         except p.toolkit.ValidationError, e:
-            self._save_object_error('Create validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+            self._save_object_error(
+                'Create validation Error: %s' % str(e.error_summary),
+                harvest_object,
+                'Import'
+            )
             return False
-    
+
         log.info('Created dataset %s', dataset['name'])
-        
+
         model.Session.commit()
-        
+
         return dataset['id']
 
     def _update_package(self, dataset, harvest_object):
         # Get the last harvested object (if any)
-        previous_object = model.Session.query(HarvestObject) \
-                                       .filter(HarvestObject.guid==harvest_object.guid) \
-                                       .filter(HarvestObject.current==True) \
-                                       .first()
-        
+        previous_object = (
+            model.Session.query(HarvestObject)
+            .filter(HarvestObject.guid == harvest_object.guid)
+            .filter(HarvestObject.current == True)  # noqa
+            .first()
+        )
+
         # Flag previous object as not current anymore
         if previous_object:
             previous_object.current = False
@@ -432,7 +580,7 @@ class StadtzhHarvester(HarvesterBase):
         # Defer constraints and flush so the dataset can be indexed with
         # the harvest object id (on the after_show hook from the harvester
         # plugin)
-        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')
+        model.Session.execute('SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED')  # noqa
         model.Session.flush()
 
         # only update pkg if this harvester allows it
@@ -441,7 +589,9 @@ class StadtzhHarvester(HarvesterBase):
 
             # get site user
             site_user = tk.get_action('get_site_user')(
-                                      {'model': model, 'ignore_auth': True}, {})
+                {'model': model, 'ignore_auth': True},
+                {}
+            )
             context = {
                 'user': site_user['name'],
                 'return_id_only': True,
@@ -451,11 +601,19 @@ class StadtzhHarvester(HarvesterBase):
             try:
                 get_action('package_update')(context, dataset)
             except p.toolkit.ValidationError, e:
-                self._save_object_error('Update validation Error: %s' % str(e.error_summary), harvest_object, 'Import')
+                self._save_object_error(
+                    'Update validation Error: %s' % str(e.error_summary),
+                    harvest_object,
+                    'Import'
+                )
                 return False
             log.info('Updated dataset %s', dataset['name'])
         else:
-            log.info('Dataset %s *not* updated because update_datasets config is set to `false`', dataset['name'])
+            log.info(
+                'Dataset %s *not* updated because update_datasets'
+                'config is set to `false`'
+                % dataset['name']
+            )
 
         model.Session.commit()
         return dataset['id']
@@ -495,20 +653,36 @@ class StadtzhHarvester(HarvesterBase):
         for name, title in group_list:
             data_dict = {'id': name}
             try:
-                group_id = get_action('group_show')(context.copy(), data_dict)['id']
+                group_id = get_action('group_show')(
+                    context.copy(),
+                    data_dict
+                )['id']
                 groups.append({'name': group_id})
                 log.debug('Added group %s' % name)
             except:
                 data_dict['name'] = name
                 data_dict['title'] = title
-                data_dict['image_url'] = self.CKAN_SITE_URL + '/kategorien/' + name + '.png'
-                log.debug('Couldn\'t get group id. Creating the group `%s` with data_dict: %s', name, data_dict)
+                data_dict['image_url'] = (
+                    '%s/kategorien/%s.png'
+                    % (self.CKAN_SITE_URL, name)
+                )
+                log.debug(
+                    'Couldn\'t get group id. '
+                    'Creating the group `%s` with data_dict: %s'
+                    % (name, data_dict)
+                )
                 try:
-                    group = get_action('group_create')(context.copy(), data_dict)
+                    group = get_action('group_create')(
+                        context.copy(),
+                        data_dict
+                    )
                     log.debug("Created group %s" % group)
                     groups.append({'name': group['id']})
                 except:
-                    log.debug('Couldn\'t create group: %s' % (traceback.format_exc()))
+                    log.debug(
+                        'Couldn\'t create group: %s'
+                        % (traceback.format_exc())
+                    )
                     raise
 
         return groups
@@ -534,33 +708,38 @@ class StadtzhHarvester(HarvesterBase):
         '''
 
         return {
-            'datasetID': dataset_id,
-            'datasetFolder': dataset_folder,
-            'title': dataset_node.find('titel').text,
-            'url': self._get(dataset_node, 'lieferant'),
-            'notes': dataset_node.find('beschreibung').text,
-            'author': dataset_node.find('quelle').text,
-            'maintainer': 'Open Data Zürich',
-            'maintainer_email': 'opendata@zuerich.ch',
-            'license_id': 'cc-zero',
-            'license_url': 'http://opendefinition.org/licenses/cc-zero/',
-            'tags': self._generate_tags(dataset_node),
-            'groups': self._dropzone_get_groups(dataset_node),
-            'spatialRelationship': self._get(dataset_node, 'raeumliche_beziehung'),
-            'dateFirstPublished': self._get(dataset_node, 'erstmalige_veroeffentlichung'),
-            'dateLastUpdated': self._get(dataset_node, 'aktualisierungsdatum'),
-            'updateInterval': self._get_update_interval(dataset_node),
-            'dataType': self._get_data_type(dataset_node),
-            'legalInformation': self._get(dataset_node, 'rechtsgrundlage'),
-            'version': self._get(dataset_node, 'aktuelle_version'),
-            'timeRange': self._get(dataset_node, 'zeitraum'),
-            'sszBemerkungen': self._convert_comments(dataset_node),
-            'sszFields': self._json_encode_attributes(self._get_attributes(dataset_node)),
-            'dataQuality': self._get(dataset_node, 'datenqualitaet'),
+            'datasetID': dataset_id,  # noqa
+            'datasetFolder': dataset_folder,  # noqa
+            'title': dataset_node.find('titel').text,  # noqa
+            'url': self._get(dataset_node, 'lieferant'),  # noqa
+            'notes': dataset_node.find('beschreibung').text,  # noqa
+            'author': dataset_node.find('quelle').text,  # noqa
+            'maintainer': 'Open Data Zürich',  # noqa
+            'maintainer_email': 'opendata@zuerich.ch',  # noqa
+            'license_id': 'cc-zero',  # noqa
+            'license_url': 'http://opendefinition.org/licenses/cc-zero/',  # noqa
+            'tags': self._generate_tags(dataset_node),  # noqa
+            'groups': self._dropzone_get_groups(dataset_node),  # noqa
+            'spatialRelationship': self._get(dataset_node, 'raeumliche_beziehung'),  # noqa
+            'dateFirstPublished': self._get(dataset_node, 'erstmalige_veroeffentlichung'),  # noqa
+            'dateLastUpdated': self._get(dataset_node, 'aktualisierungsdatum'),  # noqa
+            'updateInterval': self._get_update_interval(dataset_node),  # noqa
+            'dataType': self._get_data_type(dataset_node),  # noqa
+            'legalInformation': self._get(dataset_node, 'rechtsgrundlage'),  # noqa
+            'version': self._get(dataset_node, 'aktuelle_version'),  # noqa
+            'timeRange': self._get(dataset_node, 'zeitraum'),  # noqa
+            'sszBemerkungen': self._convert_comments(dataset_node),  # noqa
+            'sszFields': self._json_encode_attributes(self._get_attributes(dataset_node)),  # noqa
+            'dataQuality': self._get(dataset_node, 'datenqualitaet'),  # noqa
         }
 
     def _get_update_interval(self, dataset_node):
-        interval = self._get(dataset_node, 'aktualisierungsintervall').replace(u'ä', u'ae').replace(u'ö', u'oe').replace(u'ü', u'ue')
+        interval = (
+            self._get(dataset_node, 'aktualisierungsintervall')
+            .replace(u'ä', u'ae')
+            .replace(u'ö', u'oe')
+            .replace(u'ü', u'ue')
+        )
         if not interval:
             return '   '
         return interval
@@ -586,14 +765,14 @@ class StadtzhHarvester(HarvesterBase):
         Given a dataset node it extracts the tags and returns them in an array
         '''
         tags = []
-        if dataset_node.find('schlagworte') is not None and dataset_node.find('schlagworte').text:
-            for tag in dataset_node.find('schlagworte').text.split(', '):
+        tags_node = dataset_node.find('schlagworte')
+        if tags_node is not None and tags_node.text:
+            for tag in tags_node.text.split(', '):
                 tags.append({'name': tag})
         log.debug('Added tags: %s' % str(tags))
         return tags
 
     def _sort_resource(self, x, y):
-
         order = {
             'csv':  0,
             'shp':  1,
@@ -625,20 +804,42 @@ class StadtzhHarvester(HarvesterBase):
         Given a dataset folder, it'll return an array of resource metadata
         '''
         resources = []
-        resource_files = self._remove_hidden_files((f for f in os.listdir(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir']))
-                                                    if os.path.isfile(os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], f))))
+        file_list = [
+            f for f
+            in os.listdir(os.path.join(
+                self.config['data_path'],
+                dataset,
+                self.config['metafile_dir']
+            ))
+            if os.path.isfile(os.path.join(
+                self.config['data_path'],
+                dataset,
+                self.config['metafile_dir'],
+                f
+            ))
+        ]
+        resource_files = self._remove_hidden_files(file_list)
         log.debug(resource_files)
 
         # for resource_file in resource_files:
         for resource_file in (x for x in resource_files if x != 'meta.xml'):
-            resource_path = os.path.join(self.config['data_path'], dataset, self.config['metafile_dir'], resource_file)
+            resource_path = os.path.join(
+                self.config['data_path'],
+                dataset,
+                self.config['metafile_dir'],
+                resource_file
+            )
             if resource_file == 'link.xml':
                 with retry_open_file(resource_path, 'r') as links_xml:
                     parser = etree.XMLParser(encoding='utf-8')
-                    links = etree.fromstring(links_xml.read(), parser=parser).findall('link')
+                    links = (
+                        etree.fromstring(links_xml.read(), parser=parser)
+                        .findall('link')
+                    )
 
                     for link in links:
-                        if link.find('url').text != "" and link.find('url').text is not None:
+                        link_node = link.find('url')
+                        if link_node.text != "" and link_node.text is not None:
                             # generate hash for URL
                             url = link.find('url').text
                             md5 = hashlib.md5()
@@ -660,7 +861,7 @@ class StadtzhHarvester(HarvesterBase):
                         'resource_type': 'file'
                     }
                     if include_files:
-			# calculate the hash of this file
+                        # calculate the hash of this file
                         BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
                         md5 = hashlib.md5()
                         with retry_open_file(resource_path, 'rb') as f:
@@ -672,7 +873,7 @@ class StadtzhHarvester(HarvesterBase):
                             resource_dict['zh_hash'] = md5.hexdigest()
 
                         # add file to FieldStorage
-                        with retry_open_file(resource_path, 'r', close=False) as f:
+                        with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
                             field_storage = FieldStorage()
                             field_storage.file = f
                             field_storage.filename = f.name
@@ -680,7 +881,10 @@ class StadtzhHarvester(HarvesterBase):
 
                     resources.append(resource_dict)
 
-        sorted_resources = sorted(resources, cmp=lambda x, y: self._sort_resource(x, y))
+        sorted_resources = sorted(
+            resources,
+            cmp=lambda x, y: self._sort_resource(x, y)
+        )
         return sorted_resources
 
     def _node_exists_and_is_nonempty(self, dataset_node, element_name):
@@ -730,7 +934,12 @@ class StadtzhHarvester(HarvesterBase):
         for attribut in attribut_list:
             tech_name = attribut.get('technischerfeldname')
             speak_name = attribut.find('sprechenderfeldname').text
-            attributes.append(('%s (technisch: %s)' % (speak_name, tech_name), attribut.find('feldbeschreibung').text))
+            attributes.append(
+                (
+                    '%s (technisch: %s)' % (speak_name, tech_name),
+                    attribut.find('feldbeschreibung').text
+                )
+            )
         return attributes
 
     def _get_immediate_subdirectories(self, directory):
@@ -741,18 +950,29 @@ class StadtzhHarvester(HarvesterBase):
         today = datetime.date.today()
         package_id = self._validate_package_id(package_id)
         if package_id:
-            return os.path.join(self.DIFF_PATH, str(today) + '-' + package_id + '.html')
+            return os.path.join(
+                self.DIFF_PATH,
+                '%s-%s.html' % (str(today), package_id)
+            )
 
     def _create_notifications_for_deleted_datasets(self):
-        current_datasets = self._get_immediate_subdirectories(self.config['data_path'])
-        cached_datasets = self._get_immediate_subdirectories(os.path.join(self.DIFF_PATH, self.config['metadata_dir']))
+        current_datasets = self._get_immediate_subdirectories(
+            self.config['data_path']
+        )
+        cached_datasets = self._get_immediate_subdirectories(
+            os.path.join(self.DIFF_PATH, self.config['metadata_dir'])
+        )
         for package_id in cached_datasets:
-            # Validated package_id can only contain alphanumerics and underscores
+            # Validated package_id can only contain alphanumerics + underscores
             package_id = self._validate_package_id(package_id)
             if package_id and package_id not in current_datasets:
                 log.debug('Dataset `%s` has been deleted' % package_id)
                 # delete the metadata directory
-                metadata_dir = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
+                metadata_dir = os.path.join(
+                    self.DIFF_PATH,
+                    self.config['metadata_dir'],
+                    package_id
+                )
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
                 # only send notification if there is a package in CKAN
@@ -760,9 +980,10 @@ class StadtzhHarvester(HarvesterBase):
                     path = self._diff_path(package_id)
                     with open(path, 'w') as deleted_info:
                         deleted_info.write(
-                            "<!DOCTYPE html>\n<html>\n<body>\n<h2>Dataset deleted: <a href=\""
-                            + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
-                            + package_id + "</a></h2></body></html>\n"
+                            "<!DOCTYPE html>\n<html>\n<body>\n"
+                            "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
+                            "</a></h2></body></html>\n"
+                            % (self.CKAN_SITE_URL, package_id, package_id)
                         )
                     log.debug('Wrote deleted notification to file `%s`' % path)
 
@@ -773,36 +994,59 @@ class StadtzhHarvester(HarvesterBase):
             path = self._diff_path(package_id)
             with open(path, 'w') as new_info:
                 new_info.write(
-                    "<!DOCTYPE html>\n<html>\n<body>\n<h2>New dataset added: <a href=\""
-                    + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
-                    + package_id + "</a></h2></body></html>\n"
+                    "<!DOCTYPE html>\n<html>\n<body>\n"
+                    "<h2>New dataset added: <a href=\"%s/dataset/%s\">%s"
+                    "</a></h2></body></html>\n"
+                    % (self.CKAN_SITE_URL, package_id, package_id)
                 )
             log.debug('Wrote added dataset notification to file `%s`' % path)
 
-
     def _create_diffs(self, package_dict):
         try:
-            # Validated package_id can only contain alphanumerics and underscores
+            # Validated package_id can only contain alphanumerics + underscores
             package_id = self._validate_package_id(package_dict['id'])
             if not package_id:
-                raise ValueError("Package ID '%s' is not valid" % package_dict['id'])
-            new_metadata_path = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
-            prev_metadata_path = os.path.join(self.DIFF_PATH, self.config['metadata_dir'], package_id)
-            new_metadata_file = os.path.join(new_metadata_path, 'metadata-' + str(datetime.date.today()))
-            prev_metadata_file = os.path.join(new_metadata_path, 'metadata-previous')
+                raise ValueError(
+                    "Package ID '%s' is not valid" % package_dict['id']
+                )
+            new_metadata_path = os.path.join(
+                self.DIFF_PATH,
+                self.config['metadata_dir'],
+                package_id
+            )
+            prev_metadata_path = os.path.join(
+                self.DIFF_PATH,
+                self.config['metadata_dir'],
+                package_id
+            )
+            new_metadata_file = os.path.join(
+                new_metadata_path,
+                'metadata-%s' % str(datetime.date.today())
+            )
+            prev_metadata_file = os.path.join(
+                new_metadata_path,
+                'metadata-previous'
+            )
 
-            for path in [self.DIFF_PATH, new_metadata_path, prev_metadata_path]:
+            for path in [self.DIFF_PATH,
+                         new_metadata_path,
+                         prev_metadata_path]:
                 if not os.path.isdir(path):
                     os.makedirs(path)
 
             if not os.path.isfile(new_metadata_file):
-                log.debug(new_metadata_file + ' Metadata JSON missing for the dataset: ' + package_id)
+                log.debug(
+                    '%s Metadata JSON missing for the dataset: %s'
+                    % (new_metadata_file, package_id)
+                )
                 with open(new_metadata_file, 'w') as new_metadata:
                     new_metadata.write('')
                 log.debug('Created new empty metadata file.')
 
             if not os.path.isfile(prev_metadata_file):
-                log.debug('No earlier metadata JSON for the dataset: ' + package_id)
+                log.debug(
+                    'No earlier metadata JSON for the dataset: %s' % package_id
+                )
                 with open(prev_metadata_file, 'w') as prev_metadata:
                     prev_metadata.write('')
                 log.debug('Created new empty metadata file.')
@@ -813,15 +1057,18 @@ class StadtzhHarvester(HarvesterBase):
                     new = new_metadata.read()
 
             if prev == new:
-                log.debug('No change in metadata for the dataset: ' + package_id)
+                log.debug(
+                    'No change in metadata for the dataset: %s' % package_id
+                )
             else:
                 with open(prev_metadata_file) as prev_metadata:
                     with open(new_metadata_file) as new_metadata:
                         with open(self._diff_path(package_id), 'w') as diff:
                             diff.write(
-                                "<!DOCTYPE html>\n<html>\n<body>\n<h2>Metadata diff for the dataset <a href=\""
-                                + self.CKAN_SITE_URL + "/dataset/" + package_id + "\">"
-                                + package_id + "</a></h2></body></html>\n"
+                                "<!DOCTYPE html>\n<html>\n<body>\n"
+                                "<h2>Metadata diff for the dataset <a href=\""
+                                "%s/dataset/%s\">%s</a></h2></body></html>\n"
+                                % (self.CKAN_SITE_URL, package_id, package_id)
                             )
                             d = difflib.HtmlDiff(wrapcolumn=60)
                             umlauts = {
@@ -833,11 +1080,19 @@ class StadtzhHarvester(HarvesterBase):
                                 "\\u00dc": "Ü",
                                 "ISO-8859-1": "UTF-8"
                             }
-                            html = d.make_file(prev_metadata, new_metadata, context=True, numlines=1)
+                            html = d.make_file(
+                                prev_metadata,
+                                new_metadata,
+                                context=True,
+                                numlines=1
+                            )
                             for code in umlauts.keys():
                                 html = html.replace(code, umlauts[code])
                             diff.write(html)
-                            log.debug('Metadata diff generated for the dataset: ' + package_id)
+                            log.debug(
+                                'Metadata diff generated for the dataset: %s'
+                                % package_id
+                            )
 
             os.remove(prev_metadata_file)
             log.debug('Deleted previous day\'s metadata file.')
@@ -851,7 +1106,10 @@ class StadtzhHarvester(HarvesterBase):
             data_dict = {
                 'id': munge_title_to_name(self.ORGANIZATION['de']),
             }
-            package_dict['owner_org'] = get_action('organization_show')(context.copy(), data_dict)['id']
+            package_dict['owner_org'] = get_action('organization_show')(
+                context.copy(),
+                data_dict
+            )['id']
         except:
             data_dict = {
                 'permission': 'edit_group',
@@ -859,14 +1117,20 @@ class StadtzhHarvester(HarvesterBase):
                 'name': munge_title_to_name(self.ORGANIZATION['de']),
                 'title': self.ORGANIZATION['de']
             }
-            organization = get_action('organization_create')(context.copy(), data_dict)
+            organization = get_action('organization_create')(
+                context.copy(),
+                data_dict
+            )
             package_dict['owner_org'] = organization['id']
 
     def _validate_package_id(self, package_id):
         # Validate that they do not contain any HTML tags.
         match = re.search('[<>]+', package_id)
         if match:
-            log.debug('Package id %s contains disallowed characters' % package_id)
+            log.debug(
+                'Package id %s contains disallowed characters'
+                % package_id
+            )
             return False
         else:
             return munge_title_to_name(package_id)
@@ -878,7 +1142,10 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Filename is empty.')
             return False
         if match:
-            log.debug('Filename %s not added as it contains disallowed characters' % filename)
+            log.debug(
+                'Filename %s not added as it contains disallowed characters'
+                % filename
+            )
             return False
         else:
             return filename
