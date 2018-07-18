@@ -717,7 +717,7 @@ class StadtzhHarvester(HarvesterBase):
             try:
                 return self._validate_comment(markdown)
             except InvalidCommentError:
-                return ''
+                raise
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -893,7 +893,7 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Comment is empty.')
             return ''
         if match:
-            log.debug('Comment not added as it contains disallowed characters: %s' % markdown)
-            raise InvalidCommentError(markdown)
+            raise InvalidCommentError('Comment not added as it contains '
+                                      'disallowed characters: %s' % markdown)
         else:
             return markdown
