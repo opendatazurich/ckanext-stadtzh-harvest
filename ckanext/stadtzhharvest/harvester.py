@@ -714,10 +714,7 @@ class StadtzhHarvester(HarvesterBase):
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
                     markdown += '[' + label + '](' + url + ')\n\n'
-            try:
-                return self._validate_comment(markdown)
-            except InvalidCommentError:
-                raise
+            return self._validate_comment(markdown)
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -888,12 +885,13 @@ class StadtzhHarvester(HarvesterBase):
 
     def _validate_comment(self, markdown):
         # Validate that they do not contain any HTML tags.
-        match = re.search('[<>]+', markdown)
+        match = re.findall('<[a-zA-Z\/]+', markdown)
         if len(markdown) == 0:
             log.debug('Comment is empty.')
             return ''
         if match:
             raise InvalidCommentError('Comment not added as it contains '
-                                      'disallowed characters: %s' % markdown)
+                                      'disallowed characters: %s in %s'
+                                      % (match, markdown))
         else:
             return markdown
