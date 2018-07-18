@@ -31,7 +31,7 @@ Das Attribut OBJECTID ist nur im Datenformat ESRI SDE GDB vorhanden. Tabellen, d
             </bemerkung>
             <bemerkung>
                 <titel>Datenerfassung:</titel>
-                <text><![CDATA[Die Nachführung der <a href="http://geometa.stzh.ch/geodatensatz/show?nbid=4963" target="_blank">Original-Daten</a> erfolgt bei Bedarf bzw. nach Auftrag der Datenherren durch die Mitarbeitenden von GeoZ. Die Daten werden anschliessend auf den GeoServer gespielt.]]></text>
+                <text><![CDATA[Die Nachführung der [Original-Daten](http://geometa.stzh.ch/geodatensatz/show?nbid=4963) erfolgt bei Bedarf bzw. nach Auftrag der Datenherren durch die Mitarbeitenden von GeoZ. Die Daten werden anschliessend auf den GeoServer gespielt.]]></text>
             </bemerkung>
             <bemerkung>
                 <titel>Datengrundlage:</titel>
