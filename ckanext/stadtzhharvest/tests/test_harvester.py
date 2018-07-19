@@ -57,14 +57,14 @@ class FunctionalHarvestTest(object):
         cls.gather_consumer = queue.get_gather_consumer()
         cls.fetch_consumer = queue.get_fetch_consumer()
 
-        # create required tag vocabularies
-        theme.create_updateInterval()
-        theme.create_dataType()
-
     def setup(self):
         harvest_model.setup()
 
         queue.purge_queues()
+
+        # create required tag vocabularies
+        theme.create_updateInterval()
+        theme.create_dataType()
 
     def teardown(cls):
         h.reset_db()
@@ -181,9 +181,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         results = self._test_harvest_create(3, config=test_config)
         for result in results:
-            assert result['title'] in (u'Geburten nach Jahr, Geschlecht und Stadtquartier',
-                                       u'Test Nachnamen in der Stadt Zürich'
-                                       u'Daten der permanenten Velozählstellen - Stundenwerte')
+            expected_titles = [
+                u'Geburten nach Jahr, Geschlecht und Stadtquartier',
+                u'Test Nachnamen in der Stadt Zürich'
+                u'Daten der permanenten Velozählstellen - Stundenwerte'
+            ]
+
+            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def test_harvest_create_geo(self):
         data_path = os.path.join(
@@ -201,7 +205,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         results = self._test_harvest_create(2, config=test_config)
         for result in results:
-            assert result['title'] in ('Alterswohnung', 'Amtshaus')
+            expected_titles= ['Alterswohnung', 'Amtshaus']
+            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def _test_harvest_create(self, num_objects, **kwargs):
 
