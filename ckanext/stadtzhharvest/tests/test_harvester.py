@@ -130,11 +130,8 @@ class FunctionalHarvestTest(object):
             queue.fetch_callback(self.fetch_consumer, *reply)
 
     def _run_full_job(self, harvest_source_id, num_jobs=1, num_objects=1):
-        from pprint import pprint
-
         # Create new job for the source
-        job = self._create_harvest_job(harvest_source_id)
-        pprint(job)
+        self._create_harvest_job(harvest_source_id)
 
         # Run the job
         self._run_jobs(harvest_source_id)
@@ -162,8 +159,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'update_date_last_modified': False
         })
 
-        result = self._test_harvest_create(1, config=test_config)[0]
-        eq_(result['title'], u'Administrative Einteilungen Stadt Zürich')
+        results = self._test_harvest_create(1, config=test_config)['results']
+        eq_(len(results), 1)
+        eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
 
     def test_harvest_create_dwh(self):
         data_path = os.path.join(
@@ -180,11 +178,12 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         })
 
         results = self._test_harvest_create(3, config=test_config)
-        for result in results:
+        eq_(len(results['results']), 3)
+        for result in results['results']:
             expected_titles = [
                 u'Geburten nach Jahr, Geschlecht und Stadtquartier',
-                u'Test Nachnamen in der Stadt Zürich'
-                u'Daten der permanenten Velozählstellen - Stundenwerte'
+                u'Test Nachnamen in der Stadt Zürich',
+                u'Daten der permanenten Velozählstellen - Stundenwerte',
             ]
 
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
@@ -204,16 +203,14 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         })
 
         results = self._test_harvest_create(2, config=test_config)
-        for result in results:
-            expected_titles= ['Alterswohnung', 'Amtshaus']
+        eq_(len(results['results']), 2)
+        for result in results['results']:
+            expected_titles = ['Alterswohnung', 'Amtshaus']
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def _test_harvest_create(self, num_objects, **kwargs):
 
         harvest_source = self._create_harvest_source(**kwargs)
-        
-        from pprint import pprint
-        pprint(harvest_source)
 
         self._run_full_job(harvest_source['id'], num_objects=num_objects)
 
@@ -221,6 +218,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
         results = h.call_action('package_search', {}, fq=fq)
         eq_(results['count'], num_objects)
+        from pprint import pprint
+        pprint(results)
         return results
 
     # def test_harvest_update_rdf(self):
