@@ -198,6 +198,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
     def _test_harvest_create(self, num_objects, **kwargs):
 
+        from pprint import pprint
+        pprint(kwargs)
         harvest_source = self._create_harvest_source(**kwargs)
 
         self._run_full_job(harvest_source['id'], num_objects=num_objects)
