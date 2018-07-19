@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Daten der permanenten Velozählstellen - Stundenwerte</titel>
+		<beschreibung>Die Zähldaten werden vom Tiefbauamt der Stadt Zürich in eigener Regie erhoben. Die permanenten Velozählstellen sind im gesamten Stadtgebiet installiert. Die Erfassung des Veloverkehrs erfolgt mittels im Strassenbelag eingelassenen Induktionsschlaufen. Bei der Überfahrt erzeugen die Felgen des Velos, sofern sie Metall enthalten, einen elektromagnetischen Impuls, wodurch die Zählung ausgelöst wird. Diese erfolgt vollständig anonym. Die Velodaten sind wichtige Analysegrundlagen zur Beurteilung des Veloaufkommens an den jeweiligen Standorten und deren langfristige Entwicklung. Sie bilden damit eine wichtige Datengrundlage zur Dokumentation der Bedeutung des Veloverkehrs und für die Erfolgskontrolle der Veloförderung.</beschreibung>
+		<kategorie>Mobilität, Umwelt</kategorie>
+		<rechtsgrundlage></rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<lieferant>Statistik Stadt Zürich, Präsidialdepartement</lieferant>
+		<quelle>Tiefbauamt, Abteilung Mobilität + Verkehr, Tiefbau- und Entsorgungsdepartement</quelle>
+		<zeitraum>1960-01-01 - 1960-01-01</zeitraum>
+		<datenqualitaet>Die Daten der permanenten Velozählstellen geben Auskunft über die Zahl der Velofahrten über die im Strassenquerschnitt eingebauten Zählschlaufen. Die Velodaten werden zu statistischen und planerischen Zwecken auf Basis von Anzahl der gezählten Velos pro Stundenintervall erhoben. Auch im gemischten Verkehr werden gemäss Herstellerangaben unabhängig von der Verkehrsmenge ausschliesslich Velos gezählt. Das System wurde speziell dafür entwickelt, motorisierte Fahrzeuge, einschliesslich Motorräder, bei der Zählung auszuschliessen, indem diese aufgrund eines patentierten Algorithmus ignoriert werden. Velos mit Karbonfelgen werden ebenfalls nicht gezählt. Regelmässige Kontrollzählungen werden durchgeführt, um die Zählgenauigkeit der Zählgeräte zu überprüfen.</datenqualitaet>
+		<erstmalige_veroeffentlichung>14.06.2013</erstmalige_veroeffentlichung>
+		<aktualisierungsdatum>13.02.2015</aktualisierungsdatum>
+		<datentyp>Datenaggregat</datentyp>
+		<aktualisierungsintervall>quartalsweise</aktualisierungsintervall>
+		<schlagworte>sachdaten, messwerte, planung, punktdaten, standort</schlagworte>
+		<aktuelle_version>1.0</aktuelle_version>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Grundsätzlich:</titel>
+				<text>Die Daten der Dauerzählgeräte wurden bereinigt und informieren über die von den Zählgeräten am Querschnitt detektierten Velofahrten. Bei Interpretationen der Zähldaten (z.B. Entwicklung der Frequenzen) sind Randbedingungen zu berücksichtigen wie z.B. die Witterung, die Bevölkerungs- und Arbeitsplatzentwicklung oder lokale Verkehrsverlagerungen wie etwa durch Baustellen oder Umleitungen.</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Wichtige Zusatzdaten:</titel>
+				<text>Zusätzlich zu den Velozählstellendaten werden noch zwei weitere Dateien zum Download angeboten, nämlich: A) Mappingtabelle zum Datensatz: In dieser Tabelle finden Sie die X- und Y-Koordinaten der Zählstellen, deren ausgeschriebene Namen und die entsprechenden Zählstellencodes. Diese Datei kann mit dem Hauptdatensatz verbunden werden. B) Ausfallprotokoll der Velozählstellen: Hier finden Sie alle Informationen (Datum von, Datum bis, Zählstellencode, Art und Massnahme) zu den Ausfällen der Zählstationen.</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Hinweis:</titel>
+				<text>Zu diesem Datensatz gibt es drei spannende Blogbeiträge von Ralph Straumann und ein interaktives Tool zur Datenauswertung (siehe unter Anwendungen).</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Kundenfrage:</titel>
+				<text>"Sind die Zeiten eigentlich UTC oder lokal? Falls lokal: was passiert bei Winterzeit-Übergang?" Die Zeiten sind lokale Zeiten. Bei der Zeitumstellung passiert folgendes: Vorstellen von 2 auf 3 Uhr: Es fehlt einfach eine Stunde. An diesem Tag werden nur für 23 Stunden Werte geliefert. Rückstellen von 3 auf 2 Uhr: Der Wert zwischen 2 und 3 Uhr gibt die Frequenzen zweier Stunden an.</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+		</bemerkungen>
+		<anwendungen>
+			<anwendung>
+				<titel>Velozählungsauswertungstool</titel>
+				<beschreibung>Auswertung der Zählstellen Permanente Velozählung.</beschreibung>
+				<url><![CDATA[http://statistik.stadt-zuerich.ch/Modules/Geod/?topic=velo&reportmode=1]]></url>
+			</anwendung>
+			<anwendung>
+				<titel>Blogpost</titel>
+				<beschreibung>Blick in die Werkzeugkiste: Offene Dataen in R - Teil 1</beschreibung>
+				<url><![CDATA[http://geo.ebp.ch/2014/02/18/blick-in-die-werkzeugkiste-offene-daten-in-r-teil1/]]></url>
+			</anwendung>
+			<anwendung>
+				<titel>Blogpost</titel>
+				<beschreibung>Blick in die Werkzeugkiste: Offene Dataen in R - Teil 2</beschreibung>
+				<url><![CDATA[http://geo.ebp.ch/2014/04/04/blick-in-die-werkzeugkiste-offene-daten-in-r-teil-2/]]></url>
+			</anwendung>
+			<anwendung>
+				<titel>Blogpost</titel>
+				<beschreibung>Blick in die Werkzeugkiste: Offene Dataen in R - Teil 3</beschreibung>
+				<url><![CDATA[http://geo.ebp.ch/2014/04/25/blick-in-die-werkzeugkiste-offene-daten-in-r-teil-3/]]></url>
+			</anwendung>
+		</anwendungen>
+		<publikationen>
+			<publikation>
+				<titel>Fest im Sattel</titel>
+				<beschreibung>In 63 Prozent der Zürcher Haushalte steht mindestens ein Velo. Dennoch benutzt nur ein Drittel der erwachsenen Zürcherinnen und Zürcher das Velo mindestens gelegentlich. Darum soll die Veloförderung nochmals einen kräftigen Schub erhalten. Um Fördermassnahmen erfolgreich umsetzen zu können, sind auf Fakten basierte Entscheidungen notwendig. Diese Untersuchung bietet neue Erkenntnisse über die aktuelle Situation des Veloverkehrs in der Stadt Zürich.</beschreibung>
+				<url><![CDATA[https://www.stadt-zuerich.ch/prd/de/index/statistik/publikationsdatenbank/Analysen/A_001_2012.html]]></url>
+			</publikation>
+		</publikationen>
+		<attributliste>
+			<attributelement technischerfeldname="Zs Text">
+				<sprechenderfeldname>Zählstelle (Code)</sprechenderfeldname>
+				<feldbeschreibung>Codes der im Stadtgebiet installierte Zählstellen. Die Endungen _A und _E dienen der Unterscheidung der Fahrtrichtung: stadteinwärts (E) und stadtauswärts (A).</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Vkjahr Id">
+				<sprechenderfeldname>Jahr</sprechenderfeldname>
+				<feldbeschreibung>Jahreszahl (z.B. 2012)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Vkmona Id">
+				<sprechenderfeldname>Monat</sprechenderfeldname>
+				<feldbeschreibung>Numerischer Wert des Monats. ( 1=Januar, 2=Februar, ...)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Vktag1 Id">
+				<sprechenderfeldname>Tag</sprechenderfeldname>
+				<feldbeschreibung>Numerischer Wert des Tages der Messung. (1. Tag des Monats = 1, etc.)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Vkstd1 Id">
+				<sprechenderfeldname>Stunde</sprechenderfeldname>
+				<feldbeschreibung>Stunde der Messung, wobei 0 den Zeitraum zwischen 0:00 und einschliesslich 0:59 umfasst.</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Vkwota Namek">
+				<sprechenderfeldname>Wochentag (Code)</sprechenderfeldname>
+				<feldbeschreibung>Kürzel des Wochentags der Messung. (Werte Mo, Di, Mi, ...)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Zaehlstellezeit2">
+				<sprechenderfeldname>Datum</sprechenderfeldname>
+				<feldbeschreibung>Datum der Messung. (YYYY-MM-DD)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Ausfall">
+				<sprechenderfeldname>Ausfall</sprechenderfeldname>
+				<feldbeschreibung>0 = kein Ausfall der Messstation, 1= Ausfall der Messstation (siehe dazu Ausfallprotokoll)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Anzahl">
+				<sprechenderfeldname>Gezählte Velofahrten</sprechenderfeldname>
+				<feldbeschreibung>Anzahl Velos pro Stunde an der jeweiligen Messstelle</feldbeschreibung>
+			</attributelement>
+		</attributliste>
+	</datensatz>
+</datensammlung>

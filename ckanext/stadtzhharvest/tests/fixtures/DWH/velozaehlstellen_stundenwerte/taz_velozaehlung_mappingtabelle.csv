@@ -1,0 +1,38 @@
+﻿"Zs Text","Zs Bezeichnung","Zs Koordinate X","Zs Koordinate Y"
+"VZS_ANDR_A","Andreasstrasse, Richtung Wallisellen",684580,251964
+"VZS_ANDR_E","Andreasstrasse, Richtung Oerlikon",684579,251967
+"VZS_BERT_A","Bertastrasse, Richtung Aussersihl",681383,247736
+"VZS_BERT_E","Bertastrasse, Richtung Wiedikon",681382,247733
+"VZS_BINZ_A","Binzmühlestrasse, Richtung Glaubtenstrasse",681855,251985
+"VZS_BINZ_E","Binzmühlestrasse, Richtung Oerlikon",681858,251992
+"VZS_BUCH_A","Bucheggplatz, Richtung Höngg",682647,250360
+"VZS_BUCH_E","Bucheggplatz, Richtung Hofwiesenstrasse",682653,250368
+"VZS_HOFW_A","Hofwiesenstrasse, Richtung Radiostudio",682653,250368
+"VZS_HOFW_E","Hofwiesenstrasse, Richtung Bucheggplatz",682697,250606
+"VZS_LANG_A","Langstrasse, Unterführung West, Richtung Limmatplatz",682280,248328
+"VZS_LANG_E","Langstrasse, Unterführung West, Richtung Helvetiaplatz",682280,248328
+"VZS_LIMM_A","Limmatquai, Richtung Bellevue",683447,247063
+"VZS_LIMM_E","Limmatquai, Richtung Central",683455,247064
+"VZS_LUXG_A","Lux-Guyer-Weg, Richtung Wipkingen",682932,248819
+"VZS_LUXG_E","Lux-Guyer-Weg, Richtung Innenstadt",682929,248819
+"VZS_MILI_A","Militärbrücke, Richtung Langstrasse",682730,247709
+"VZS_MILI_E","Militärbrücke, Richtung Bahnhofstrasse",682730,247709
+"VZS_MUEH_A","Mühlebachstrasse, Richtung Riesbach",684008,246557
+"VZS_MUEH_E","Mühlebachstrasse, Richtung Bellevue",684005,246565
+"VZS_MYTH_A","Mythenquai, Richtung Wollishofen",682871,245891
+"VZS_MYTH_E","Mythenquai, Richtung Innenstadt",682873,245889
+"VZS_SAUM_A","Saumackerstrasse, Richtung Bahnhof Altstetten",679340,249345
+"VZS_SAUM_E","Saumackerstrasse, Richtung Uetliberg",679334,249346
+"VZS_SCHE_A","Scheuchzerstrasse, Richtung Irchel",683572,248545
+"VZS_SCHE_E","Scheuchzerstrasse, Richtung Innenstadt",683569,248543
+"VZS_SCHU_A","Schulstrasse, Richtung Bahnhof Oerlikon",683404,251619
+"VZS_SCHU_E","Schulstrasse, Richtung Irchel",683407,251616
+"VZS_SIHL_A","Sihlpromenade, Richtung Saalsporthalle",682374,247057
+"VZS_SIHL_E","Sihlpromenade, Richtung Innenstadt",682374,247055
+"VZS_TALS_A","Talstrasse, Richtung Seeufer",682750,247322
+"VZS_TALS_E","Talstrasse, Richtung Hauptbahnhof",682761,247323
+"VZS_TOED_A","Tödistrasse, Richtung Hauptbahnhof",682884,246550
+"VZS_TOED_E","Tödistrasse, Richtung Seeufer",682879,246550
+"VZS_ZOLL_A","Zollstrasse, Richtung Langstrasse",682950,248229
+"VZS_ZOLL_E","Zollstrasse, Richtung Sihlquai",682945,248223
+

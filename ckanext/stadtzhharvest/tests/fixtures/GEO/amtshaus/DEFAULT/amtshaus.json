@@ -1,0 +1,15 @@
+{"name":"Amtshaus","type":"FeatureCollection"
+,"features":[
+{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54030413678566,47.3747818583098]},"properties":{"Name":"Amtshaus III","Adresse":"Lindenhofstrasse 21","PLZ":"8001","Ort":"Zürich","Tel":"+41 44 412 11 11","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54025232780697,47.3741976641217]},"properties":{"Name":"Amtshaus IV (Lindenhofstrasse)","Adresse":"Lindenhofstrasse 19","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.5410460289997,47.3818360011201]},"properties":{"Name":"Bürohaus Walche (GWA)","Adresse":"Walchestrasse 31/33","PLZ":"8006","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.53987504820446,47.3751637502597]},"properties":{"Name":"Amtshaus V","Adresse":"Werdmühleplatz 3","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54164749562138,47.3693089767026]},"properties":{"Name":"Stadthaus","Adresse":"Stadthausquai 17","PLZ":"8001","Ort":"Zürich","Tel":"+41 44 412 11 11","www":"http://www.stadt-zuerich.ch/stadthaus"}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54119953506991,47.3758167562952]},"properties":{"Name":"Amtshaus II (Beatenplatz)","Adresse":"Beatenplatz 1","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52701664609644,47.3719035232248]},"properties":{"Name":"Verwaltungszentrum Werd","Adresse":"Werdstrasse 75","PLZ":"8004","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54162266567393,47.3751470724367]},"properties":{"Name":"Amtshaus I","Adresse":"Bahnhofquai 3","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.53154296221854,47.3672822022908]},"properties":{"Name":"Amtshaus Parkring","Adresse":"Parkring 4","PLZ":"8002","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54176325611313,47.3755415181197]},"properties":{"Name":"Amtshaus II (Bahnhofquai)","Adresse":"Bahnhofquai 5","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54013503440887,47.3742887355618]},"properties":{"Name":"Amtshaus IV (Uraniastrasse)","Adresse":"Uraniastrasse 7","PLZ":"8001","Ort":"Zürich","Tel":"","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52725421137476,47.3763988689854]},"properties":{"Name":"Amtshaus Helvetiaplatz","Adresse":"Molkenstrasse 5/9","PLZ":"8004","Ort":"Zürich","Tel":"","www":""}}
+]}

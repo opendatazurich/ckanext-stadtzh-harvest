@@ -1,0 +1,812 @@
+﻿"StichtagDatJahr","SexCd","SexLang","QuarSort","QuarLang","StatZoneSort","StatZoneLang","AnzGebuWir"
+2013,1,"männlich",14,"City",1404,"Paradeplatz",1
+2013,1,"männlich",12,"Hochschulen",1203,"Bellevue",1
+2013,1,"männlich",12,"Hochschulen",1201,"Central",1
+2013,1,"männlich",13,"Lindenhof",1302,"Münsterhof",2
+2013,1,"männlich",13,"Lindenhof",1301,"Schipfe",3
+2013,1,"männlich",11,"Rathaus",1103,"Grossmünster",1
+2013,1,"männlich",11,"Rathaus",1104,"Oberdorf",2
+2013,1,"männlich",11,"Rathaus",1101,"Zähringerstrasse",2
+2013,1,"männlich",11,"Rathaus",1102,"Zentralbibliothek",5
+2013,1,"männlich",101,"Höngg",10106,"Bauherrenstrasse",8
+2013,1,"männlich",101,"Höngg",10107,"Grossmannstrasse",15
+2013,1,"männlich",101,"Höngg",10110,"Gsteigstrasse",8
+2013,1,"männlich",101,"Höngg",10102,"Hönggerberg",15
+2013,1,"männlich",101,"Höngg",10103,"Imbisbühlstrasse",27
+2013,1,"männlich",101,"Höngg",10101,"Riedhof",12
+2013,1,"männlich",101,"Höngg",10109,"Rütihof",19
+2013,1,"männlich",101,"Höngg",10108,"Waidbad",11
+2013,1,"männlich",101,"Höngg",10104,"Werdinsel",20
+2013,1,"männlich",102,"Wipkingen",10202,"Im Sydefädeli",21
+2013,1,"männlich",102,"Wipkingen",10207,"Letten",11
+2013,1,"männlich",102,"Wipkingen",10205,"Röschibachstrasse",11
+2013,1,"männlich",102,"Wipkingen",10204,"Rosengartenstrasse",10
+2013,1,"männlich",102,"Wipkingen",10206,"Schubertstrasse",24
+2013,1,"männlich",102,"Wipkingen",10201,"Waidspital",5
+2013,1,"männlich",102,"Wipkingen",10203,"Zschokkestrasse",9
+2013,1,"männlich",111,"Affoltern",11102,"Furttalstrasse",7
+2013,1,"männlich",111,"Affoltern",11106,"Hürststrasse",13
+2013,1,"männlich",111,"Affoltern",11101,"Katzensee",40
+2013,1,"männlich",111,"Affoltern",11107,"Reckenholz",22
+2013,1,"männlich",111,"Affoltern",11104,"Schauenbergstrasse",38
+2013,1,"männlich",111,"Affoltern",11105,"Schützenmatt",6
+2013,1,"männlich",111,"Affoltern",11103,"Zehntenhausplatz",28
+2013,1,"männlich",115,"Oerlikon",11501,"Affolternstrasse",40
+2013,1,"männlich",115,"Oerlikon",11503,"Albin Zollinger-Platz",20
+2013,1,"männlich",115,"Oerlikon",11508,"Berninaplatz",9
+2013,1,"männlich",115,"Oerlikon",11509,"Gorwiden",11
+2013,1,"männlich",115,"Oerlikon",11502,"Holunderhof",5
+2013,1,"männlich",115,"Oerlikon",11507,"Magdalenenstrasse",16
+2013,1,"männlich",115,"Oerlikon",11504,"Marktplatz Oerlikon",4
+2013,1,"männlich",115,"Oerlikon",11506,"Messegelände",13
+2013,1,"männlich",115,"Oerlikon",11510,"Murwiesenstrasse",1
+2013,1,"männlich",115,"Oerlikon",11505,"Stadthof",9
+2013,1,"männlich",119,"Seebach",11905,"Ausserdorfstrasse",2
+2013,1,"männlich",119,"Seebach",11906,"Eichrain",29
+2013,1,"männlich",119,"Seebach",11908,"Grünhaldenstrasse",11
+2013,1,"männlich",119,"Seebach",11904,"Höhenring",34
+2013,1,"männlich",119,"Seebach",11901,"Köschenrüti",24
+2013,1,"männlich",119,"Seebach",11909,"Leutschenbach",18
+2013,1,"männlich",119,"Seebach",11903,"Rickenstrasse",14
+2013,1,"männlich",119,"Seebach",11907,"Sandacker",9
+2013,1,"männlich",119,"Seebach",11902,"Schwandenholz",17
+2013,1,"männlich",123,"Hirzenbach",12302,"Hirzenbachstrasse",22
+2013,1,"männlich",123,"Hirzenbach",12301,"Kronwiesenstrasse",10
+2013,1,"männlich",123,"Hirzenbach",12303,"Mattenhof",28
+2013,1,"männlich",123,"Hirzenbach",12304,"Probsteistrasse",12
+2013,1,"männlich",121,"Saatlen",12103,"Auzelg",9
+2013,1,"männlich",121,"Saatlen",12102,"Dreispitz",18
+2013,1,"männlich",121,"Saatlen",12101,"Hagenholz",13
+2013,1,"männlich",122,"Schwamendingen-Mitte",12203,"Auhof",17
+2013,1,"männlich",122,"Schwamendingen-Mitte",12202,"Bocklerstrasse",11
+2013,1,"männlich",122,"Schwamendingen-Mitte",12205,"Roswiesenstrasse",15
+2013,1,"männlich",122,"Schwamendingen-Mitte",12204,"Schürgistrasse",23
+2013,1,"männlich",122,"Schwamendingen-Mitte",12201,"Tulpenstrasse",17
+2013,1,"männlich",24,"Enge",2403,"Belvoir-Park",12
+2013,1,"männlich",24,"Enge",2406,"Gartenstrasse",2
+2013,1,"männlich",24,"Enge",2402,"Kongresshaus",7
+2013,1,"männlich",24,"Enge",2404,"Museum Rietberg",33
+2013,1,"männlich",24,"Enge",2401,"Parkring",6
+2013,1,"männlich",24,"Enge",2405,"Rieterplatz",18
+2013,1,"männlich",23,"Leimbach",2301,"Höckler",9
+2013,1,"männlich",23,"Leimbach",2302,"Mahrbachweg",13
+2013,1,"männlich",23,"Leimbach",2303,"Sihlweidstrasse",19
+2013,1,"männlich",21,"Wollishofen",2107,"Auf der Egg",9
+2013,1,"männlich",21,"Wollishofen",2102,"Bellariastrasse",15
+2013,1,"männlich",21,"Wollishofen",2109,"Entlisberg",17
+2013,1,"männlich",21,"Wollishofen",2103,"Jugendherberge",8
+2013,1,"männlich",21,"Wollishofen",2104,"Morgental",2
+2013,1,"männlich",21,"Wollishofen",2108,"Neubühl",18
+2013,1,"männlich",21,"Wollishofen",2111,"Seeblickstrasse",3
+2013,1,"männlich",21,"Wollishofen",2110,"Verenastrasse",13
+2013,1,"männlich",31,"Alt-Wiedikon",3105,"Binz",19
+2013,1,"männlich",31,"Alt-Wiedikon",3102,"Goldbrunnenplatz",14
+2013,1,"männlich",31,"Alt-Wiedikon",3103,"Gotthelfstrasse",10
+2013,1,"männlich",31,"Alt-Wiedikon",3101,"Höfliweg",29
+2013,1,"männlich",31,"Alt-Wiedikon",3104,"Manesseplatz",25
+2013,1,"männlich",31,"Alt-Wiedikon",3106,"Saalsporthalle",31
+2013,1,"männlich",33,"Friesenberg",3305,"Albisgüetli",10
+2013,1,"männlich",33,"Friesenberg",3302,"Gehrenholz",10
+2013,1,"männlich",33,"Friesenberg",3301,"Heuried",9
+2013,1,"männlich",33,"Friesenberg",3304,"Strassenverkehrsamt",4
+2013,1,"männlich",33,"Friesenberg",3306,"Triemli",11
+2013,1,"männlich",33,"Friesenberg",3303,"Uetliberg",10
+2013,1,"männlich",34,"Sihlfeld",3407,"Bahnhof Wiedikon",18
+2013,1,"männlich",34,"Sihlfeld",3403,"Brahmsstrasse",11
+2013,1,"männlich",34,"Sihlfeld",3402,"Friedhof Sihlfeld",10
+2013,1,"männlich",34,"Sihlfeld",3404,"Fritschistrasse",19
+2013,1,"männlich",34,"Sihlfeld",3405,"Idaplatz",25
+2013,1,"männlich",34,"Sihlfeld",3401,"Schaufelbergerstrasse",19
+2013,1,"männlich",34,"Sihlfeld",3408,"Sihlhölzli",25
+2013,1,"männlich",34,"Sihlfeld",3406,"Zwinglihaus",20
+2013,1,"männlich",44,"Hard",4403,"Bullingerhof",24
+2013,1,"männlich",44,"Hard",4405,"Güterbahnhof",16
+2013,1,"männlich",44,"Hard",4404,"Lochergut",7
+2013,1,"männlich",44,"Hard",4402,"Norastrasse",21
+2013,1,"männlich",44,"Hard",4401,"Schlachthof",5
+2013,1,"männlich",42,"Langstrasse",4202,"Bäckeranlage",8
+2013,1,"männlich",42,"Langstrasse",4203,"Engelstrasse",20
+2013,1,"männlich",42,"Langstrasse",4201,"Schöneggplatz",9
+2013,1,"männlich",42,"Langstrasse",4206,"Sihlpost",9
+2013,1,"männlich",42,"Langstrasse",4205,"Volkshaus",14
+2013,1,"männlich",41,"Werd",4101,"Kalkbreite",11
+2013,1,"männlich",41,"Werd",4103,"Schöntalstrasse",16
+2013,1,"männlich",41,"Werd",4102,"Werdplatz",7
+2013,1,"männlich",52,"Escher Wyss",5201,"Hardturm",5
+2013,1,"männlich",52,"Escher Wyss",5203,"Neue Hard",18
+2013,1,"männlich",52,"Escher Wyss",5202,"Technopark",9
+2013,1,"männlich",51,"Gewerbeschule",5103,"Berufsschule",2
+2013,1,"männlich",51,"Gewerbeschule",5105,"Johannesgasse",11
+2013,1,"männlich",51,"Gewerbeschule",5101,"Josefswiese",20
+2013,1,"männlich",51,"Gewerbeschule",5106,"Konradstrasse",5
+2013,1,"männlich",51,"Gewerbeschule",5104,"Museum für Gestaltung",2
+2013,1,"männlich",51,"Gewerbeschule",5102,"Quellenstrasse",15
+2013,1,"männlich",63,"Oberstrass",6304,"Culmannstrasse",9
+2013,1,"männlich",63,"Oberstrass",6305,"Frauenklinik",10
+2013,1,"männlich",63,"Oberstrass",6302,"Letzistrasse",6
+2013,1,"männlich",63,"Oberstrass",6303,"Ottikerstrasse",20
+2013,1,"männlich",63,"Oberstrass",6307,"Rigiblick",6
+2013,1,"männlich",63,"Oberstrass",6306,"Rigistrasse",7
+2013,1,"männlich",63,"Oberstrass",6301,"Uni Irchel",3
+2013,1,"männlich",61,"Unterstrass",6113,"Beckenhof",13
+2013,1,"männlich",61,"Unterstrass",6112,"Drahtschmidli",10
+2013,1,"männlich",61,"Unterstrass",6103,"Freibad Allenmoos",9
+2013,1,"männlich",61,"Unterstrass",6110,"Gemsenstrasse",14
+2013,1,"männlich",61,"Unterstrass",6107,"Guggachstrasse",15
+2013,1,"männlich",61,"Unterstrass",6109,"Irchel",12
+2013,1,"männlich",61,"Unterstrass",6102,"Kiefernweg",10
+2013,1,"männlich",61,"Unterstrass",6101,"Nordheim",4
+2013,1,"männlich",61,"Unterstrass",6104,"Radio-Studio",9
+2013,1,"männlich",61,"Unterstrass",6111,"Schindlerstrasse",26
+2013,1,"männlich",61,"Unterstrass",6106,"Seminarstrasse",11
+2013,1,"männlich",61,"Unterstrass",6105,"Steinkluppe",11
+2013,1,"männlich",61,"Unterstrass",6108,"Stüssistrasse",22
+2013,1,"männlich",71,"Fluntern",7103,"Bethanien",15
+2013,1,"männlich",71,"Fluntern",7101,"Heubeeriweg",6
+2013,1,"männlich",71,"Fluntern",7105,"Platte",8
+2013,1,"männlich",71,"Fluntern",7102,"Sonnenbad",3
+2013,1,"männlich",71,"Fluntern",7104,"Universitätsspital",7
+2013,1,"männlich",71,"Fluntern",7106,"Zoo",2
+2013,1,"männlich",73,"Hirslanden",7301,"Degenried",7
+2013,1,"männlich",73,"Hirslanden",7303,"Hegibachplatz",27
+2013,1,"männlich",73,"Hirslanden",7302,"Klusplatz",26
+2013,1,"männlich",72,"Hottingen",7201,"Dolder",1
+2013,1,"männlich",72,"Hottingen",7203,"Doldertal",2
+2013,1,"männlich",72,"Hottingen",7207,"Eidmattstrasse",19
+2013,1,"männlich",72,"Hottingen",7204,"Kinderspital",15
+2013,1,"männlich",72,"Hottingen",7205,"Merkurplatz",16
+2013,1,"männlich",72,"Hottingen",7206,"Pflegerinnenschule",9
+2013,1,"männlich",72,"Hottingen",7202,"Sonnenberg",3
+2013,1,"männlich",74,"Witikon",7401,"Buchzelgstrasse",10
+2013,1,"männlich",74,"Witikon",7402,"Carl Spitteler-Strasse",6
+2013,1,"männlich",74,"Witikon",7403,"Eierbrecht",7
+2013,1,"männlich",74,"Witikon",7405,"Glockenacker",4
+2013,1,"männlich",74,"Witikon",7406,"Im Trichtisal",5
+2013,1,"männlich",74,"Witikon",7404,"Loorenstrasse",1
+2013,1,"männlich",74,"Witikon",7407,"Trichtenhausen",3
+2013,1,"männlich",82,"Mühlebach",8203,"Geranienstrasse",11
+2013,1,"männlich",82,"Mühlebach",8201,"Holbeinstrasse",14
+2013,1,"männlich",82,"Mühlebach",8204,"In der Mühle",8
+2013,1,"männlich",82,"Mühlebach",8202,"Riesbachstrasse",7
+2013,1,"männlich",81,"Seefeld",8102,"Chinagarten",16
+2013,1,"männlich",81,"Seefeld",8101,"Seebad Utoquai",4
+2013,1,"männlich",81,"Seefeld",8103,"Tiefenbrunnen",9
+2013,1,"männlich",83,"Weinegg",8302,"Botanischer Garten",3
+2013,1,"männlich",83,"Weinegg",8303,"Burghölzli",11
+2013,1,"männlich",83,"Weinegg",8301,"Neumünster",6
+2013,1,"männlich",83,"Weinegg",8304,"Rehalp",6
+2013,1,"männlich",91,"Albisrieden",9103,"Bockhornstrasse",5
+2013,1,"männlich",91,"Albisrieden",9101,"Brünneliacker",5
+2013,1,"männlich",91,"Albisrieden",9109,"Espenhof",23
+2013,1,"männlich",91,"Albisrieden",9102,"In den Rütenen",21
+2013,1,"männlich",91,"Albisrieden",9105,"In der Ey",18
+2013,1,"männlich",91,"Albisrieden",9107,"Letzigraben",14
+2013,1,"männlich",91,"Albisrieden",9106,"Mühlezelgstrasse",13
+2013,1,"männlich",91,"Albisrieden",9108,"Sackzelg",11
+2013,1,"männlich",91,"Albisrieden",9104,"Zollfreilager",15
+2013,1,"männlich",92,"Altstetten",9209,"Altstetterplatz",12
+2013,1,"männlich",92,"Altstetten",9206,"Bachmattstrasse",14
+2013,1,"männlich",92,"Altstetten",9204,"Buchlern",13
+2013,1,"männlich",92,"Altstetten",9210,"Calandastrasse",7
+2013,1,"männlich",92,"Altstetten",9205,"Dachslernstrasse",16
+2013,1,"männlich",92,"Altstetten",9201,"Dunkelhölzli",5
+2013,1,"männlich",92,"Altstetten",9213,"Edelweissstrasse",9
+2013,1,"männlich",92,"Altstetten",9203,"Eichbühl",10
+2013,1,"männlich",92,"Altstetten",9212,"Grimselstrasse",14
+2013,1,"männlich",92,"Altstetten",9216,"Grünaustrasse",8
+2013,1,"männlich",92,"Altstetten",9208,"Hardhof",4
+2013,1,"männlich",92,"Altstetten",9215,"Juchhof",5
+2013,1,"männlich",92,"Altstetten",9214,"Letzigrund",11
+2013,1,"männlich",92,"Altstetten",9202,"Loogartenstrasse",31
+2013,1,"männlich",92,"Altstetten",9207,"Werdhölzli",2
+2013,1,"männlich",92,"Altstetten",9211,"Zwyssigstrasse",10
+2013,2,"weiblich",14,"City",1401,"Bahnhofplatz",1
+2013,2,"weiblich",14,"City",1403,"Selnaustrasse",4
+2013,2,"weiblich",12,"Hochschulen",1201,"Central",2
+2013,2,"weiblich",13,"Lindenhof",1301,"Schipfe",4
+2013,2,"weiblich",11,"Rathaus",1103,"Grossmünster",4
+2013,2,"weiblich",11,"Rathaus",1104,"Oberdorf",4
+2013,2,"weiblich",11,"Rathaus",1101,"Zähringerstrasse",2
+2013,2,"weiblich",11,"Rathaus",1102,"Zentralbibliothek",3
+2013,2,"weiblich",101,"Höngg",10106,"Bauherrenstrasse",12
+2013,2,"weiblich",101,"Höngg",10107,"Grossmannstrasse",11
+2013,2,"weiblich",101,"Höngg",10110,"Gsteigstrasse",13
+2013,2,"weiblich",101,"Höngg",10102,"Hönggerberg",16
+2013,2,"weiblich",101,"Höngg",10103,"Imbisbühlstrasse",19
+2013,2,"weiblich",101,"Höngg",10101,"Riedhof",12
+2013,2,"weiblich",101,"Höngg",10109,"Rütihof",15
+2013,2,"weiblich",101,"Höngg",10108,"Waidbad",11
+2013,2,"weiblich",101,"Höngg",10104,"Werdinsel",12
+2013,2,"weiblich",102,"Wipkingen",10202,"Im Sydefädeli",11
+2013,2,"weiblich",102,"Wipkingen",10207,"Letten",11
+2013,2,"weiblich",102,"Wipkingen",10205,"Röschibachstrasse",17
+2013,2,"weiblich",102,"Wipkingen",10204,"Rosengartenstrasse",7
+2013,2,"weiblich",102,"Wipkingen",10206,"Schubertstrasse",23
+2013,2,"weiblich",102,"Wipkingen",10201,"Waidspital",2
+2013,2,"weiblich",102,"Wipkingen",10203,"Zschokkestrasse",9
+2013,2,"weiblich",111,"Affoltern",11102,"Furttalstrasse",10
+2013,2,"weiblich",111,"Affoltern",11106,"Hürststrasse",28
+2013,2,"weiblich",111,"Affoltern",11101,"Katzensee",42
+2013,2,"weiblich",111,"Affoltern",11107,"Reckenholz",17
+2013,2,"weiblich",111,"Affoltern",11104,"Schauenbergstrasse",25
+2013,2,"weiblich",111,"Affoltern",11105,"Schützenmatt",20
+2013,2,"weiblich",111,"Affoltern",11103,"Zehntenhausplatz",44
+2013,2,"weiblich",115,"Oerlikon",11501,"Affolternstrasse",45
+2013,2,"weiblich",115,"Oerlikon",11503,"Albin Zollinger-Platz",14
+2013,2,"weiblich",115,"Oerlikon",11508,"Berninaplatz",9
+2013,2,"weiblich",115,"Oerlikon",11509,"Gorwiden",9
+2013,2,"weiblich",115,"Oerlikon",11502,"Holunderhof",11
+2013,2,"weiblich",115,"Oerlikon",11507,"Magdalenenstrasse",12
+2013,2,"weiblich",115,"Oerlikon",11504,"Marktplatz Oerlikon",9
+2013,2,"weiblich",115,"Oerlikon",11506,"Messegelände",11
+2013,2,"weiblich",115,"Oerlikon",11510,"Murwiesenstrasse",4
+2013,2,"weiblich",115,"Oerlikon",11505,"Stadthof",15
+2013,2,"weiblich",119,"Seebach",11905,"Ausserdorfstrasse",3
+2013,2,"weiblich",119,"Seebach",11906,"Eichrain",22
+2013,2,"weiblich",119,"Seebach",11908,"Grünhaldenstrasse",8
+2013,2,"weiblich",119,"Seebach",11904,"Höhenring",28
+2013,2,"weiblich",119,"Seebach",11901,"Köschenrüti",15
+2013,2,"weiblich",119,"Seebach",11909,"Leutschenbach",17
+2013,2,"weiblich",119,"Seebach",11903,"Rickenstrasse",4
+2013,2,"weiblich",119,"Seebach",11907,"Sandacker",6
+2013,2,"weiblich",119,"Seebach",11902,"Schwandenholz",19
+2013,2,"weiblich",123,"Hirzenbach",12302,"Hirzenbachstrasse",25
+2013,2,"weiblich",123,"Hirzenbach",12301,"Kronwiesenstrasse",5
+2013,2,"weiblich",123,"Hirzenbach",12303,"Mattenhof",30
+2013,2,"weiblich",123,"Hirzenbach",12304,"Probsteistrasse",5
+2013,2,"weiblich",121,"Saatlen",12103,"Auzelg",6
+2013,2,"weiblich",121,"Saatlen",12102,"Dreispitz",26
+2013,2,"weiblich",121,"Saatlen",12101,"Hagenholz",12
+2013,2,"weiblich",122,"Schwamendingen-Mitte",12203,"Auhof",14
+2013,2,"weiblich",122,"Schwamendingen-Mitte",12202,"Bocklerstrasse",4
+2013,2,"weiblich",122,"Schwamendingen-Mitte",12205,"Roswiesenstrasse",14
+2013,2,"weiblich",122,"Schwamendingen-Mitte",12204,"Schürgistrasse",24
+2013,2,"weiblich",122,"Schwamendingen-Mitte",12201,"Tulpenstrasse",16
+2013,2,"weiblich",24,"Enge",2403,"Belvoir-Park",15
+2013,2,"weiblich",24,"Enge",2406,"Gartenstrasse",1
+2013,2,"weiblich",24,"Enge",2402,"Kongresshaus",5
+2013,2,"weiblich",24,"Enge",2404,"Museum Rietberg",15
+2013,2,"weiblich",24,"Enge",2401,"Parkring",4
+2013,2,"weiblich",24,"Enge",2405,"Rieterplatz",14
+2013,2,"weiblich",23,"Leimbach",2301,"Höckler",6
+2013,2,"weiblich",23,"Leimbach",2302,"Mahrbachweg",15
+2013,2,"weiblich",23,"Leimbach",2303,"Sihlweidstrasse",23
+2013,2,"weiblich",21,"Wollishofen",2107,"Auf der Egg",7
+2013,2,"weiblich",21,"Wollishofen",2101,"Bahnhof Wollishofen",1
+2013,2,"weiblich",21,"Wollishofen",2102,"Bellariastrasse",23
+2013,2,"weiblich",21,"Wollishofen",2109,"Entlisberg",14
+2013,2,"weiblich",21,"Wollishofen",2103,"Jugendherberge",7
+2013,2,"weiblich",21,"Wollishofen",2104,"Morgental",9
+2013,2,"weiblich",21,"Wollishofen",2108,"Neubühl",17
+2013,2,"weiblich",21,"Wollishofen",2111,"Seeblickstrasse",3
+2013,2,"weiblich",21,"Wollishofen",2110,"Verenastrasse",6
+2013,2,"weiblich",31,"Alt-Wiedikon",3105,"Binz",27
+2013,2,"weiblich",31,"Alt-Wiedikon",3102,"Goldbrunnenplatz",15
+2013,2,"weiblich",31,"Alt-Wiedikon",3103,"Gotthelfstrasse",14
+2013,2,"weiblich",31,"Alt-Wiedikon",3101,"Höfliweg",28
+2013,2,"weiblich",31,"Alt-Wiedikon",3104,"Manesseplatz",27
+2013,2,"weiblich",31,"Alt-Wiedikon",3106,"Saalsporthalle",20
+2013,2,"weiblich",33,"Friesenberg",3305,"Albisgüetli",5
+2013,2,"weiblich",33,"Friesenberg",3302,"Gehrenholz",4
+2013,2,"weiblich",33,"Friesenberg",3301,"Heuried",7
+2013,2,"weiblich",33,"Friesenberg",3304,"Strassenverkehrsamt",6
+2013,2,"weiblich",33,"Friesenberg",3306,"Triemli",17
+2013,2,"weiblich",33,"Friesenberg",3303,"Uetliberg",10
+2013,2,"weiblich",34,"Sihlfeld",3407,"Bahnhof Wiedikon",16
+2013,2,"weiblich",34,"Sihlfeld",3403,"Brahmsstrasse",16
+2013,2,"weiblich",34,"Sihlfeld",3402,"Friedhof Sihlfeld",15
+2013,2,"weiblich",34,"Sihlfeld",3404,"Fritschistrasse",22
+2013,2,"weiblich",34,"Sihlfeld",3405,"Idaplatz",30
+2013,2,"weiblich",34,"Sihlfeld",3401,"Schaufelbergerstrasse",16
+2013,2,"weiblich",34,"Sihlfeld",3408,"Sihlhölzli",22
+2013,2,"weiblich",34,"Sihlfeld",3406,"Zwinglihaus",21
+2013,2,"weiblich",44,"Hard",4403,"Bullingerhof",15
+2013,2,"weiblich",44,"Hard",4405,"Güterbahnhof",13
+2013,2,"weiblich",44,"Hard",4404,"Lochergut",11
+2013,2,"weiblich",44,"Hard",4402,"Norastrasse",14
+2013,2,"weiblich",44,"Hard",4401,"Schlachthof",8
+2013,2,"weiblich",42,"Langstrasse",4202,"Bäckeranlage",11
+2013,2,"weiblich",42,"Langstrasse",4204,"Bezirksgebäude",2
+2013,2,"weiblich",42,"Langstrasse",4203,"Engelstrasse",22
+2013,2,"weiblich",42,"Langstrasse",4201,"Schöneggplatz",12
+2013,2,"weiblich",42,"Langstrasse",4206,"Sihlpost",8
+2013,2,"weiblich",42,"Langstrasse",4205,"Volkshaus",10
+2013,2,"weiblich",41,"Werd",4101,"Kalkbreite",13
+2013,2,"weiblich",41,"Werd",4103,"Schöntalstrasse",19
+2013,2,"weiblich",41,"Werd",4102,"Werdplatz",5
+2013,2,"weiblich",52,"Escher Wyss",5201,"Hardturm",6
+2013,2,"weiblich",52,"Escher Wyss",5203,"Neue Hard",6
+2013,2,"weiblich",52,"Escher Wyss",5202,"Technopark",10
+2013,2,"weiblich",51,"Gewerbeschule",5103,"Berufsschule",2
+2013,2,"weiblich",51,"Gewerbeschule",5105,"Johannesgasse",14
+2013,2,"weiblich",51,"Gewerbeschule",5101,"Josefswiese",13
+2013,2,"weiblich",51,"Gewerbeschule",5106,"Konradstrasse",2
+2013,2,"weiblich",51,"Gewerbeschule",5104,"Museum für Gestaltung",4
+2013,2,"weiblich",51,"Gewerbeschule",5102,"Quellenstrasse",23
+2013,2,"weiblich",63,"Oberstrass",6304,"Culmannstrasse",12
+2013,2,"weiblich",63,"Oberstrass",6305,"Frauenklinik",12
+2013,2,"weiblich",63,"Oberstrass",6302,"Letzistrasse",13
+2013,2,"weiblich",63,"Oberstrass",6303,"Ottikerstrasse",13
+2013,2,"weiblich",63,"Oberstrass",6307,"Rigiblick",2
+2013,2,"weiblich",63,"Oberstrass",6306,"Rigistrasse",13
+2013,2,"weiblich",63,"Oberstrass",6301,"Uni Irchel",1
+2013,2,"weiblich",61,"Unterstrass",6113,"Beckenhof",12
+2013,2,"weiblich",61,"Unterstrass",6112,"Drahtschmidli",8
+2013,2,"weiblich",61,"Unterstrass",6103,"Freibad Allenmoos",4
+2013,2,"weiblich",61,"Unterstrass",6110,"Gemsenstrasse",9
+2013,2,"weiblich",61,"Unterstrass",6107,"Guggachstrasse",18
+2013,2,"weiblich",61,"Unterstrass",6109,"Irchel",12
+2013,2,"weiblich",61,"Unterstrass",6102,"Kiefernweg",11
+2013,2,"weiblich",61,"Unterstrass",6101,"Nordheim",5
+2013,2,"weiblich",61,"Unterstrass",6104,"Radio-Studio",9
+2013,2,"weiblich",61,"Unterstrass",6111,"Schindlerstrasse",24
+2013,2,"weiblich",61,"Unterstrass",6106,"Seminarstrasse",7
+2013,2,"weiblich",61,"Unterstrass",6105,"Steinkluppe",16
+2013,2,"weiblich",61,"Unterstrass",6108,"Stüssistrasse",26
+2013,2,"weiblich",71,"Fluntern",7103,"Bethanien",17
+2013,2,"weiblich",71,"Fluntern",7101,"Heubeeriweg",5
+2013,2,"weiblich",71,"Fluntern",7105,"Platte",5
+2013,2,"weiblich",71,"Fluntern",7102,"Sonnenbad",7
+2013,2,"weiblich",71,"Fluntern",7104,"Universitätsspital",5
+2013,2,"weiblich",71,"Fluntern",7106,"Zoo",1
+2013,2,"weiblich",73,"Hirslanden",7301,"Degenried",9
+2013,2,"weiblich",73,"Hirslanden",7303,"Hegibachplatz",21
+2013,2,"weiblich",73,"Hirslanden",7302,"Klusplatz",12
+2013,2,"weiblich",72,"Hottingen",7201,"Dolder",1
+2013,2,"weiblich",72,"Hottingen",7203,"Doldertal",6
+2013,2,"weiblich",72,"Hottingen",7207,"Eidmattstrasse",15
+2013,2,"weiblich",72,"Hottingen",7204,"Kinderspital",12
+2013,2,"weiblich",72,"Hottingen",7205,"Merkurplatz",10
+2013,2,"weiblich",72,"Hottingen",7206,"Pflegerinnenschule",7
+2013,2,"weiblich",72,"Hottingen",7202,"Sonnenberg",4
+2013,2,"weiblich",74,"Witikon",7401,"Buchzelgstrasse",9
+2013,2,"weiblich",74,"Witikon",7402,"Carl Spitteler-Strasse",6
+2013,2,"weiblich",74,"Witikon",7403,"Eierbrecht",8
+2013,2,"weiblich",74,"Witikon",7405,"Glockenacker",5
+2013,2,"weiblich",74,"Witikon",7406,"Im Trichtisal",6
+2013,2,"weiblich",74,"Witikon",7404,"Loorenstrasse",3
+2013,2,"weiblich",74,"Witikon",7407,"Trichtenhausen",7
+2013,2,"weiblich",82,"Mühlebach",8203,"Geranienstrasse",8
+2013,2,"weiblich",82,"Mühlebach",8201,"Holbeinstrasse",7
+2013,2,"weiblich",82,"Mühlebach",8204,"In der Mühle",5
+2013,2,"weiblich",82,"Mühlebach",8202,"Riesbachstrasse",7
+2013,2,"weiblich",81,"Seefeld",8102,"Chinagarten",11
+2013,2,"weiblich",81,"Seefeld",8101,"Seebad Utoquai",6
+2013,2,"weiblich",81,"Seefeld",8103,"Tiefenbrunnen",11
+2013,2,"weiblich",83,"Weinegg",8302,"Botanischer Garten",2
+2013,2,"weiblich",83,"Weinegg",8303,"Burghölzli",6
+2013,2,"weiblich",83,"Weinegg",8301,"Neumünster",7
+2013,2,"weiblich",83,"Weinegg",8304,"Rehalp",11
+2013,2,"weiblich",91,"Albisrieden",9103,"Bockhornstrasse",4
+2013,2,"weiblich",91,"Albisrieden",9101,"Brünneliacker",7
+2013,2,"weiblich",91,"Albisrieden",9109,"Espenhof",25
+2013,2,"weiblich",91,"Albisrieden",9102,"In den Rütenen",15
+2013,2,"weiblich",91,"Albisrieden",9105,"In der Ey",23
+2013,2,"weiblich",91,"Albisrieden",9107,"Letzigraben",9
+2013,2,"weiblich",91,"Albisrieden",9106,"Mühlezelgstrasse",17
+2013,2,"weiblich",91,"Albisrieden",9108,"Sackzelg",4
+2013,2,"weiblich",91,"Albisrieden",9104,"Zollfreilager",27
+2013,2,"weiblich",92,"Altstetten",9209,"Altstetterplatz",10
+2013,2,"weiblich",92,"Altstetten",9206,"Bachmattstrasse",17
+2013,2,"weiblich",92,"Altstetten",9204,"Buchlern",15
+2013,2,"weiblich",92,"Altstetten",9210,"Calandastrasse",14
+2013,2,"weiblich",92,"Altstetten",9205,"Dachslernstrasse",24
+2013,2,"weiblich",92,"Altstetten",9201,"Dunkelhölzli",17
+2013,2,"weiblich",92,"Altstetten",9213,"Edelweissstrasse",9
+2013,2,"weiblich",92,"Altstetten",9203,"Eichbühl",13
+2013,2,"weiblich",92,"Altstetten",9212,"Grimselstrasse",8
+2013,2,"weiblich",92,"Altstetten",9216,"Grünaustrasse",12
+2013,2,"weiblich",92,"Altstetten",9208,"Hardhof",8
+2013,2,"weiblich",92,"Altstetten",9215,"Juchhof",3
+2013,2,"weiblich",92,"Altstetten",9214,"Letzigrund",9
+2013,2,"weiblich",92,"Altstetten",9202,"Loogartenstrasse",20
+2013,2,"weiblich",92,"Altstetten",9207,"Werdhölzli",7
+2013,2,"weiblich",92,"Altstetten",9211,"Zwyssigstrasse",9
+2014,1,"männlich",14,"City",1403,"Selnaustrasse",5
+2014,1,"männlich",12,"Hochschulen",1203,"Bellevue",1
+2014,1,"männlich",13,"Lindenhof",1302,"Münsterhof",1
+2014,1,"männlich",13,"Lindenhof",1301,"Schipfe",4
+2014,1,"männlich",11,"Rathaus",1103,"Grossmünster",7
+2014,1,"männlich",11,"Rathaus",1104,"Oberdorf",1
+2014,1,"männlich",11,"Rathaus",1101,"Zähringerstrasse",5
+2014,1,"männlich",11,"Rathaus",1102,"Zentralbibliothek",6
+2014,1,"männlich",101,"Höngg",10106,"Bauherrenstrasse",8
+2014,1,"männlich",101,"Höngg",10107,"Grossmannstrasse",10
+2014,1,"männlich",101,"Höngg",10110,"Gsteigstrasse",12
+2014,1,"männlich",101,"Höngg",10102,"Hönggerberg",16
+2014,1,"männlich",101,"Höngg",10103,"Imbisbühlstrasse",25
+2014,1,"männlich",101,"Höngg",10101,"Riedhof",11
+2014,1,"männlich",101,"Höngg",10109,"Rütihof",21
+2014,1,"männlich",101,"Höngg",10108,"Waidbad",14
+2014,1,"männlich",101,"Höngg",10104,"Werdinsel",17
+2014,1,"männlich",102,"Wipkingen",10202,"Im Sydefädeli",18
+2014,1,"männlich",102,"Wipkingen",10207,"Letten",12
+2014,1,"männlich",102,"Wipkingen",10205,"Röschibachstrasse",23
+2014,1,"männlich",102,"Wipkingen",10204,"Rosengartenstrasse",18
+2014,1,"männlich",102,"Wipkingen",10206,"Schubertstrasse",24
+2014,1,"männlich",102,"Wipkingen",10201,"Waidspital",7
+2014,1,"männlich",102,"Wipkingen",10203,"Zschokkestrasse",12
+2014,1,"männlich",111,"Affoltern",11102,"Furttalstrasse",15
+2014,1,"männlich",111,"Affoltern",11106,"Hürststrasse",26
+2014,1,"männlich",111,"Affoltern",11101,"Katzensee",29
+2014,1,"männlich",111,"Affoltern",11107,"Reckenholz",14
+2014,1,"männlich",111,"Affoltern",11104,"Schauenbergstrasse",45
+2014,1,"männlich",111,"Affoltern",11105,"Schützenmatt",9
+2014,1,"männlich",111,"Affoltern",11103,"Zehntenhausplatz",30
+2014,1,"männlich",115,"Oerlikon",11501,"Affolternstrasse",47
+2014,1,"männlich",115,"Oerlikon",11503,"Albin Zollinger-Platz",17
+2014,1,"männlich",115,"Oerlikon",11508,"Berninaplatz",15
+2014,1,"männlich",115,"Oerlikon",11509,"Gorwiden",6
+2014,1,"männlich",115,"Oerlikon",11502,"Holunderhof",9
+2014,1,"männlich",115,"Oerlikon",11507,"Magdalenenstrasse",7
+2014,1,"männlich",115,"Oerlikon",11504,"Marktplatz Oerlikon",14
+2014,1,"männlich",115,"Oerlikon",11506,"Messegelände",15
+2014,1,"männlich",115,"Oerlikon",11510,"Murwiesenstrasse",4
+2014,1,"männlich",115,"Oerlikon",11505,"Stadthof",11
+2014,1,"männlich",119,"Seebach",11905,"Ausserdorfstrasse",4
+2014,1,"männlich",119,"Seebach",11906,"Eichrain",33
+2014,1,"männlich",119,"Seebach",11908,"Grünhaldenstrasse",12
+2014,1,"männlich",119,"Seebach",11904,"Höhenring",32
+2014,1,"männlich",119,"Seebach",11901,"Köschenrüti",22
+2014,1,"männlich",119,"Seebach",11909,"Leutschenbach",16
+2014,1,"männlich",119,"Seebach",11903,"Rickenstrasse",13
+2014,1,"männlich",119,"Seebach",11907,"Sandacker",13
+2014,1,"männlich",119,"Seebach",11902,"Schwandenholz",20
+2014,1,"männlich",123,"Hirzenbach",12302,"Hirzenbachstrasse",27
+2014,1,"männlich",123,"Hirzenbach",12301,"Kronwiesenstrasse",6
+2014,1,"männlich",123,"Hirzenbach",12303,"Mattenhof",27
+2014,1,"männlich",123,"Hirzenbach",12304,"Probsteistrasse",3
+2014,1,"männlich",121,"Saatlen",12103,"Auzelg",3
+2014,1,"männlich",121,"Saatlen",12102,"Dreispitz",29
+2014,1,"männlich",121,"Saatlen",12101,"Hagenholz",9
+2014,1,"männlich",122,"Schwamendingen-Mitte",12203,"Auhof",18
+2014,1,"männlich",122,"Schwamendingen-Mitte",12202,"Bocklerstrasse",4
+2014,1,"männlich",122,"Schwamendingen-Mitte",12205,"Roswiesenstrasse",11
+2014,1,"männlich",122,"Schwamendingen-Mitte",12204,"Schürgistrasse",16
+2014,1,"männlich",122,"Schwamendingen-Mitte",12201,"Tulpenstrasse",19
+2014,1,"männlich",24,"Enge",2403,"Belvoir-Park",10
+2014,1,"männlich",24,"Enge",2402,"Kongresshaus",6
+2014,1,"männlich",24,"Enge",2404,"Museum Rietberg",25
+2014,1,"männlich",24,"Enge",2401,"Parkring",11
+2014,1,"männlich",24,"Enge",2405,"Rieterplatz",27
+2014,1,"männlich",23,"Leimbach",2301,"Höckler",7
+2014,1,"männlich",23,"Leimbach",2302,"Mahrbachweg",10
+2014,1,"männlich",23,"Leimbach",2303,"Sihlweidstrasse",9
+2014,1,"männlich",21,"Wollishofen",2107,"Auf der Egg",11
+2014,1,"männlich",21,"Wollishofen",2101,"Bahnhof Wollishofen",2
+2014,1,"männlich",21,"Wollishofen",2102,"Bellariastrasse",41
+2014,1,"männlich",21,"Wollishofen",2109,"Entlisberg",13
+2014,1,"männlich",21,"Wollishofen",2103,"Jugendherberge",12
+2014,1,"männlich",21,"Wollishofen",2104,"Morgental",9
+2014,1,"männlich",21,"Wollishofen",2108,"Neubühl",14
+2014,1,"männlich",21,"Wollishofen",2111,"Seeblickstrasse",5
+2014,1,"männlich",21,"Wollishofen",2110,"Verenastrasse",5
+2014,1,"männlich",21,"Wollishofen",2106,"Waschanstalt",1
+2014,1,"männlich",31,"Alt-Wiedikon",3105,"Binz",24
+2014,1,"männlich",31,"Alt-Wiedikon",3102,"Goldbrunnenplatz",17
+2014,1,"männlich",31,"Alt-Wiedikon",3103,"Gotthelfstrasse",8
+2014,1,"männlich",31,"Alt-Wiedikon",3101,"Höfliweg",26
+2014,1,"männlich",31,"Alt-Wiedikon",3104,"Manesseplatz",30
+2014,1,"männlich",31,"Alt-Wiedikon",3106,"Saalsporthalle",27
+2014,1,"männlich",33,"Friesenberg",3305,"Albisgüetli",11
+2014,1,"männlich",33,"Friesenberg",3302,"Gehrenholz",5
+2014,1,"männlich",33,"Friesenberg",3301,"Heuried",11
+2014,1,"männlich",33,"Friesenberg",3304,"Strassenverkehrsamt",6
+2014,1,"männlich",33,"Friesenberg",3306,"Triemli",10
+2014,1,"männlich",33,"Friesenberg",3303,"Uetliberg",11
+2014,1,"männlich",34,"Sihlfeld",3407,"Bahnhof Wiedikon",24
+2014,1,"männlich",34,"Sihlfeld",3403,"Brahmsstrasse",17
+2014,1,"männlich",34,"Sihlfeld",3402,"Friedhof Sihlfeld",12
+2014,1,"männlich",34,"Sihlfeld",3404,"Fritschistrasse",20
+2014,1,"männlich",34,"Sihlfeld",3405,"Idaplatz",22
+2014,1,"männlich",34,"Sihlfeld",3401,"Schaufelbergerstrasse",23
+2014,1,"männlich",34,"Sihlfeld",3408,"Sihlhölzli",27
+2014,1,"männlich",34,"Sihlfeld",3406,"Zwinglihaus",25
+2014,1,"männlich",44,"Hard",4403,"Bullingerhof",28
+2014,1,"männlich",44,"Hard",4405,"Güterbahnhof",26
+2014,1,"männlich",44,"Hard",4404,"Lochergut",10
+2014,1,"männlich",44,"Hard",4402,"Norastrasse",14
+2014,1,"männlich",44,"Hard",4401,"Schlachthof",11
+2014,1,"männlich",42,"Langstrasse",4202,"Bäckeranlage",7
+2014,1,"männlich",42,"Langstrasse",4204,"Bezirksgebäude",2
+2014,1,"männlich",42,"Langstrasse",4203,"Engelstrasse",20
+2014,1,"männlich",42,"Langstrasse",4201,"Schöneggplatz",9
+2014,1,"männlich",42,"Langstrasse",4206,"Sihlpost",14
+2014,1,"männlich",42,"Langstrasse",4205,"Volkshaus",13
+2014,1,"männlich",41,"Werd",4101,"Kalkbreite",17
+2014,1,"männlich",41,"Werd",4103,"Schöntalstrasse",14
+2014,1,"männlich",41,"Werd",4102,"Werdplatz",1
+2014,1,"männlich",52,"Escher Wyss",5201,"Hardturm",14
+2014,1,"männlich",52,"Escher Wyss",5204,"KV-Business School",1
+2014,1,"männlich",52,"Escher Wyss",5203,"Neue Hard",7
+2014,1,"männlich",52,"Escher Wyss",5202,"Technopark",10
+2014,1,"männlich",51,"Gewerbeschule",5103,"Berufsschule",1
+2014,1,"männlich",51,"Gewerbeschule",5105,"Johannesgasse",9
+2014,1,"männlich",51,"Gewerbeschule",5101,"Josefswiese",8
+2014,1,"männlich",51,"Gewerbeschule",5106,"Konradstrasse",5
+2014,1,"männlich",51,"Gewerbeschule",5104,"Museum für Gestaltung",2
+2014,1,"männlich",51,"Gewerbeschule",5102,"Quellenstrasse",26
+2014,1,"männlich",63,"Oberstrass",6304,"Culmannstrasse",19
+2014,1,"männlich",63,"Oberstrass",6305,"Frauenklinik",6
+2014,1,"männlich",63,"Oberstrass",6302,"Letzistrasse",9
+2014,1,"männlich",63,"Oberstrass",6303,"Ottikerstrasse",9
+2014,1,"männlich",63,"Oberstrass",6307,"Rigiblick",2
+2014,1,"männlich",63,"Oberstrass",6306,"Rigistrasse",18
+2014,1,"männlich",63,"Oberstrass",6301,"Uni Irchel",3
+2014,1,"männlich",61,"Unterstrass",6113,"Beckenhof",13
+2014,1,"männlich",61,"Unterstrass",6112,"Drahtschmidli",7
+2014,1,"männlich",61,"Unterstrass",6103,"Freibad Allenmoos",4
+2014,1,"männlich",61,"Unterstrass",6110,"Gemsenstrasse",5
+2014,1,"männlich",61,"Unterstrass",6107,"Guggachstrasse",13
+2014,1,"männlich",61,"Unterstrass",6109,"Irchel",11
+2014,1,"männlich",61,"Unterstrass",6102,"Kiefernweg",7
+2014,1,"männlich",61,"Unterstrass",6101,"Nordheim",4
+2014,1,"männlich",61,"Unterstrass",6104,"Radio-Studio",6
+2014,1,"männlich",61,"Unterstrass",6111,"Schindlerstrasse",21
+2014,1,"männlich",61,"Unterstrass",6106,"Seminarstrasse",5
+2014,1,"männlich",61,"Unterstrass",6105,"Steinkluppe",11
+2014,1,"männlich",61,"Unterstrass",6108,"Stüssistrasse",19
+2014,1,"männlich",71,"Fluntern",7103,"Bethanien",14
+2014,1,"männlich",71,"Fluntern",7101,"Heubeeriweg",11
+2014,1,"männlich",71,"Fluntern",7105,"Platte",6
+2014,1,"männlich",71,"Fluntern",7102,"Sonnenbad",4
+2014,1,"männlich",71,"Fluntern",7104,"Universitätsspital",8
+2014,1,"männlich",71,"Fluntern",7106,"Zoo",1
+2014,1,"männlich",73,"Hirslanden",7301,"Degenried",13
+2014,1,"männlich",73,"Hirslanden",7303,"Hegibachplatz",26
+2014,1,"männlich",73,"Hirslanden",7302,"Klusplatz",15
+2014,1,"männlich",72,"Hottingen",7201,"Dolder",3
+2014,1,"männlich",72,"Hottingen",7203,"Doldertal",7
+2014,1,"männlich",72,"Hottingen",7207,"Eidmattstrasse",14
+2014,1,"männlich",72,"Hottingen",7204,"Kinderspital",14
+2014,1,"männlich",72,"Hottingen",7205,"Merkurplatz",11
+2014,1,"männlich",72,"Hottingen",7206,"Pflegerinnenschule",9
+2014,1,"männlich",72,"Hottingen",7202,"Sonnenberg",6
+2014,1,"männlich",74,"Witikon",7401,"Buchzelgstrasse",9
+2014,1,"männlich",74,"Witikon",7402,"Carl Spitteler-Strasse",12
+2014,1,"männlich",74,"Witikon",7403,"Eierbrecht",10
+2014,1,"männlich",74,"Witikon",7405,"Glockenacker",3
+2014,1,"männlich",74,"Witikon",7406,"Im Trichtisal",7
+2014,1,"männlich",74,"Witikon",7407,"Trichtenhausen",5
+2014,1,"männlich",82,"Mühlebach",8203,"Geranienstrasse",11
+2014,1,"männlich",82,"Mühlebach",8201,"Holbeinstrasse",14
+2014,1,"männlich",82,"Mühlebach",8204,"In der Mühle",5
+2014,1,"männlich",82,"Mühlebach",8202,"Riesbachstrasse",7
+2014,1,"männlich",81,"Seefeld",8102,"Chinagarten",19
+2014,1,"männlich",81,"Seefeld",8101,"Seebad Utoquai",12
+2014,1,"männlich",81,"Seefeld",8103,"Tiefenbrunnen",13
+2014,1,"männlich",83,"Weinegg",8302,"Botanischer Garten",6
+2014,1,"männlich",83,"Weinegg",8303,"Burghölzli",8
+2014,1,"männlich",83,"Weinegg",8301,"Neumünster",5
+2014,1,"männlich",83,"Weinegg",8304,"Rehalp",5
+2014,1,"männlich",91,"Albisrieden",9103,"Bockhornstrasse",8
+2014,1,"männlich",91,"Albisrieden",9101,"Brünneliacker",7
+2014,1,"männlich",91,"Albisrieden",9109,"Espenhof",23
+2014,1,"männlich",91,"Albisrieden",9102,"In den Rütenen",20
+2014,1,"männlich",91,"Albisrieden",9105,"In der Ey",16
+2014,1,"männlich",91,"Albisrieden",9107,"Letzigraben",16
+2014,1,"männlich",91,"Albisrieden",9106,"Mühlezelgstrasse",13
+2014,1,"männlich",91,"Albisrieden",9108,"Sackzelg",6
+2014,1,"männlich",91,"Albisrieden",9104,"Zollfreilager",15
+2014,1,"männlich",92,"Altstetten",9209,"Altstetterplatz",21
+2014,1,"männlich",92,"Altstetten",9206,"Bachmattstrasse",13
+2014,1,"männlich",92,"Altstetten",9204,"Buchlern",14
+2014,1,"männlich",92,"Altstetten",9210,"Calandastrasse",11
+2014,1,"männlich",92,"Altstetten",9205,"Dachslernstrasse",18
+2014,1,"männlich",92,"Altstetten",9201,"Dunkelhölzli",9
+2014,1,"männlich",92,"Altstetten",9213,"Edelweissstrasse",6
+2014,1,"männlich",92,"Altstetten",9203,"Eichbühl",11
+2014,1,"männlich",92,"Altstetten",9212,"Grimselstrasse",18
+2014,1,"männlich",92,"Altstetten",9216,"Grünaustrasse",16
+2014,1,"männlich",92,"Altstetten",9208,"Hardhof",8
+2014,1,"männlich",92,"Altstetten",9215,"Juchhof",7
+2014,1,"männlich",92,"Altstetten",9214,"Letzigrund",12
+2014,1,"männlich",92,"Altstetten",9202,"Loogartenstrasse",12
+2014,1,"männlich",92,"Altstetten",9207,"Werdhölzli",7
+2014,1,"männlich",92,"Altstetten",9211,"Zwyssigstrasse",13
+2014,2,"weiblich",14,"City",1401,"Bahnhofplatz",1
+2014,2,"weiblich",14,"City",1403,"Selnaustrasse",3
+2014,2,"weiblich",14,"City",1402,"Sihlporte",1
+2014,2,"weiblich",12,"Hochschulen",1201,"Central",1
+2014,2,"weiblich",13,"Lindenhof",1302,"Münsterhof",3
+2014,2,"weiblich",13,"Lindenhof",1301,"Schipfe",2
+2014,2,"weiblich",11,"Rathaus",1103,"Grossmünster",2
+2014,2,"weiblich",11,"Rathaus",1104,"Oberdorf",2
+2014,2,"weiblich",11,"Rathaus",1101,"Zähringerstrasse",2
+2014,2,"weiblich",11,"Rathaus",1102,"Zentralbibliothek",5
+2014,2,"weiblich",101,"Höngg",10106,"Bauherrenstrasse",10
+2014,2,"weiblich",101,"Höngg",10107,"Grossmannstrasse",19
+2014,2,"weiblich",101,"Höngg",10110,"Gsteigstrasse",12
+2014,2,"weiblich",101,"Höngg",10102,"Hönggerberg",13
+2014,2,"weiblich",101,"Höngg",10103,"Imbisbühlstrasse",17
+2014,2,"weiblich",101,"Höngg",10101,"Riedhof",8
+2014,2,"weiblich",101,"Höngg",10109,"Rütihof",16
+2014,2,"weiblich",101,"Höngg",10108,"Waidbad",9
+2014,2,"weiblich",101,"Höngg",10104,"Werdinsel",14
+2014,2,"weiblich",102,"Wipkingen",10202,"Im Sydefädeli",19
+2014,2,"weiblich",102,"Wipkingen",10207,"Letten",14
+2014,2,"weiblich",102,"Wipkingen",10205,"Röschibachstrasse",31
+2014,2,"weiblich",102,"Wipkingen",10204,"Rosengartenstrasse",18
+2014,2,"weiblich",102,"Wipkingen",10206,"Schubertstrasse",27
+2014,2,"weiblich",102,"Wipkingen",10201,"Waidspital",9
+2014,2,"weiblich",102,"Wipkingen",10203,"Zschokkestrasse",15
+2014,2,"weiblich",111,"Affoltern",11102,"Furttalstrasse",10
+2014,2,"weiblich",111,"Affoltern",11106,"Hürststrasse",29
+2014,2,"weiblich",111,"Affoltern",11101,"Katzensee",30
+2014,2,"weiblich",111,"Affoltern",11107,"Reckenholz",19
+2014,2,"weiblich",111,"Affoltern",11104,"Schauenbergstrasse",37
+2014,2,"weiblich",111,"Affoltern",11105,"Schützenmatt",11
+2014,2,"weiblich",111,"Affoltern",11103,"Zehntenhausplatz",42
+2014,2,"weiblich",115,"Oerlikon",11501,"Affolternstrasse",41
+2014,2,"weiblich",115,"Oerlikon",11503,"Albin Zollinger-Platz",18
+2014,2,"weiblich",115,"Oerlikon",11508,"Berninaplatz",9
+2014,2,"weiblich",115,"Oerlikon",11509,"Gorwiden",8
+2014,2,"weiblich",115,"Oerlikon",11502,"Holunderhof",12
+2014,2,"weiblich",115,"Oerlikon",11507,"Magdalenenstrasse",14
+2014,2,"weiblich",115,"Oerlikon",11504,"Marktplatz Oerlikon",12
+2014,2,"weiblich",115,"Oerlikon",11506,"Messegelände",6
+2014,2,"weiblich",115,"Oerlikon",11510,"Murwiesenstrasse",1
+2014,2,"weiblich",115,"Oerlikon",11505,"Stadthof",12
+2014,2,"weiblich",119,"Seebach",11905,"Ausserdorfstrasse",3
+2014,2,"weiblich",119,"Seebach",11906,"Eichrain",31
+2014,2,"weiblich",119,"Seebach",11908,"Grünhaldenstrasse",17
+2014,2,"weiblich",119,"Seebach",11904,"Höhenring",29
+2014,2,"weiblich",119,"Seebach",11901,"Köschenrüti",21
+2014,2,"weiblich",119,"Seebach",11909,"Leutschenbach",17
+2014,2,"weiblich",119,"Seebach",11903,"Rickenstrasse",17
+2014,2,"weiblich",119,"Seebach",11907,"Sandacker",14
+2014,2,"weiblich",119,"Seebach",11902,"Schwandenholz",19
+2014,2,"weiblich",123,"Hirzenbach",12302,"Hirzenbachstrasse",25
+2014,2,"weiblich",123,"Hirzenbach",12301,"Kronwiesenstrasse",7
+2014,2,"weiblich",123,"Hirzenbach",12303,"Mattenhof",41
+2014,2,"weiblich",123,"Hirzenbach",12304,"Probsteistrasse",9
+2014,2,"weiblich",121,"Saatlen",12103,"Auzelg",4
+2014,2,"weiblich",121,"Saatlen",12102,"Dreispitz",27
+2014,2,"weiblich",121,"Saatlen",12101,"Hagenholz",9
+2014,2,"weiblich",122,"Schwamendingen-Mitte",12203,"Auhof",14
+2014,2,"weiblich",122,"Schwamendingen-Mitte",12202,"Bocklerstrasse",10
+2014,2,"weiblich",122,"Schwamendingen-Mitte",12205,"Roswiesenstrasse",19
+2014,2,"weiblich",122,"Schwamendingen-Mitte",12204,"Schürgistrasse",11
+2014,2,"weiblich",122,"Schwamendingen-Mitte",12201,"Tulpenstrasse",13
+2014,2,"weiblich",24,"Enge",2403,"Belvoir-Park",8
+2014,2,"weiblich",24,"Enge",2406,"Gartenstrasse",3
+2014,2,"weiblich",24,"Enge",2402,"Kongresshaus",7
+2014,2,"weiblich",24,"Enge",2404,"Museum Rietberg",19
+2014,2,"weiblich",24,"Enge",2401,"Parkring",11
+2014,2,"weiblich",24,"Enge",2405,"Rieterplatz",16
+2014,2,"weiblich",23,"Leimbach",2301,"Höckler",14
+2014,2,"weiblich",23,"Leimbach",2302,"Mahrbachweg",4
+2014,2,"weiblich",23,"Leimbach",2303,"Sihlweidstrasse",11
+2014,2,"weiblich",21,"Wollishofen",2107,"Auf der Egg",9
+2014,2,"weiblich",21,"Wollishofen",2101,"Bahnhof Wollishofen",2
+2014,2,"weiblich",21,"Wollishofen",2102,"Bellariastrasse",22
+2014,2,"weiblich",21,"Wollishofen",2109,"Entlisberg",14
+2014,2,"weiblich",21,"Wollishofen",2103,"Jugendherberge",12
+2014,2,"weiblich",21,"Wollishofen",2104,"Morgental",5
+2014,2,"weiblich",21,"Wollishofen",2108,"Neubühl",15
+2014,2,"weiblich",21,"Wollishofen",2111,"Seeblickstrasse",4
+2014,2,"weiblich",21,"Wollishofen",2110,"Verenastrasse",3
+2014,2,"weiblich",21,"Wollishofen",2106,"Waschanstalt",3
+2014,2,"weiblich",31,"Alt-Wiedikon",3105,"Binz",31
+2014,2,"weiblich",31,"Alt-Wiedikon",3102,"Goldbrunnenplatz",14
+2014,2,"weiblich",31,"Alt-Wiedikon",3103,"Gotthelfstrasse",12
+2014,2,"weiblich",31,"Alt-Wiedikon",3101,"Höfliweg",33
+2014,2,"weiblich",31,"Alt-Wiedikon",3104,"Manesseplatz",23
+2014,2,"weiblich",31,"Alt-Wiedikon",3106,"Saalsporthalle",22
+2014,2,"weiblich",33,"Friesenberg",3305,"Albisgüetli",8
+2014,2,"weiblich",33,"Friesenberg",3302,"Gehrenholz",6
+2014,2,"weiblich",33,"Friesenberg",3301,"Heuried",12
+2014,2,"weiblich",33,"Friesenberg",3304,"Strassenverkehrsamt",9
+2014,2,"weiblich",33,"Friesenberg",3306,"Triemli",8
+2014,2,"weiblich",33,"Friesenberg",3303,"Uetliberg",9
+2014,2,"weiblich",34,"Sihlfeld",3407,"Bahnhof Wiedikon",20
+2014,2,"weiblich",34,"Sihlfeld",3403,"Brahmsstrasse",12
+2014,2,"weiblich",34,"Sihlfeld",3402,"Friedhof Sihlfeld",8
+2014,2,"weiblich",34,"Sihlfeld",3404,"Fritschistrasse",14
+2014,2,"weiblich",34,"Sihlfeld",3405,"Idaplatz",27
+2014,2,"weiblich",34,"Sihlfeld",3401,"Schaufelbergerstrasse",22
+2014,2,"weiblich",34,"Sihlfeld",3408,"Sihlhölzli",18
+2014,2,"weiblich",34,"Sihlfeld",3406,"Zwinglihaus",16
+2014,2,"weiblich",44,"Hard",4403,"Bullingerhof",9
+2014,2,"weiblich",44,"Hard",4405,"Güterbahnhof",23
+2014,2,"weiblich",44,"Hard",4404,"Lochergut",8
+2014,2,"weiblich",44,"Hard",4402,"Norastrasse",22
+2014,2,"weiblich",44,"Hard",4401,"Schlachthof",9
+2014,2,"weiblich",42,"Langstrasse",4202,"Bäckeranlage",15
+2014,2,"weiblich",42,"Langstrasse",4204,"Bezirksgebäude",1
+2014,2,"weiblich",42,"Langstrasse",4203,"Engelstrasse",18
+2014,2,"weiblich",42,"Langstrasse",4201,"Schöneggplatz",14
+2014,2,"weiblich",42,"Langstrasse",4206,"Sihlpost",12
+2014,2,"weiblich",42,"Langstrasse",4205,"Volkshaus",13
+2014,2,"weiblich",41,"Werd",4101,"Kalkbreite",16
+2014,2,"weiblich",41,"Werd",4103,"Schöntalstrasse",20
+2014,2,"weiblich",41,"Werd",4102,"Werdplatz",4
+2014,2,"weiblich",52,"Escher Wyss",5201,"Hardturm",3
+2014,2,"weiblich",52,"Escher Wyss",5204,"KV-Business School",1
+2014,2,"weiblich",52,"Escher Wyss",5203,"Neue Hard",9
+2014,2,"weiblich",52,"Escher Wyss",5202,"Technopark",22
+2014,2,"weiblich",51,"Gewerbeschule",5103,"Berufsschule",3
+2014,2,"weiblich",51,"Gewerbeschule",5105,"Johannesgasse",12
+2014,2,"weiblich",51,"Gewerbeschule",5101,"Josefswiese",15
+2014,2,"weiblich",51,"Gewerbeschule",5106,"Konradstrasse",8
+2014,2,"weiblich",51,"Gewerbeschule",5104,"Museum für Gestaltung",2
+2014,2,"weiblich",51,"Gewerbeschule",5102,"Quellenstrasse",24
+2014,2,"weiblich",63,"Oberstrass",6304,"Culmannstrasse",12
+2014,2,"weiblich",63,"Oberstrass",6305,"Frauenklinik",5
+2014,2,"weiblich",63,"Oberstrass",6302,"Letzistrasse",5
+2014,2,"weiblich",63,"Oberstrass",6303,"Ottikerstrasse",10
+2014,2,"weiblich",63,"Oberstrass",6307,"Rigiblick",6
+2014,2,"weiblich",63,"Oberstrass",6306,"Rigistrasse",9
+2014,2,"weiblich",61,"Unterstrass",6113,"Beckenhof",17
+2014,2,"weiblich",61,"Unterstrass",6112,"Drahtschmidli",6
+2014,2,"weiblich",61,"Unterstrass",6103,"Freibad Allenmoos",7
+2014,2,"weiblich",61,"Unterstrass",6110,"Gemsenstrasse",11
+2014,2,"weiblich",61,"Unterstrass",6107,"Guggachstrasse",17
+2014,2,"weiblich",61,"Unterstrass",6109,"Irchel",11
+2014,2,"weiblich",61,"Unterstrass",6102,"Kiefernweg",4
+2014,2,"weiblich",61,"Unterstrass",6101,"Nordheim",5
+2014,2,"weiblich",61,"Unterstrass",6104,"Radio-Studio",12
+2014,2,"weiblich",61,"Unterstrass",6111,"Schindlerstrasse",24
+2014,2,"weiblich",61,"Unterstrass",6106,"Seminarstrasse",4
+2014,2,"weiblich",61,"Unterstrass",6105,"Steinkluppe",10
+2014,2,"weiblich",61,"Unterstrass",6108,"Stüssistrasse",20
+2014,2,"weiblich",71,"Fluntern",7103,"Bethanien",12
+2014,2,"weiblich",71,"Fluntern",7101,"Heubeeriweg",7
+2014,2,"weiblich",71,"Fluntern",7105,"Platte",5
+2014,2,"weiblich",71,"Fluntern",7102,"Sonnenbad",5
+2014,2,"weiblich",71,"Fluntern",7104,"Universitätsspital",5
+2014,2,"weiblich",71,"Fluntern",7106,"Zoo",1
+2014,2,"weiblich",73,"Hirslanden",7301,"Degenried",9
+2014,2,"weiblich",73,"Hirslanden",7303,"Hegibachplatz",28
+2014,2,"weiblich",73,"Hirslanden",7302,"Klusplatz",15
+2014,2,"weiblich",72,"Hottingen",7201,"Dolder",3
+2014,2,"weiblich",72,"Hottingen",7203,"Doldertal",4
+2014,2,"weiblich",72,"Hottingen",7207,"Eidmattstrasse",14
+2014,2,"weiblich",72,"Hottingen",7204,"Kinderspital",11
+2014,2,"weiblich",72,"Hottingen",7205,"Merkurplatz",14
+2014,2,"weiblich",72,"Hottingen",7206,"Pflegerinnenschule",15
+2014,2,"weiblich",72,"Hottingen",7202,"Sonnenberg",5
+2014,2,"weiblich",74,"Witikon",7401,"Buchzelgstrasse",13
+2014,2,"weiblich",74,"Witikon",7402,"Carl Spitteler-Strasse",11
+2014,2,"weiblich",74,"Witikon",7403,"Eierbrecht",7
+2014,2,"weiblich",74,"Witikon",7405,"Glockenacker",7
+2014,2,"weiblich",74,"Witikon",7406,"Im Trichtisal",5
+2014,2,"weiblich",74,"Witikon",7404,"Loorenstrasse",2
+2014,2,"weiblich",74,"Witikon",7407,"Trichtenhausen",6
+2014,2,"weiblich",82,"Mühlebach",8203,"Geranienstrasse",8
+2014,2,"weiblich",82,"Mühlebach",8201,"Holbeinstrasse",14
+2014,2,"weiblich",82,"Mühlebach",8204,"In der Mühle",4
+2014,2,"weiblich",82,"Mühlebach",8202,"Riesbachstrasse",7
+2014,2,"weiblich",81,"Seefeld",8102,"Chinagarten",20
+2014,2,"weiblich",81,"Seefeld",8101,"Seebad Utoquai",8
+2014,2,"weiblich",81,"Seefeld",8103,"Tiefenbrunnen",20
+2014,2,"weiblich",83,"Weinegg",8302,"Botanischer Garten",4
+2014,2,"weiblich",83,"Weinegg",8303,"Burghölzli",10
+2014,2,"weiblich",83,"Weinegg",8301,"Neumünster",3
+2014,2,"weiblich",83,"Weinegg",8304,"Rehalp",15
+2014,2,"weiblich",91,"Albisrieden",9103,"Bockhornstrasse",9
+2014,2,"weiblich",91,"Albisrieden",9101,"Brünneliacker",9
+2014,2,"weiblich",91,"Albisrieden",9109,"Espenhof",20
+2014,2,"weiblich",91,"Albisrieden",9102,"In den Rütenen",16
+2014,2,"weiblich",91,"Albisrieden",9105,"In der Ey",18
+2014,2,"weiblich",91,"Albisrieden",9107,"Letzigraben",15
+2014,2,"weiblich",91,"Albisrieden",9106,"Mühlezelgstrasse",12
+2014,2,"weiblich",91,"Albisrieden",9108,"Sackzelg",6
+2014,2,"weiblich",91,"Albisrieden",9104,"Zollfreilager",17
+2014,2,"weiblich",92,"Altstetten",9209,"Altstetterplatz",14
+2014,2,"weiblich",92,"Altstetten",9206,"Bachmattstrasse",15
+2014,2,"weiblich",92,"Altstetten",9204,"Buchlern",18
+2014,2,"weiblich",92,"Altstetten",9210,"Calandastrasse",17
+2014,2,"weiblich",92,"Altstetten",9205,"Dachslernstrasse",16
+2014,2,"weiblich",92,"Altstetten",9201,"Dunkelhölzli",10
+2014,2,"weiblich",92,"Altstetten",9213,"Edelweissstrasse",16
+2014,2,"weiblich",92,"Altstetten",9203,"Eichbühl",13
+2014,2,"weiblich",92,"Altstetten",9212,"Grimselstrasse",14
+2014,2,"weiblich",92,"Altstetten",9216,"Grünaustrasse",10
+2014,2,"weiblich",92,"Altstetten",9208,"Hardhof",3
+2014,2,"weiblich",92,"Altstetten",9215,"Juchhof",4
+2014,2,"weiblich",92,"Altstetten",9214,"Letzigrund",11
+2014,2,"weiblich",92,"Altstetten",9202,"Loogartenstrasse",11
+2014,2,"weiblich",92,"Altstetten",9207,"Werdhölzli",2
+2014,2,"weiblich",92,"Altstetten",9211,"Zwyssigstrasse",11
+
