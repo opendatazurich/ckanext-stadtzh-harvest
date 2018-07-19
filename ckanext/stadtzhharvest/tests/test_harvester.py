@@ -125,9 +125,11 @@ class FunctionalHarvestTest(object):
             queue.fetch_callback(self.fetch_consumer, *reply)
 
     def _run_full_job(self, harvest_source_id, num_jobs=1, num_objects=1):
+        from pprint import pprint
 
         # Create new job for the source
-        self._create_harvest_job(harvest_source_id)
+        job = self._create_harvest_job(harvest_source_id)
+        pprint(job)
 
         # Run the job
         self._run_jobs(harvest_source_id)
@@ -198,9 +200,10 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
     def _test_harvest_create(self, num_objects, **kwargs):
 
-        from pprint import pprint
-        pprint(kwargs)
         harvest_source = self._create_harvest_source(**kwargs)
+        
+        from pprint import pprint
+        pprint(harvest_source)
 
         self._run_full_job(harvest_source['id'], num_objects=num_objects)
 
@@ -208,8 +211,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
         results = h.call_action('package_search', {}, fq=fq)
         eq_(results['count'], num_objects)
-	return results
-
+        return results
 
     # def test_harvest_update_rdf(self):
 
