@@ -70,7 +70,7 @@ class FunctionalHarvestTest(object):
             'title': 'Stadt ZH Source',
             'name': 'test-stadtzh-source',
             'url': 'http://stadthzh',
-            'source_type': 'dcat_rdf',
+            'source_type': 'stadtzh_harvester',
         }
 
         source_dict.update(**kwargs)
