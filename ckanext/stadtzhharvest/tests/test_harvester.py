@@ -9,6 +9,7 @@ import ckanext.harvest.model as harvest_model
 from ckanext.harvest import queue
 
 import ckanext.stadtzhharvest.harvester as plugin
+import ckanext.stadtzhtheme.plugin as theme
 
 eq_ = nose.tools.eq_
 assert_true = nose.tools.assert_true
@@ -55,6 +56,10 @@ class FunctionalHarvestTest(object):
 
         cls.gather_consumer = queue.get_gather_consumer()
         cls.fetch_consumer = queue.get_fetch_consumer()
+
+        # create required tag vocabularies
+        theme.create_updateInterval()
+        theme.create_dataType()
 
     def setup(self):
         harvest_model.setup()
