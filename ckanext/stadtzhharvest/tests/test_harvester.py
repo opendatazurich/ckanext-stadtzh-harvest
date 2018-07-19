@@ -147,15 +147,15 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'fixtures',
             'test_dropzone'
         )
-        test_config = {
+        test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
             'metadata_dir': 'test-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
-        }
+        })
 
-        result = self._test_harvest_create(1, config=json.dumps(test_config))[0]
+        result = self._test_harvest_create(1, config=test_config)[0]
         eq_(result['title'], u'Administrative Einteilungen Stadt Zürich')
 
     def test_harvest_create_dwh(self):
@@ -164,13 +164,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'fixtures',
             'DWH'
         )
-        test_config = {
+        test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
             'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
-        }
+        })
 
         results = self._test_harvest_create(3, config=test_config)
         for result in results:
@@ -184,13 +184,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'fixtures',
             'GEO'
         )
-        test_config = {
+        test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': 'DEFAULT',
             'metadata_dir': 'geo-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
-        }
+        })
 
         results = self._test_harvest_create(2, config=test_config)
         for result in results:
