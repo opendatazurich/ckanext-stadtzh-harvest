@@ -9,7 +9,7 @@ import traceback
 import uuid
 import hashlib
 from contextlib import contextmanager
-from lxml import etree
+import defusedxml.ElementTree as etree
 from cgi import FieldStorage
 from pylons import config
 from ckan import model
