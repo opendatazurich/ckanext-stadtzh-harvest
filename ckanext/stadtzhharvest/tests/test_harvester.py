@@ -3,6 +3,8 @@
 import nose
 import os
 import json
+import tempfile
+import shutil
 import ckantoolkit.tests.helpers as h
 
 import ckanext.harvest.model as harvest_model
@@ -66,8 +68,12 @@ class FunctionalHarvestTest(object):
         theme.create_updateInterval()
         theme.create_dataType()
 
-    def teardown(cls):
+        # create temp dir for this test
+        self.temp_dir = tempfile.mkdtemp()
+
+    def teardown(self):
         h.reset_db()
+        shutil.rmtree(self.temp_dir)
 
     def _create_harvest_source(self, **kwargs):
 
@@ -209,7 +215,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def _test_harvest_create(self, num_objects, **kwargs):
-
         harvest_source = self._create_harvest_source(**kwargs)
 
         self._run_full_job(harvest_source['id'], num_objects=num_objects)
@@ -218,204 +223,117 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
         results = h.call_action('package_search', {}, fq=fq)
         eq_(results['count'], num_objects)
-        from pprint import pprint
-        pprint(results)
         return results
 
-    # def test_harvest_update_rdf(self):
+    def test_harvest_update_dwh(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'DWH'
+        )
+        temp_dir = tempfile.mkdtemp()
+        temp_data_path = os.path.join(temp_dir, 'DWH')
+        shutil.copytree(data_path, temp_data_path)
 
-    #     self._test_harvest_update(self.rdf_mock_url,
-    #                               self.rdf_content,
-    #                               self.rdf_content_type)
+        test_config = json.dumps({
+            'data_path': temp_data_path,
+            'metafile_dir': '',
+            'metadata_dir': 'dwh-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': False
+        })
+        meta_xml_path = os.path.join(
+            temp_dir,
+            'DWH',
+            'nachnamen_2014',
+            'meta.xml'
+        )
 
-    # def _test_harvest_update(self, url, content, content_type):
-    #     # Mock the GET request to get the file
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=content, content_type=content_type)
+        results = self._test_harvest_update(3, temp_data_path, meta_xml_path, config=test_config)
+        eq_(len(results['results']), 4)
 
-    #     # The harvester will try to do a HEAD request first so we need to mock
-    #     # this as well
-    #     httpretty.register_uri(httpretty.HEAD, url,
-    #                            status=405, content_type=content_type)
+        # the title of 'nachnamen_2014' should be updated + 1 one dataset should be added
+        for result in results['results']:
+            expected_titles = [
+                u'Geburten nach Jahr, Geschlecht und Stadtquartier',
+                u'Test Nachnamen in der Stadt Zürich (updated)',
+                u'Daten der permanenten Velozählstellen - Stundenwerte',
+                u'Administrative Einteilungen Stadt Zürich',
+            ]
 
-    #     harvest_source = self._create_harvest_source(url)
+            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
-    #     # First run, will create two datasets as previously tested
-    #     self._run_full_job(harvest_source['id'], num_objects=2)
+    def test_harvest_update_geo(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'GEO'
+        )
+        temp_dir = tempfile.mkdtemp()
+        temp_data_path = os.path.join(temp_dir, 'GEO')
+        shutil.copytree(data_path, temp_data_path)
 
-    #     # Run the jobs to mark the previous one as Finished
-    #     self._run_jobs()
+        test_config = json.dumps({
+            'data_path': temp_data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+        meta_xml_path = os.path.join(
+            temp_dir,
+            'GEO',
+            'amtshaus',
+            'DEFAULT',
+            'meta.xml'
+        )
 
-    #     # Mock an update in the remote file
-    #     new_file = content.replace('Example dataset 1',
-    #                                'Example dataset 1 (updated)')
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=new_file, content_type=content_type)
+        results = self._test_harvest_update(2, temp_data_path, meta_xml_path, config=test_config)
+        eq_(len(results['results']), 3)
+        # since 'update_datasets' is set to False, no datasets should be changed
+        # but a new one should be there
+        for result in results['results']:
+            expected_titles = [
+                u'Alterswohnung',
+                u'Amtshaus',
+                u'Administrative Einteilungen Stadt Zürich',
+            ]
+            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
-    #     # Run a second job
-    #     self._run_full_job(harvest_source['id'], num_objects=2)
+    def _test_harvest_update(self, num_objects, dropzone_path, meta_xml_path, **kwargs):
+        harvest_source = self._create_harvest_source(**kwargs)
 
-    #     # Check that we still have two datasets
-    #     fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
-    #     results = h.call_action('package_search', {}, fq=fq)
+        # First run, will create datasets as previously tested
+        self._run_full_job(harvest_source['id'], num_objects=num_objects)
 
-    #     eq_(results['count'], 2)
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
 
-    #     # Check that the dataset was updated
-    #     for result in results['results']:
-    #         assert result['title'] in ('Example dataset 1 (updated)',
-    #                                    'Example dataset 2')
+        # change data in source
+        with open(meta_xml_path, 'r') as meta_file:
+            meta = meta_file.read()
+        meta = meta.replace('</titel>', ' (updated)</titel>')
+        with open(meta_xml_path, 'w') as meta_file:
+            meta_file.write(meta)
 
-    # def test_harvest_update_existing_resources(self):
+        # add new file to dropzone
+        dataset_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_dropzone',
+            'test_dataset'
+        )
+        shutil.copytree(
+            dataset_path,
+            os.path.join(dropzone_path, 'test_dataset')
+        )
 
-    #     existing, new = self._test_harvest_update_resources(self.rdf_mock_url,
-    #                               self.rdf_content_with_distribution_uri,
-    #                               self.rdf_content_type)
-    #     eq_(new['uri'], 'https://data.some.org/catalog/datasets/1/resource/1')
-    #     eq_(new['uri'], existing['uri'])
-    #     eq_(new['id'], existing['id'])
+        # Run a second job
+        self._run_full_job(harvest_source['id'], num_objects=num_objects)
 
-    # def test_harvest_update_new_resources(self):
+        # Check that we still have two datasets
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq)
 
-    #     existing, new = self._test_harvest_update_resources(self.rdf_mock_url,
-    #                               self.rdf_content_with_distribution,
-    #                               self.rdf_content_type)
-    #     eq_(existing['uri'], '')
-    #     eq_(new['uri'], '')
-    #     nose.tools.assert_is_not(new['id'], existing['id'])
-
-    # def _test_harvest_update_resources(self, url, content, content_type):
-    #     # Mock the GET request to get the file
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=content, content_type=content_type)
-
-    #     # The harvester will try to do a HEAD request first so we need to mock
-    #     # this as well
-    #     httpretty.register_uri(httpretty.HEAD, url,
-    #                            status=405, content_type=content_type)
-
-    #     harvest_source = self._create_harvest_source(url)
-
-    #     # First run, create the dataset with the resource
-    #     self._run_full_job(harvest_source['id'], num_objects=1)
-
-    #     # Run the jobs to mark the previous one as Finished
-    #     self._run_jobs()
-
-    #     # get the created dataset
-    #     fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
-    #     results = h.call_action('package_search', {}, fq=fq)
-    #     eq_(results['count'], 1)
-
-    #     existing_dataset = results['results'][0]
-    #     existing_resource = existing_dataset.get('resources')[0]
-
-    #     # Mock an update in the remote file
-    #     new_file = content.replace('Example resource 1',
-    #                                'Example resource 1 (updated)')
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=new_file, content_type=content_type)
-
-    #     # Run a second job
-    #     self._run_full_job(harvest_source['id'])
-
-    #     # get the updated dataset
-    #     new_results = h.call_action('package_search', {}, fq=fq)
-    #     eq_(new_results['count'], 1)
-
-    #     new_dataset = new_results['results'][0]
-    #     new_resource = new_dataset.get('resources')[0]
-
-    #     eq_(existing_resource['name'], 'Example resource 1')
-    #     eq_(len(new_dataset.get('resources')), 1)
-    #     eq_(new_resource['name'], 'Example resource 1 (updated)')
-    #     return (existing_resource, new_resource)
-
-    # def test_harvest_delete_rdf(self):
-
-    #     self._test_harvest_delete(self.rdf_mock_url,
-    #                               self.rdf_content,
-    #                               self.rdf_remote_file_small,
-    #                               self.rdf_content_type)
-
-    # def test_harvest_delete_ttl(self):
-
-    #     self._test_harvest_delete(self.ttl_mock_url,
-    #                               self.ttl_content,
-    #                               self.ttl_remote_file_small,
-    #                               self.ttl_content_type)
-
-    # def _test_harvest_delete(self, url, content, content_small, content_type):
-
-    #     # Mock the GET request to get the file
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=content, content_type=content_type)
-
-    #     # The harvester will try to do a HEAD request first so we need to mock
-    #     # this as well
-    #     httpretty.register_uri(httpretty.HEAD, url,
-    #                            status=405, content_type=content_type)
-
-    #     harvest_source = self._create_harvest_source(url)
-
-    #     # First run, will create two datasets as previously tested
-    #     self._run_full_job(harvest_source['id'], num_objects=2)
-
-    #     # Run the jobs to mark the previous one as Finished
-    #     self._run_jobs()
-
-    #     # Mock a deletion in the remote file
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=content_small, content_type=content_type)
-
-    #     # Run a second job
-    #     self._run_full_job(harvest_source['id'], num_objects=2)
-
-    #     # Check that we only have one dataset
-    #     fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
-    #     results = h.call_action('package_search', {}, fq=fq)
-
-    #     eq_(results['count'], 1)
-
-    #     eq_(results['results'][0]['title'], 'Example dataset 1')
-
-    # def test_harvest_bad_format_rdf(self):
-
-    #     self._test_harvest_bad_format(self.rdf_mock_url,
-    #                                   self.rdf_remote_file_invalid,
-    #                                   self.rdf_content_type)
-
-    # def test_harvest_bad_format_ttl(self):
-
-    #     self._test_harvest_bad_format(self.ttl_mock_url,
-    #                                   self.ttl_remote_file_invalid,
-    #                                   self.ttl_content_type)
-
-    # def _test_harvest_bad_format(self, url, bad_content, content_type):
-
-    #     # Mock the GET request to get the file
-    #     httpretty.register_uri(httpretty.GET, url,
-    #                            body=bad_content, content_type=content_type)
-
-    #     # The harvester will try to do a HEAD request first so we need to mock
-    #     # this as well
-    #     httpretty.register_uri(httpretty.HEAD, url,
-    #                            status=405, content_type=content_type)
-
-    #     harvest_source = self._create_harvest_source(url)
-    #     self._create_harvest_job(harvest_source['id'])
-    #     self._run_jobs(harvest_source['id'])
-    #     self._gather_queue(1)
-
-    #     # Run the jobs to mark the previous one as Finished
-    #     self._run_jobs()
-
-    #     # Get the harvest source with the udpated status
-    #     harvest_source = h.call_action('harvest_source_show',
-    #                                    id=harvest_source['id'])
-
-    #     last_job_status = harvest_source['status']['last_job']
-
-    #     eq_(last_job_status['status'], 'Finished')
-    #     assert ('Error parsing the RDF file'
-    #             in last_job_status['gather_error_summary'][0][0])
+        eq_(results['count'], num_objects+1)
+        return results
