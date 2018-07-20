@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import errno
 import re
 import datetime
 import difflib
@@ -940,8 +941,16 @@ class StadtzhHarvester(HarvesterBase):
         return attributes
 
     def _get_immediate_subdirectories(self, directory):
-        return [name for name in os.listdir(directory)
-                if os.path.isdir(os.path.join(directory, name))]
+        try:
+            return [
+                name for name in os.listdir(directory)
+                if os.path.isdir(os.path.join(directory, name))
+            ]
+        except OSError, e:
+            if e.errno == errno.ENOENT:
+                # directory does not exist
+                return []
+            raise
 
     def _diff_path(self, package_id):
         today = datetime.date.today()
