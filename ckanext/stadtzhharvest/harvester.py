@@ -22,9 +22,13 @@ from ckan.lib.munge import munge_title_to_name
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
-
 import logging
 log = logging.getLogger(__name__)
+
+# patch etree due to typo in defusedxml
+# => https://github.com/tiran/defusedxml/pull/9
+etree.XMLParser = etree.XMLParse
+
 
 FILE_NOT_FOUND_URL = 'https://data.stadt-zuerich.ch/filenotfound'
 
