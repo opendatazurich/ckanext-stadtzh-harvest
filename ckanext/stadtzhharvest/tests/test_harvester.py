@@ -15,6 +15,7 @@ import ckanext.stadtzhtheme.plugin as theme
 
 eq_ = nose.tools.eq_
 assert_true = nose.tools.assert_true
+assert_raises = nose.tools.assert_raises
 
 __location__ = os.path.realpath(
     os.path.join(
@@ -49,6 +50,28 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['title'], u'Administrative Einteilungen Stadt Zürich')
+
+    def test_load_metadata_from_path_empty(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'empty_dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        with assert_raises(plugin.MetaXmlNotFoundError) as e:
+            harvester._load_metadata_from_path(
+                test_meta_xml_path,
+                dataset_folder,
+                dataset_folder
+            )
 
 
 class FunctionalHarvestTest(object):
@@ -329,7 +352,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         )
 
         # Run a second job
-        self._run_full_job(harvest_source['id'], num_objects=num_objects)
+        self._run_full_job(harvest_source['id'], num_objects=num_objects+1)
 
         # Check that we still have two datasets
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])

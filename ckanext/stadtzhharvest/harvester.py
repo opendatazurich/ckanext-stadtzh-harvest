@@ -37,6 +37,10 @@ class InvalidCommentError(Exception):
         return repr(self.value)
 
 
+class MetaXmlNotFoundError(Exception):
+    pass
+
+
 @contextmanager
 def retry_open_file(path, mode, tries=10, close=True):
     """
@@ -190,24 +194,21 @@ class StadtzhHarvester(HarvesterBase):
             return []
 
     def _load_metadata_from_path(self, meta_xml_path, dataset_id, dataset):
-        metadata = None
-        if os.path.exists(meta_xml_path):
-            with retry_open_file(meta_xml_path, 'r') as meta_xml:
-                meta_xml = etree.parse(meta_xml)
-                dataset_node = meta_xml.find('datensatz')
-            metadata = self._dropzone_get_metadata(
-                dataset_id,
-                dataset,
-                dataset_node
+        if not os.path.exists(meta_xml_path):
+            raise MetaXmlNotFoundError(
+                'meta.xml not found for dataset %s (path: %s)'
+                % (dataset_id, meta_xml_path)
             )
-        else:
-            metadata = {
-                'datasetID': dataset_id,
-                'datasetFolder': dataset,
-                'title': dataset,
-                'url': None,
-                'resources': self._generate_resources_dict_array(dataset),
-            }
+
+        with retry_open_file(meta_xml_path, 'r') as meta_xml:
+            meta_xml = etree.parse(meta_xml)
+            dataset_node = meta_xml.find('datensatz')
+
+        metadata = self._dropzone_get_metadata(
+            dataset_id,
+            dataset,
+            dataset_node
+        )
         return metadata
 
     def _generate_diff_file(self, dataset_id, metadata):
