@@ -25,11 +25,6 @@ from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 import logging
 log = logging.getLogger(__name__)
 
-# patch etree due to typo in defusedxml
-# => https://github.com/tiran/defusedxml/pull/9
-etree.XMLParser = etree.XMLParse
-
-
 FILE_NOT_FOUND_URL = 'https://data.stadt-zuerich.ch/filenotfound'
 
 
@@ -197,8 +192,7 @@ class StadtzhHarvester(HarvesterBase):
         metadata = None
         if os.path.exists(meta_xml_path):
             with retry_open_file(meta_xml_path, 'r') as meta_xml:
-                parser = etree.XMLParser(encoding='utf-8')
-                meta_xml = etree.fromstring(meta_xml.read(), parser=parser)
+                meta_xml = etree.parse(meta_xml)
                 dataset_node = meta_xml.find('datensatz')
             metadata = self._dropzone_get_metadata(
                 dataset_id,
@@ -835,9 +829,8 @@ class StadtzhHarvester(HarvesterBase):
             )
             if resource_file == 'link.xml':
                 with retry_open_file(resource_path, 'r') as links_xml:
-                    parser = etree.XMLParser(encoding='utf-8')
                     links = (
-                        etree.fromstring(links_xml.read(), parser=parser)
+                        etree.parse(links_xml)
                         .findall('link')
                     )
 
