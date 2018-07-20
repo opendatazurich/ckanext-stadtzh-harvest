@@ -272,7 +272,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'meta.xml'
         )
 
-        results = self._test_harvest_update(3, temp_data_path, meta_xml_path, config=test_config)
+        results = self._test_harvest_update(3, 'test_dropzone', temp_data_path, meta_xml_path, config=test_config)
         eq_(len(results['results']), 4)
 
         # the title of 'nachnamen_2014' should be updated + 1 one dataset should be added
@@ -311,7 +311,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'meta.xml'
         )
 
-        results = self._test_harvest_update(2, temp_data_path, meta_xml_path, config=test_config)
+        results = self._test_harvest_update(2, 'test_geo_dropzone', temp_data_path, meta_xml_path, config=test_config)
         eq_(len(results['results']), 3)
         # since 'update_datasets' is set to False, no datasets should be changed
         # but a new one should be there
@@ -323,7 +323,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             ]
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
-    def _test_harvest_update(self, num_objects, dropzone_path, meta_xml_path, **kwargs):
+    def _test_harvest_update(self, num_objects, mock_dropzone, dropzone_path, meta_xml_path, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
 
         # First run, will create datasets as previously tested
@@ -343,7 +343,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         dataset_path = os.path.join(
             __location__,
             'fixtures',
-            'test_dropzone',
+            mock_dropzone,
             'test_dataset'
         )
         shutil.copytree(
