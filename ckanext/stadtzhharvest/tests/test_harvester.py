@@ -334,7 +334,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         results = self._test_harvest_create(1, config=test_config)
         eq_(len(results['results']), 1)
-        result = results[0]
+        result = results['results'][0]
 
         eq_(result['title'], u'Administrative Einteilungen Stadt Zürich')
         eq_(result['license_id'], u'cc-zero')
