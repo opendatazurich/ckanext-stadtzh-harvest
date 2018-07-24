@@ -886,6 +886,7 @@ class StadtzhHarvester(HarvesterBase):
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
                     }
+
                     # calculate the hash of this file
                     BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
                     md5 = hashlib.md5()
@@ -896,6 +897,10 @@ class StadtzhHarvester(HarvesterBase):
                                 break
                             md5.update(data)
                         resource_dict['zh_hash'] = md5.hexdigest()
+
+                    # update dict with given metadata
+                    if resource_file in metadata:
+                        resource_dict.update(metadata[resource_file])
 
                     # add file to FieldStorage
                     with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
