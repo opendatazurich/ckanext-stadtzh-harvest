@@ -101,30 +101,6 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
 
-    def test_load_metadata_license(self):
-        harvester = plugin.StadtzhHarvester()
-        dataset_folder = 'cc-by-dataset'
-        data_path = os.path.join(
-            __location__,
-            'fixtures',
-            'license_dropzone'
-        )
-
-        test_meta_xml_path = os.path.join(
-            data_path,
-            dataset_folder,
-            'meta.xml'
-        )
-
-        metadata = harvester._load_metadata_from_path(
-            test_meta_xml_path,
-            dataset_folder,
-            dataset_folder
-        )
-        eq_(metadata['datasetFolder'], dataset_folder)
-        eq_(metadata['datasetID'], dataset_folder)
-        eq_(metadata['license_id'], u'cc-by')
-
     def test_load_metadata_resource_descriptions(self):
         harvester = plugin.StadtzhHarvester()
         dataset_folder = 'test_dataset'
@@ -148,20 +124,19 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         )
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
-        eq_(metadata['license_id'], u'cc-by')
         eq_(len(metadata['resources']), 4)
 
         test_json = next(r for r in metadata['resources'] if r["name"] == "test.json")
-        eq_(test_json['description', u'This is a test description')
+        eq_(test_json['description'], u'This is a test description')
 
         test_csv = next(r for r in metadata['resources'] if r["name"] == "test.csv")
-        eq_(test_csv['description', u'')
+        eq_(test_csv['description'], u'')
 
         wms = next(r for r in metadata['resources'] if r["name"] == "Web Map Service")
-        eq_(wms['description', u'')
+        eq_(wms['description'], u'')
 
         wfs = next(r for r in metadata['resources'] if r["name"] == "Web Feature Service")
-        eq_(wfs['description', u'Dies ist eine Spezial-Beschreibung')
+        eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
 
 class FunctionalHarvestTest(object):
