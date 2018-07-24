@@ -799,6 +799,7 @@ class StadtzhHarvester(HarvesterBase):
         return cmp(order[x_format], order[y_format])
 
     def _generate_resources_dict_array(self, dataset, include_files=False):
+    def _generate_resources_dict_array(self, dataset, metadata):
         '''
         Given a dataset folder, it'll return an array of resource metadata
         '''
@@ -836,10 +837,9 @@ class StadtzhHarvester(HarvesterBase):
                     )
 
                     for link in links:
-                        link_node = link.find('url')
-                        if link_node.text != "" and link_node.text is not None:
+                        url = self._get(link, 'url')
+                        if url:
                             # generate hash for URL
-                            url = link.find('url').text
                             md5 = hashlib.md5()
                             md5.update(url)
                             resources.append({
@@ -858,24 +858,23 @@ class StadtzhHarvester(HarvesterBase):
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
                     }
-                    if include_files:
-                        # calculate the hash of this file
-                        BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                        md5 = hashlib.md5()
-                        with retry_open_file(resource_path, 'rb') as f:
-                            while True:
-                                data = f.read(BUF_SIZE)
-                                if not data:
-                                    break
-                                md5.update(data)
-                            resource_dict['zh_hash'] = md5.hexdigest()
+                    # calculate the hash of this file
+                    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+                    md5 = hashlib.md5()
+                    with retry_open_file(resource_path, 'rb') as f:
+                        while True:
+                            data = f.read(BUF_SIZE)
+                            if not data:
+                                break
+                            md5.update(data)
+                        resource_dict['zh_hash'] = md5.hexdigest()
 
-                        # add file to FieldStorage
-                        with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
-                            field_storage = FieldStorage()
-                            field_storage.file = f
-                            field_storage.filename = f.name
-                            resource_dict['upload'] = field_storage
+                    # add file to FieldStorage
+                    with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
+                        field_storage = FieldStorage()
+                        field_storage.file = f
+                        field_storage.filename = f.name
+                        resource_dict['upload'] = field_storage
 
                     resources.append(resource_dict)
 
