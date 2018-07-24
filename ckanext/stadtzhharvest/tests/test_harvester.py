@@ -51,9 +51,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['title'], u'Administrative Einteilungen Stadt Zürich')
         eq_(metadata['license_id'], u'cc-zero')
-        eq_(len(metadata['resources']), 1)
-        eq_(metadata['resources'][0]['name'], u'resource.csv')
-        eq_(metadata['resources'][0]['description'], u'')
+        eq_(len(metadata['resource_metadata']), 0)
 
     def test_load_metadata_from_path_empty(self):
         harvester = plugin.StadtzhHarvester()
@@ -124,19 +122,11 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         )
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
-        eq_(len(metadata['resources']), 4)
+        eq_(len(metadata['resource_metadata']), 1)
 
-        test_json = next(r for r in metadata['resources'] if r["name"] == "test.json")
-        eq_(test_json['description'], u'This is a test description')
-
-        test_csv = next(r for r in metadata['resources'] if r["name"] == "test.csv")
-        eq_(test_csv['description'], u'')
-
-        wms = next(r for r in metadata['resources'] if r["name"] == "Web Map Service")
-        eq_(wms['description'], u'')
-
-        wfs = next(r for r in metadata['resources'] if r["name"] == "Web Feature Service")
-        eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
+        assert 'test.csv' not in metadata['resource_metadata']
+        assert 'test.json' in metadata['resource_metadata'], "test.json is not defined"
+        eq_(metadata['resource_metadata']['test.json']['description'], u'This is a test description')
 
 
 class FunctionalHarvestTest(object):
@@ -256,6 +246,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         results = self._test_harvest_create(1, config=test_config)['results']
         eq_(len(results), 1)
         eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
+        eq_(results[0]['license_id'], u'cc-by')
+        eq_(len(results[0]['resources']), 1)
 
     def test_harvest_create_dwh(self):
         data_path = os.path.join(
@@ -301,6 +293,38 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         for result in results['results']:
             expected_titles = ['Alterswohnung', 'Amtshaus']
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
+
+    def test_geo_with_resources(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+
+        results = self._test_harvest_create(1, config=test_config)
+        eq_(len(results['results']), 1)
+        result = results[0]
+
+        eq_(result['title'], u'Administrative Einteilungen Stadt Zürich')
+        eq_(result['license_id'], u'cc-zero')
+        eq_(len(result['resources']), 4)
+
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        eq_(test_json['description'], u'This is a test description')
+
+        test_csv = next(r for r in result['resources'] if r["name"] == "test.csv") 
+        eq_(test_json['description'], u'')
+        wms = next(r for r in result['resources'] if r["name"] == "Web Map Service") 
+        eq_(wms['description'], u'')
+        wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
+        eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
     def _test_harvest_create(self, num_objects, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
