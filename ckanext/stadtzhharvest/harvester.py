@@ -716,8 +716,7 @@ class StadtzhHarvester(HarvesterBase):
             'author': dataset_node.find('quelle').text,  # noqa
             'maintainer': 'Open Data Zürich',  # noqa
             'maintainer_email': 'opendata@zuerich.ch',  # noqa
-            'license_id': 'cc-zero',  # noqa
-            'license_url': 'http://opendefinition.org/licenses/cc-zero/',  # noqa
+            'license_id': self._get(dataset_node, 'lizenz', default='cc-zero'),  # noqa
             'tags': self._generate_tags(dataset_node),  # noqa
             'groups': self._dropzone_get_groups(dataset_node),  # noqa
             'spatialRelationship': self._get(dataset_node, 'raeumliche_beziehung'),  # noqa
@@ -895,12 +894,12 @@ class StadtzhHarvester(HarvesterBase):
         else:
             return element.text
 
-    def _get(self, node, name):
+    def _get(self, node, name, default=''):
         element = self._node_exists_and_is_nonempty(node, name)
         if element:
             return element
         else:
-            return ''
+            return default
 
     def _convert_comments(self, node):
         comments = node.find('bemerkungen')
