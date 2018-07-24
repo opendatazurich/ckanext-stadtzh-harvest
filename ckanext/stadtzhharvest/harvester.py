@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import errno
 import re
 import datetime
 import difflib
@@ -9,7 +10,7 @@ import traceback
 import uuid
 import hashlib
 from contextlib import contextmanager
-from lxml import etree
+import defusedxml.ElementTree as etree
 from cgi import FieldStorage
 from pylons import config
 from ckan import model
@@ -22,7 +23,6 @@ from ckan.lib.munge import munge_title_to_name
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
-
 import logging
 log = logging.getLogger(__name__)
 
@@ -35,6 +35,10 @@ class InvalidCommentError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+
+class MetaXmlNotFoundError(Exception):
+    pass
 
 
 @contextmanager
@@ -190,25 +194,21 @@ class StadtzhHarvester(HarvesterBase):
             return []
 
     def _load_metadata_from_path(self, meta_xml_path, dataset_id, dataset):
-        metadata = None
-        if os.path.exists(meta_xml_path):
-            with retry_open_file(meta_xml_path, 'r') as meta_xml:
-                parser = etree.XMLParser(encoding='utf-8')
-                meta_xml = etree.fromstring(meta_xml.read(), parser=parser)
-                dataset_node = meta_xml.find('datensatz')
-            metadata = self._dropzone_get_metadata(
-                dataset_id,
-                dataset,
-                dataset_node
+        if not os.path.exists(meta_xml_path):
+            raise MetaXmlNotFoundError(
+                'meta.xml not found for dataset %s (path: %s)'
+                % (dataset_id, meta_xml_path)
             )
-        else:
-            metadata = {
-                'datasetID': dataset_id,
-                'datasetFolder': dataset,
-                'title': dataset,
-                'url': None,
-                'resources': self._generate_resources_dict_array(dataset),
-            }
+
+        with retry_open_file(meta_xml_path, 'r') as meta_xml:
+            meta_xml = etree.parse(meta_xml)
+            dataset_node = meta_xml.find('datensatz')
+
+        metadata = self._dropzone_get_metadata(
+            dataset_id,
+            dataset,
+            dataset_node
+        )
         return metadata
 
     def _generate_diff_file(self, dataset_id, metadata):
@@ -831,9 +831,8 @@ class StadtzhHarvester(HarvesterBase):
             )
             if resource_file == 'link.xml':
                 with retry_open_file(resource_path, 'r') as links_xml:
-                    parser = etree.XMLParser(encoding='utf-8')
                     links = (
-                        etree.fromstring(links_xml.read(), parser=parser)
+                        etree.parse(links_xml)
                         .findall('link')
                     )
 
@@ -943,8 +942,16 @@ class StadtzhHarvester(HarvesterBase):
         return attributes
 
     def _get_immediate_subdirectories(self, directory):
-        return [name for name in os.listdir(directory)
-                if os.path.isdir(os.path.join(directory, name))]
+        try:
+            return [
+                name for name in os.listdir(directory)
+                if os.path.isdir(os.path.join(directory, name))
+            ]
+        except OSError, e:
+            if e.errno == errno.ENOENT:
+                # directory does not exist
+                return []
+            raise
 
     def _diff_path(self, package_id):
         today = datetime.date.today()

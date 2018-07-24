@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Geburten nach Jahr, Geschlecht und Stadtquartier</titel>
+		<beschreibung>Anzahl Lebendgeburten nach Geschlecht und Stadtquartier, 2013-2014</beschreibung>
+		<kategorie>Bevölkerung</kategorie>
+		<rechtsgrundlage></rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<lieferant>Statistik Stadt Zürich, Präsidialdepartement</lieferant>
+		<quelle>Personenmeldeamt der Stadt Zürich, Präsidialdepartement</quelle>
+		<zeitraum>2013 - 2014</zeitraum>
+		<datenqualitaet>gut</datenqualitaet>
+		<erstmalige_veroeffentlichung>03.03.2015</erstmalige_veroeffentlichung>
+		<aktualisierungsdatum>03.03.2015</aktualisierungsdatum>
+		<datentyp>Datenaggregat</datentyp>
+		<aktualisierungsintervall>jährlich</aktualisierungsintervall>
+		<schlagworte>sachdaten, tabellen, zeitreihe, geburt, quartier, statistische zone</schlagworte>
+		<aktuelle_version>1.0</aktuelle_version>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Hinweis:</titel>
+				<text>Auf Grund eines neuen Datensystems kann zur Zeit nur ab 2013 ausgewertet werden.</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+		</bemerkungen>
+		<anwendungen>
+			<anwendung>
+				<titel>Tagblatt: Züri-Babys</titel>
+				<beschreibung>Züri-Babys im Tagblatt der Stadt Zürich</beschreibung>
+				<url><![CDATA[http://www.tagblattzuerich.ch/zueri-babys.html]]></url>
+			</anwendung>
+			<anwendung>
+				<titel>Baby benamsen</titel>
+				<beschreibung>Suchen Sie einen Babynamen? Hier ist ein Namenslexikon als App.</beschreibung>
+				<url><![CDATA[https://www.stadt-zuerich.ch/portal/de/index/ogd/anwendungen/mobileapp/baby-benamsen.html]]></url>
+			</anwendung>
+		</anwendungen>
+		<publikationen>
+			<publikation>
+				<titel>Züri-Baby</titel>
+				<beschreibung>Entwicklung der Geburten in der Stadt Zürich 1900 - 2013</beschreibung>
+				<url><![CDATA[https://www.stadt-zuerich.ch/prd/de/index/statistik/publikationen-angebote/publikationen/Analysen/A_002_2014.html]]></url>
+			</publikation>
+		</publikationen>
+		<attributliste>
+			<attributelement technischerfeldname="StichtagDatJahr">
+				<sprechenderfeldname>Daten gültig per Jahr</sprechenderfeldname>
+				<feldbeschreibung>Jahr. Zeitpunkt entspricht dem Ende des Jahres.</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="SexCd">
+				<sprechenderfeldname>Geschlecht (Code)</sprechenderfeldname>
+				<feldbeschreibung>Code des Geschlechts. Werte: 1 und 2.</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="SexLang">
+				<sprechenderfeldname>Geschlecht (lang)</sprechenderfeldname>
+				<feldbeschreibung>Geschlecht ausgeschrieben. Werte: männlich und weiblich</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="QuarSort">
+				<sprechenderfeldname>Stadtquartier (Sort)</sprechenderfeldname>
+				<feldbeschreibung>Offizieller Code des Statistikschen Stadtquartiers (Typ: Numerisch).</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="QuarLang">
+				<sprechenderfeldname>Stadtquartier (lang)</sprechenderfeldname>
+				<feldbeschreibung>Name des Statistikschen Stadtquartiers.</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="StatZoneSort">
+				<sprechenderfeldname>Statistische Zone (Sort)</sprechenderfeldname>
+				<feldbeschreibung>Code der Statistischen Zonen (Typ: Numerisch)</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="StatZoneLang">
+				<sprechenderfeldname>Statistische Zone (lang)</sprechenderfeldname>
+				<feldbeschreibung>Name der Statistischen Zonen</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="AnzGebuWir">
+				<sprechenderfeldname>Anzahl Geburten</sprechenderfeldname>
+				<feldbeschreibung>Anzahl Lebendgeburten nach wirtschaftlicher Bevölkerungsdefinition.</feldbeschreibung>
+			</attributelement>
+		</attributliste>
+	</datensatz>
+</datensammlung>

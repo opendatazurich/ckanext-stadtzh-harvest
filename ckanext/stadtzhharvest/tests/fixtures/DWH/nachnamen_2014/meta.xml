@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Test Nachnamen in der Stadt Zürich</titel>
+		<beschreibung>TEST: Anzahl Personen nach Nachnamen, die mindestens drei Mal vorkommen.</beschreibung>
+		<kategorie>Bevölkerung</kategorie>
+		<rechtsgrundlage></rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<lieferant>Statistik Stadt Zürich, Präsidialdepartement</lieferant>
+		<quelle>Personenmeldeamt der Stadt Zürich, Präsidialdepartement</quelle>
+		<zeitraum>2013</zeitraum>
+		<datenqualitaet>gut</datenqualitaet>
+		<erstmalige_veroeffentlichung>30.10.2014</erstmalige_veroeffentlichung>
+		<aktualisierungsdatum>30.10.2014</aktualisierungsdatum>
+		<datentyp>Datenaggregat</datentyp>
+		<aktualisierungsintervall>jährlich</aktualisierungsintervall>
+		<schlagworte>sachdaten, tabellen</schlagworte>
+		<aktuelle_version>1.0</aktuelle_version>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Hinweis:</titel>
+				<text>Es werden nur Nachnamen angezeigt, welche mindestens drei Mal vorkommen</text>
+				<link>
+					<label></label>
+					<url></url>
+				</link>
+			</bemerkung>
+		</bemerkungen>
+		<publikationen>
+			<publikation>
+				<titel>Die Geburten deutscher und italienischer Kinder in der Stadt Zürich im Spannungsfeld der Nord-Süd-Wanderung</titel>
+				<beschreibung>Quatsch von Beat Mischler aus dem Jahre 2005</beschreibung>
+				<url><![CDATA[https://www.stadt-zuerich.ch/prd/de/index/statistik/publikationsdatenbank/Analysen/A_002_2005.html#downloads_file_1]]></url>
+			</publikation>
+		</publikationen>
+		<attributliste>
+			<attributelement technischerfeldname="StichtagDatJahr">
+				<sprechenderfeldname>Daten gültig per Jahr</sprechenderfeldname>
+				<feldbeschreibung>Jahr. Zeitpunkt entspricht dem Ende des Jahres.</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="Name">
+				<sprechenderfeldname>Nachname</sprechenderfeldname>
+				<feldbeschreibung>Nachname</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="AnzName">
+				<sprechenderfeldname>Anzahl Nachnamen</sprechenderfeldname>
+				<feldbeschreibung>Anzahl Personen pro Nachnamen</feldbeschreibung>
+			</attributelement>
+		</attributliste>
+	</datensatz>
+</datensammlung>
