@@ -254,8 +254,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'fixtures',
             'DWH'
         )
-        temp_dir = tempfile.mkdtemp()
-        temp_data_path = os.path.join(temp_dir, 'DWH')
+        temp_data_path = os.path.join(self.temp_dir, 'DWH')
         shutil.copytree(data_path, temp_data_path)
 
         test_config = json.dumps({
@@ -266,7 +265,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'update_date_last_modified': False
         })
         meta_xml_path = os.path.join(
-            temp_dir,
+            self.temp_dir,
             'DWH',
             'nachnamen_2014',
             'meta.xml'
@@ -292,8 +291,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'fixtures',
             'GEO'
         )
-        temp_dir = tempfile.mkdtemp()
-        temp_data_path = os.path.join(temp_dir, 'GEO')
+        temp_data_path = os.path.join(self.temp_dir, 'GEO')
         shutil.copytree(data_path, temp_data_path)
 
         test_config = json.dumps({
@@ -304,7 +302,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'update_date_last_modified': True
         })
         meta_xml_path = os.path.join(
-            temp_dir,
+            self.temp_dir,
             'GEO',
             'amtshaus',
             'DEFAULT',
