@@ -149,13 +149,19 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
-        eq_(len(metadata['resources']), 2)
+        eq_(len(metadata['resources']), 4)
 
         test_json = next(r for r in metadata['resources'] if r["name"] == "test.json")
         eq_(test_json['description', u'This is a test description')
 
         test_csv = next(r for r in metadata['resources'] if r["name"] == "test.csv")
         eq_(test_csv['description', u'')
+
+        wms = next(r for r in metadata['resources'] if r["name"] == "Web Map Service")
+        eq_(wms['description', u'')
+
+        wfs = next(r for r in metadata['resources'] if r["name"] == "Web Feature Service")
+        eq_(wfs['description', u'Dies ist eine Spezial-Beschreibung')
 
 
 class FunctionalHarvestTest(object):

@@ -207,7 +207,7 @@ class StadtzhHarvester(HarvesterBase):
         with retry_open_file(meta_xml_path, 'r') as meta_xml:
             meta_xml = etree.parse(meta_xml)
             dataset_node = meta_xml.find('datensatz')
-            resources_node = self._get(dataset_node, 'ressourcen')
+            resources_node = dataset_node.find('ressourcen')
 
         metadata = self._dropzone_get_metadata(
             dataset_id,
@@ -216,7 +216,9 @@ class StadtzhHarvester(HarvesterBase):
         )
 
         # add resource metadata
-        metadata['resource_metadata'] = self._get_resources_metadata(resources_node)
+        metadata['resource_metadata'] = self._get_resources_metadata(
+            resources_node
+        )
 
         return metadata
 
@@ -816,7 +818,9 @@ class StadtzhHarvester(HarvesterBase):
             for resource in resources_node:
                 filename = resource.get('dateiname')
                 if not filename:
-                    raise MetaXmlInvalid("Resources must have an attribute 'dateiname'")
+                    raise MetaXmlInvalid(
+                        "Resources must have an attribute 'dateiname'"
+                    )
                 resources[filename] = {
                     'description': self._get(resource, 'beschreibung'),
                 }
@@ -868,9 +872,10 @@ class StadtzhHarvester(HarvesterBase):
                             resources.append({
                                 'url': url,
                                 'zh_hash': md5.hexdigest(),
-                                'name': link.find('lable').text,
-                                'format': link.find('type').text,
-                                'resource_type': 'api'
+                                'name': self._get(link, 'lable'),
+                                'description': self._get(link, 'description'),
+                                'format': self._get(link, 'type'),
+                                'resource_type': 'api',
                             })
             else:
                 resource_file = self._validate_filename(resource_file)
