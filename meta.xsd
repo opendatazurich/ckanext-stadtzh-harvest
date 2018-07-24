@@ -50,6 +50,7 @@
                 <xs:element name="publikationen" />
                 <xs:element name="zeitraum" type="xs:string" />
                 <xs:element name="quelle" type="xs:string" />
+                <xs:element name="lizenz" type="xs:string" />
                 <xs:element name="datenqualitaet" />
                 <xs:element name="aktuelle_version" type="xs:string" />
                 <xs:element name="anwendungen">
