@@ -51,6 +51,9 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['title'], u'Administrative Einteilungen Stadt Zürich')
         eq_(metadata['license_id'], u'cc-zero')
+        eq_(len(metadata['resources']), 1)
+        eq_(metadata['resources'][0]['name'], u'resource.csv')
+        eq_(metadata['resources'][0]['description'], u'')
 
     def test_load_metadata_from_path_empty(self):
         harvester = plugin.StadtzhHarvester()
@@ -82,11 +85,6 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
             'fixtures',
             'license_dropzone'
         )
-        test_config = {
-            'data_path': data_path,
-            'metafile_dir': ''
-        }
-        harvester._set_config(json.dumps(test_config))
 
         test_meta_xml_path = os.path.join(
             data_path,
@@ -102,6 +100,62 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
+
+    def test_load_metadata_license(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'cc-by-dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'license_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+        eq_(metadata['license_id'], u'cc-by')
+
+    def test_load_metadata_resource_descriptions(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'test_dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'DEFAULT',
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+        eq_(metadata['license_id'], u'cc-by')
+        eq_(len(metadata['resources']), 2)
+
+        test_json = next(r for r in metadata['resources'] if r["name"] == "test.json")
+        eq_(test_json['description', u'This is a test description')
+
+        test_csv = next(r for r in metadata['resources'] if r["name"] == "test.csv")
+        eq_(test_csv['description', u'')
 
 
 class FunctionalHarvestTest(object):

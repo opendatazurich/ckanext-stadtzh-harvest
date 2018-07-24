@@ -41,6 +41,10 @@ class MetaXmlNotFoundError(Exception):
     pass
 
 
+class MetaXmlInvalid(Exception):
+    pass
+
+
 @contextmanager
 def retry_open_file(path, mode, tries=10, close=True):
     """
@@ -203,12 +207,17 @@ class StadtzhHarvester(HarvesterBase):
         with retry_open_file(meta_xml_path, 'r') as meta_xml:
             meta_xml = etree.parse(meta_xml)
             dataset_node = meta_xml.find('datensatz')
+            resources_node = self._get(dataset_node, 'ressourcen')
 
         metadata = self._dropzone_get_metadata(
             dataset_id,
             dataset,
             dataset_node
         )
+
+        # add resource metadata
+        metadata['resource_metadata'] = self._get_resources_metadata(resources_node)
+
         return metadata
 
     def _generate_diff_file(self, dataset_id, metadata):
@@ -278,10 +287,13 @@ class StadtzhHarvester(HarvesterBase):
         # check if package already exists and
         existing_package = self._get_existing_package(package_dict)
 
+        resource_metadata = package_dict.pop('resource_metadata', {})
+
         # update existing resources, delete old ones, create new ones
         actions, resources_changed = self._resources_actions(
             package_dict,
-            existing_package
+            existing_package,
+            resource_metadata
         )
 
         if existing_package and 'resources' in existing_package:
@@ -360,12 +372,12 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Could not find pkg %s' % package_dict['name'])
         return existing_package
 
-    def _resources_actions(self, package_dict, existing_package):
+    def _resources_actions(self, package_dict, existing_package, metadata):
         resources_changed = False
         actions = []
         new_resources = self._generate_resources_dict_array(
             package_dict['datasetFolder'],
-            include_files=True
+            metadata
         )
         if not existing_package:
             resources_changed = True
@@ -798,7 +810,18 @@ class StadtzhHarvester(HarvesterBase):
             return -1
         return cmp(order[x_format], order[y_format])
 
-    def _generate_resources_dict_array(self, dataset, include_files=False):
+    def _get_resources_metadata(self, resources_node):
+        resources = {}
+        if resources_node:
+            for resource in resources_node:
+                filename = resource.get('dateiname')
+                if not filename:
+                    raise MetaXmlInvalid("Resources must have an attribute 'dateiname'")
+                resources[filename] = {
+                    'description': self._get(resource, 'beschreibung'),
+                }
+        return resources
+
     def _generate_resources_dict_array(self, dataset, metadata):
         '''
         Given a dataset folder, it'll return an array of resource metadata
