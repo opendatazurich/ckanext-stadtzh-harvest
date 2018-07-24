@@ -50,7 +50,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['title'], u'Administrative Einteilungen Stadt Zürich')
-        eq_(metadata['license_id'], u'cc-zero')
+        eq_(metadata['license_id'], u'cc-by')
         eq_(len(metadata['resource_metadata']), 0)
 
     def test_load_metadata_from_path_empty(self):
@@ -98,6 +98,30 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
+
+    def test_load_metadata_no_license(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'no-license-dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'license_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+        eq_(metadata['license_id'], u'cc-zero')
 
     def test_load_metadata_resource_descriptions(self):
         harvester = plugin.StadtzhHarvester()
