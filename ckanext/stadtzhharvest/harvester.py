@@ -707,6 +707,12 @@ class StadtzhHarvester(HarvesterBase):
         For the given dataset node return the metadata dict.
         '''
 
+        # check license
+        license = 'cc-zero'
+        license_node = dataset_node.find('lizenz')
+        if license_node and license_node.text:
+            license = license_node.text
+
         return {
             'datasetID': dataset_id,  # noqa
             'datasetFolder': dataset_folder,  # noqa
@@ -716,8 +722,7 @@ class StadtzhHarvester(HarvesterBase):
             'author': dataset_node.find('quelle').text,  # noqa
             'maintainer': 'Open Data Zürich',  # noqa
             'maintainer_email': 'opendata@zuerich.ch',  # noqa
-            'license_id': 'cc-zero',  # noqa
-            'license_url': 'http://opendefinition.org/licenses/cc-zero/',  # noqa
+            'license_id': license,  # noqa
             'tags': self._generate_tags(dataset_node),  # noqa
             'groups': self._dropzone_get_groups(dataset_node),  # noqa
             'spatialRelationship': self._get(dataset_node, 'raeumliche_beziehung'),  # noqa
