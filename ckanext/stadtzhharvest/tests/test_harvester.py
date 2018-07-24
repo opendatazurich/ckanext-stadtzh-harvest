@@ -67,7 +67,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
             'meta.xml'
         )
 
-        with assert_raises(plugin.MetaXmlNotFoundError) as e:
+        with assert_raises(plugin.MetaXmlNotFoundError):
             harvester._load_metadata_from_path(
                 test_meta_xml_path,
                 dataset_folder,
@@ -77,7 +77,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
     def test_load_metadata_license(self):
         harvester = plugin.StadtzhHarvester()
         dataset_folder = 'cc-by-dataset'
-        data_path =  os.path.join(
+        data_path = os.path.join(
             __location__,
             'fixtures',
             'license_dropzone'
@@ -88,13 +88,12 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         }
         harvester._set_config(json.dumps(test_config))
 
-
         test_meta_xml_path = os.path.join(
             data_path,
             dataset_folder,
             'meta.xml'
         )
-        
+
         metadata = harvester._load_metadata_from_path(
             test_meta_xml_path,
             dataset_folder,
@@ -103,7 +102,6 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
-
 
 
 class FunctionalHarvestTest(object):
