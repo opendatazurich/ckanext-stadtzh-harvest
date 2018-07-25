@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="datensammlung">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="datensatz">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element name="titel" type="xs:string" />
+                <xs:element name="beschreibung" type="xs:string" />
+                <xs:element name="rechtsgrundlage" type="xs:string" />
+                <xs:element name="raeumliche_beziehung" type="xs:string" />
+                <xs:element name="aktualisierungsintervall">
+				  <xs:simpleType>
+					<xs:restriction base="xs:string">
+					  <xs:enumeration value="   "/>
+					  <xs:enumeration value="alle 4 Jahre"/>
+					  <xs:enumeration value="Echtzeit"/>
+					  <xs:enumeration value="halbjaehrlich"/>
+					  <xs:enumeration value="jaehrlich"/>
+					  <xs:enumeration value="keines"/>
+					  <xs:enumeration value="laufend"/>
+					  <xs:enumeration value="monatlich"/>
+					  <xs:enumeration value="quartalsweise"/>
+					  <xs:enumeration value="sporadisch oder unregelmaessig"/>
+					  <xs:enumeration value="stuendlich"/>
+					  <xs:enumeration value="taeglich"/>
+					  <xs:enumeration value="vierzehntäglich"/>
+					  <xs:enumeration value="vierzehntaeglich"/>
+					  <xs:enumeration value="woechentlich"/>
+					</xs:restriction>
+				  </xs:simpleType>
+                </xs:element>
+                <xs:element name="aktualisierungsdatum" type="xs:string"/>
+                <xs:element name="datentyp">
+				  <xs:simpleType>
+					<xs:restriction base="xs:string">
+					  <xs:enumeration value="   "/>
+					  <xs:enumeration value="Bilddatei"/>
+					  <xs:enumeration value="Datenaggregat"/>
+					  <xs:enumeration value="Einzeldaten"/>
+					  <xs:enumeration value="Web-Service"/>
+					</xs:restriction>
+				  </xs:simpleType>
+                </xs:element>
+                <xs:element name="erstmalige_veroeffentlichung" type="xs:string"/>
+                <xs:element name="kategorie" type="xs:string"/>
+                <xs:element name="lieferant" type="xs:string"/>
+                <xs:element name="publikationen" />
+                <xs:element name="zeitraum" type="xs:string" />
+                <xs:element name="quelle" type="xs:string" />
+                <xs:element name="lizenz" type="xs:string" />
+                <xs:element name="datenqualitaet" />
+                <xs:element name="aktuelle_version" type="xs:string" />
+                <xs:element name="anwendungen">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element maxOccurs="unbounded" name="anwendung">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="titel" type="xs:string" />
+                            <xs:element name="beschreibung" type="xs:string" />
+                            <xs:element name="url" type="xs:string" />
+                          </xs:sequence>
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="bemerkungen">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element maxOccurs="unbounded" name="bemerkung">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="titel" type="xs:string" />
+                            <xs:element name="text" />
+                            <xs:element name="link">
+                              <xs:complexType>
+                                <xs:sequence>
+                                  <xs:element name="label" type="xs:string" />
+                                  <xs:element name="url" type="xs:string" />
+                                </xs:sequence>
+                              </xs:complexType>
+                            </xs:element>
+                          </xs:sequence>
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="ressourcen">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element name="ressource">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="beschreibung" type="xs:string" />
+                          </xs:sequence>
+                          <xs:attribute name="dateiname" type="xs:string" use="required" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="attributliste">
+                  <xs:complexType>
+                    <xs:sequence>
+                      <xs:element maxOccurs="unbounded" name="attributelement">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="sprechenderfeldname" type="xs:string" />
+                            <xs:element name="feldbeschreibung" type="xs:string" />
+                          </xs:sequence>
+                          <xs:attribute name="technischerfeldname" type="xs:string" use="required" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:sequence>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="schlagworte" type="xs:string" />
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

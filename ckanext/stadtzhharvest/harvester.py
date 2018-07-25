@@ -41,6 +41,10 @@ class MetaXmlNotFoundError(Exception):
     pass
 
 
+class MetaXmlInvalid(Exception):
+    pass
+
+
 @contextmanager
 def retry_open_file(path, mode, tries=10, close=True):
     """
@@ -203,12 +207,19 @@ class StadtzhHarvester(HarvesterBase):
         with retry_open_file(meta_xml_path, 'r') as meta_xml:
             meta_xml = etree.parse(meta_xml)
             dataset_node = meta_xml.find('datensatz')
+            resources_node = dataset_node.find('ressourcen')
 
         metadata = self._dropzone_get_metadata(
             dataset_id,
             dataset,
             dataset_node
         )
+
+        # add resource metadata
+        metadata['resource_metadata'] = self._get_resources_metadata(
+            resources_node
+        )
+
         return metadata
 
     def _generate_diff_file(self, dataset_id, metadata):
@@ -278,10 +289,19 @@ class StadtzhHarvester(HarvesterBase):
         # check if package already exists and
         existing_package = self._get_existing_package(package_dict)
 
+        # get metadata for resources
+        resource_metadata = package_dict.pop('resource_metadata', {})
+        new_resources = self._generate_resources_from_folder(
+            package_dict['datasetFolder']
+        )
+        for resource in new_resources:
+            if resource['name'] in resource_metadata:
+                resource.update(resource_metadata[resource['name']])
+
         # update existing resources, delete old ones, create new ones
         actions, resources_changed = self._resources_actions(
-            package_dict,
-            existing_package
+            existing_package,
+            new_resources
         )
 
         if existing_package and 'resources' in existing_package:
@@ -360,13 +380,10 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Could not find pkg %s' % package_dict['name'])
         return existing_package
 
-    def _resources_actions(self, package_dict, existing_package):
+    def _resources_actions(self, existing_package, new_resources):
         resources_changed = False
         actions = []
-        new_resources = self._generate_resources_dict_array(
-            package_dict['datasetFolder'],
-            include_files=True
-        )
+
         if not existing_package:
             resources_changed = True
             for r in new_resources:
@@ -798,9 +815,23 @@ class StadtzhHarvester(HarvesterBase):
             return -1
         return cmp(order[x_format], order[y_format])
 
-    def _generate_resources_dict_array(self, dataset, include_files=False):
+    def _get_resources_metadata(self, resources_node):
+        resources = {}
+        if resources_node:
+            for resource in resources_node:
+                filename = resource.get('dateiname')
+                if not filename:
+                    raise MetaXmlInvalid(
+                        "Resources must have an attribute 'dateiname'"
+                    )
+                resources[filename] = {
+                    'description': self._get(resource, 'beschreibung'),
+                }
+        return resources
+
+    def _generate_resources_from_folder(self, dataset):
         '''
-        Given a dataset folder, it'll return an array of resource metadata
+        Given a dataset folder, it'll return a list of resource metadata
         '''
         resources = []
         file_list = [
@@ -836,18 +867,18 @@ class StadtzhHarvester(HarvesterBase):
                     )
 
                     for link in links:
-                        link_node = link.find('url')
-                        if link_node.text != "" and link_node.text is not None:
+                        url = self._get(link, 'url')
+                        if url:
                             # generate hash for URL
-                            url = link.find('url').text
                             md5 = hashlib.md5()
                             md5.update(url)
                             resources.append({
                                 'url': url,
                                 'zh_hash': md5.hexdigest(),
-                                'name': link.find('lable').text,
-                                'format': link.find('type').text,
-                                'resource_type': 'api'
+                                'name': self._get(link, 'lable'),
+                                'description': self._get(link, 'description'),
+                                'format': self._get(link, 'type'),
+                                'resource_type': 'api',
                             })
             else:
                 resource_file = self._validate_filename(resource_file)
@@ -858,24 +889,24 @@ class StadtzhHarvester(HarvesterBase):
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
                     }
-                    if include_files:
-                        # calculate the hash of this file
-                        BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                        md5 = hashlib.md5()
-                        with retry_open_file(resource_path, 'rb') as f:
-                            while True:
-                                data = f.read(BUF_SIZE)
-                                if not data:
-                                    break
-                                md5.update(data)
-                            resource_dict['zh_hash'] = md5.hexdigest()
 
-                        # add file to FieldStorage
-                        with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
-                            field_storage = FieldStorage()
-                            field_storage.file = f
-                            field_storage.filename = f.name
-                            resource_dict['upload'] = field_storage
+                    # calculate the hash of this file
+                    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+                    md5 = hashlib.md5()
+                    with retry_open_file(resource_path, 'rb') as f:
+                        while True:
+                            data = f.read(BUF_SIZE)
+                            if not data:
+                                break
+                            md5.update(data)
+                        resource_dict['zh_hash'] = md5.hexdigest()
+
+                    # add file to FieldStorage
+                    with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
+                        field_storage = FieldStorage()
+                        field_storage.file = f
+                        field_storage.filename = f.name
+                        resource_dict['upload'] = field_storage
 
                     resources.append(resource_dict)
 

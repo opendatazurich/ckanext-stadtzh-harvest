@@ -50,7 +50,8 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['title'], u'Administrative Einteilungen Stadt Zürich')
-        eq_(metadata['license_id'], u'cc-zero')
+        eq_(metadata['license_id'], u'cc-by')
+        eq_(len(metadata['resource_metadata']), 0)
 
     def test_load_metadata_from_path_empty(self):
         harvester = plugin.StadtzhHarvester()
@@ -82,11 +83,6 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
             'fixtures',
             'license_dropzone'
         )
-        test_config = {
-            'data_path': data_path,
-            'metafile_dir': ''
-        }
-        harvester._set_config(json.dumps(test_config))
 
         test_meta_xml_path = os.path.join(
             data_path,
@@ -102,6 +98,59 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(metadata['datasetFolder'], dataset_folder)
         eq_(metadata['datasetID'], dataset_folder)
         eq_(metadata['license_id'], u'cc-by')
+
+    def test_load_metadata_no_license(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'no-license-dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'license_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+        eq_(metadata['license_id'], u'cc-zero')
+
+    def test_load_metadata_resource_descriptions(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'test_dataset'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'DEFAULT',
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+        eq_(len(metadata['resource_metadata']), 1)
+
+        assert 'test.csv' not in metadata['resource_metadata']
+        assert 'test.json' in metadata['resource_metadata'], "test.json is not defined"
+        eq_(metadata['resource_metadata']['test.json']['description'], u'This is a test description')
 
 
 class FunctionalHarvestTest(object):
@@ -221,6 +270,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         results = self._test_harvest_create(1, config=test_config)['results']
         eq_(len(results), 1)
         eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
+        eq_(results[0]['license_id'], u'cc-by')
+        eq_(len(results[0]['resources']), 1)
 
     def test_harvest_create_dwh(self):
         data_path = os.path.join(
@@ -266,6 +317,40 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         for result in results['results']:
             expected_titles = ['Alterswohnung', 'Amtshaus']
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
+
+    def test_geo_with_resources(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+
+        results = self._test_harvest_create(1, config=test_config)
+        eq_(len(results['results']), 1)
+        result = results['results'][0]
+
+        eq_(result['title'], u'Administrative Einteilungen Stadt Zürich')
+        eq_(result['license_id'], u'cc-zero')
+        eq_(len(result['resources']), 4)
+
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        eq_(test_json['description'], u'This is a test description')
+
+        test_csv = next(r for r in result['resources'] if r["name"] == "test.csv") 
+        eq_(test_csv['description'], u'')
+
+        wms = next(r for r in result['resources'] if r["name"] == "Web Map Service") 
+        eq_(wms['description'], u'')
+
+        wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
+        eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
     def _test_harvest_create(self, num_objects, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)

@@ -218,11 +218,6 @@ Die Statistischen Zonen entsprechen der kleinräumigsten Unterteilung der Admini
             ]]></text>  
             </bemerkung>
         </bemerkungen>
-	<ressourcen>
-		<ressource dateiname="test.json">
-			<beschreibung>This is a test description</beschreibung>
-		</ressource>
-	</ressourcen>
         <schlagworte>gebietseinteilungen, quartiere, stadtquartiere, geodaten, vektordaten, polygondaten, punktdaten</schlagworte>
         <attributliste> 
         </attributliste>        

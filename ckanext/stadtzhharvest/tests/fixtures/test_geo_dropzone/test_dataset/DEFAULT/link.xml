@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<linklist>
+	<link>
+		<lable>Web Map Service</lable>
+		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?]]></url>
+		<type>WMS</type>
+	</link>
+	<link>
+		<lable>Web Feature Service</lable>
+		<description>Dies ist eine Spezial-Beschreibung</description>
+		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?]]></url>
+		<type>WFS</type>
+	</link>
+</linklist>
+
+
