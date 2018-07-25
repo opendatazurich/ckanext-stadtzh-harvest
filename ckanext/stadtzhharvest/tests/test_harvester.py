@@ -340,6 +340,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(result['license_id'], u'cc-zero')
         eq_(len(result['resources']), 4)
 
+        from pprint import pprint
+        pprint(result)
+
         test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
         eq_(test_json['description'], u'This is a test description')
 
