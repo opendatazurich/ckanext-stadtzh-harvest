@@ -340,16 +340,15 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(result['license_id'], u'cc-zero')
         eq_(len(result['resources']), 4)
 
-        from pprint import pprint
-        pprint(result)
-
         test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
         eq_(test_json['description'], u'This is a test description')
 
         test_csv = next(r for r in result['resources'] if r["name"] == "test.csv") 
-        eq_(test_json['description'], u'')
+        eq_(test_csv['description'], u'')
+
         wms = next(r for r in result['resources'] if r["name"] == "Web Map Service") 
         eq_(wms['description'], u'')
+
         wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
         eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
