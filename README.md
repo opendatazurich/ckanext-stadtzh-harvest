@@ -228,7 +228,12 @@ DWH/bev_zuz_jahr_quartier
 * **Data type**: complex
 * **Cardinality**: 0..1
 * **Description**: List of comments related to this dataset
-* **Values**: `<bemerkung>` childs (with `<titel>`, `<text>` and `<link>` (with `<label>` and `<url>`))
+* **Values**: `<bemerkung>`-elements with:
+	* `<titel>` (title of the comment, _required_)
+	* `<text>` (text of the comment, _required_)
+	* `<link>` (link of the comment, _optional_) with:
+		* `<label>` (lable of the link, _optional_)
+		* `<url>` (url of the link, _optional_)
 * **Example**:
 ```xml
 <bemerkungen>
@@ -248,7 +253,9 @@ DWH/bev_zuz_jahr_quartier
 * **Data type**: complex
 * **Cardinality**: 0..1
 * **Description**: List of attributes to describe the fields of this dataset
-* **Values**: `<attributelement technischerfeldname="{fieldname}">` childs (with `<sprechenderfeldname>` and `<feldbeschreibung>`)
+* **Values**: `<attributelement technischerfeldname="{fieldname}">` (name of the attribute-field, _required_) elements with:
+    * `<sprechenderfeldname>` (label of the attribute, _required_)
+    * `<feldbeschreibung>` (description of the attribute, _required_)
 * **Example**:
 ```xml
 <attributliste> 
@@ -310,7 +317,11 @@ Full example of a link.xml:
 * **Data type**: complex
 * **Cardinality**: 0..n
 * **Description**: Describes resources that are available as a URL (APIs, services)
-* **Values**: Elements `<lable>` (name of the resource, _required_), `<url>` (URL of the resource, _required_), `<type>` (format of the resource, _required_), `<description>` (description of the resource, _optional_)
+* **Values**: 
+    * `<lable>` (name of the resource, _required_)
+    * `<url>` (URL of the resource, _required_)
+    * `<type>` (format of the resource, _required_) 
+    * `<description>` (description of the resource, _optional_)
 * Example:
 ```xml
 <link>
