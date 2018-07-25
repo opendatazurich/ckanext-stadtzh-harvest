@@ -71,41 +71,203 @@ DWH/bev_zuz_jahr_quartier
 
 #### `titel`
 
-* Data type: String
-* Cardinality: 1
-* Description: Title of the dataset
-* Values: any literal
-* Example:
+* **Data type**: String
+* **Cardinality**: 1
+* **Description**: Title of this dataset
+* **Values**: any literal
+* **Example**:
 ```xml
 <titel>Alterswohnung</title>
 ```
 
-#### `anwendungen`
+#### `beschreibung`
 
-* Data type: complex
-* Cardinality: 1
-* Description: List of applications related to this dataset
-* Values: `<anwendung>` childs (with `<titel>`, `<beschreibung>` and `<url>`)
-* Example:
+* **Data type**: String
+* **Cardinality**: 1
+* **Description**: Description of this dataset
+* **Values**: any literal
+* **Example**:
 ```xml
-<anwendungen>
-	<anwendung>
-		<titel>Stadtplan</titel>
-		<beschreibung>Verwendung des Datensatzes im Stadtplan</beschreibung>
-		<url>http://www.stadtplan.stadt-zuerich.ch/zueriplan/stadtplan.aspx?2a672998-cfb2-473a-934d-c316e8b01ad3</url>
-	</anwendung>
-</anwendungen>
+<beschreibung>Liste der städtischen Alterswohnungen</beschreibung>
+```
+
+#### `rechtsgrundlage`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Description of the legal basis of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<rechtsgrundlage>Stadtratsbeschluss DGA</rechtsgrundlage>
+```
+
+#### `raeumliche_beziehung`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Spatial relationship of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+```
+
+#### `aktualisierungsintervall`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Update interval of this dataset
+* **Values**: `"   "`, `"alle 4 Jahre"`, `"Echtzeit"`, `"halbjaehrlich"`, `"jaehrlich"`, `"keines"`, `"laufend"`, `"monatlich"`, `"quartalsweise"`, `"sporadisch oder unregelmaessig"`, `"stuendlich"`, `"taeglich"`, `"vierzehntaeglich"`, `"woechentlich"`, `"laufende Nachfuehrung"`, `"keine Nachfuehrung"`
+* **Example**:
+```xml
+<aktualisierungsintervall>woechentlich</aktualisierungsintervall>
+```
+
+#### `aktualisierungsdatum`
+
+* **Data type**: String
+* **Cardinality**: 1
+* **Description**: Date of the last update of this dataset
+* **Values**: date `dd.mm.yyyy`
+* **Example**:
+```xml
+<aktualisierungsdatum>20.10.2015</aktualisierungsdatum>
 ```
 
 #### `datentyp`
 
-* Data type: String
-* Cardinality: 1
-* Description: Type of data in this dataset
-* Values: `"   "`, `"Bilddatei"`, `"Datenaggregat"`, `"Einzeldaten"`, `"Web-Service"`
-* Example:
+* **Data type**: String
+* **Cardinality**: 1
+* **Description**: Type of data in this dataset
+* **Values**: `"   "`, `"Bilddatei"`, `"Datenaggregat"`, `"Einzeldaten"`, `"Web-Service"`
+* **Example**:
 ```xml
 <datentyp>Datenaggregat</datentyp>
+```
+
+#### `erstmalige_veroeffentlichung`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Publication date of this dataset
+* **Values**: `dd.mm.yyyy`
+* **Example**:
+```xml
+<erstmalige_veroeffentlichung>21.01.2015</erstmalige_veroeffentlichung>
+```
+
+#### `kategorie`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: List of categories of this dataset
+* **Values**: comma-seperated list of category-titles
+* **Example**:
+```xml
+<kategorie>Basiskarten, Bevölkerung, Bauen und Wohnen</kategorie>
+```
+
+#### `lieferant`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Publisher of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<lieferant>Geomatik und Vermessung Zürich, Tiefbau- und Entsorgungsdepartement</lieferant>
+```
+
+#### `zeitraum`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Temporal relationship of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<zeitraum>laufende Nachführung</zeitraum>
+```
+
+#### `quelle`
+
+* **Data type**: String
+* **Cardinality**: 1
+* **Description**: Source of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<quelle>Gesundheits- und Umweltdepartement</quelle>
+```
+
+#### `datenqualitaet`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Quality of this dataset
+* **Values**: any literal
+* **Example**:
+```xml
+<datenqualitaet>gut</datenqualitaet>
+```
+
+#### `aktuelle_version`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Version of this dataset
+* **Values**: version number
+* **Example**:
+```xml
+<aktuelle_version>1.0</aktuelle_version>
+```
+
+#### `bemerkungen`
+
+* **Data type**: complex
+* **Cardinality**: 0..1
+* **Description**: List of comments related to this dataset
+* **Values**: `<bemerkung>` childs (with `<titel>`, `<text>` and `<link>` (with `<label>` and `<url>`))
+* **Example**:
+```xml
+<bemerkungen>
+    <bemerkung>
+        <titel>Vorschau WMS (statisches Bild):</titel>
+        <text>Es werden nur Wohnungen angezeigt, welche mindestens drei Mal vorkommen</text>
+        <link>
+          <label>Layer Alterswohnung</label>
+          <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?VERSION=1.3.0&REQUEST=GetMap&CRS=EPSG:21781&Styles=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=FALSE&bbox=676000,241000,690000,255000&WIDTH=800&HEIGHT=800&Layers=Stadtplan,Alterswohnung"]]></url>
+      </link>
+    </bemerkung>
+</bemerkungen>
+```
+
+#### `attributliste`
+
+* **Data type**: complex
+* **Cardinality**: 0..1
+* **Description**: List of attributes to describe the fields of this dataset
+* **Values**: `<attributelement technischerfeldname="{fieldname}">` childs (with `<sprechenderfeldname>` and `<feldbeschreibung>`)
+* **Example**:
+```xml
+<attributliste> 
+   <attributelement technischerfeldname="ADRESSE">
+        <sprechenderfeldname>Adresse</sprechenderfeldname>
+        <feldbeschreibung>Adresse des Objektes, CHAR 70 Zeichen lang</feldbeschreibung>
+   </attributelement>
+</attributliste>
+```
+
+#### `schlagworte`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: List of tags of this dataset
+* **Values**: comma-seperated list of tag-titles
+* **Example**:
+```xml
+<schlagworte>geodaten, vektordaten, punktdaten, standort</schlagworte>
 ```
 
 ### link.xml
