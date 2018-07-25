@@ -71,22 +71,22 @@ DWH/bev_zuz_jahr_quartier
 
 #### `titel`
 
-Data type: String
-Cardinality: 1
-Description: Title of the dataset
-Values: any literal
-Example:
+* Data type: String
+* Cardinality: 1
+* Description: Title of the dataset
+* Values: any literal
+* Example:
 ```xml
 <titel>Alterswohnung</title>
 ```
 
 #### `anwendungen`
 
-Data type: complex
-Cardinality: 1
-Description: List of applications related to this dataset
-Values: `<anwendung>` childs (with `<titel>`, `<beschreibung>` and `<url>`)
-Example:
+* Data type: complex
+* Cardinality: 1
+* Description: List of applications related to this dataset
+* Values: `<anwendung>` childs (with `<titel>`, `<beschreibung>` and `<url>`)
+* Example:
 ```xml
 <anwendungen>
 	<anwendung>
@@ -99,11 +99,11 @@ Example:
 
 #### `datentyp`
 
-Data type: String
-Cardinality: 1
-Description: Type of data in this dataset
-Values: `"   "`, `"Bilddatei"`, `"Datenaggregat"`, `"Einzeldaten"`, `"Web-Service"`
-Example:
+* Data type: String
+* Cardinality: 1
+* Description: Type of data in this dataset
+* Values: `"   "`, `"Bilddatei"`, `"Datenaggregat"`, `"Einzeldaten"`, `"Web-Service"`
+* Example:
 ```xml
 <datentyp>Datenaggregat</datentyp>
 ```
