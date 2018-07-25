@@ -125,5 +125,36 @@ GEO/alterswohnung
     └── meta.xml
 ```
 
+Full example of a link.xml:
 
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<linklist>
+	<link>
+		<lable>Web Map Service</lable>
+		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?]]></url>
+		<type>WMS</type>
+	</link>
+	<link>
+		<lable>Web Feature Service</lable>
+		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?]]></url>
+		<type>WFS</type>
+	</link>
+</linklist>
+```
 
+#### `link`
+
+* **Data type**: complex
+* **Cardinality**: 0..n
+* **Description**: Describes resources that are available as a URL (APIs, services)
+* **Values**: Elements `<lable>` (name of the resource, _required_), `<url>` (URL of the resource, _required_), `<type>` (format of the resource, _required_), `<description>` (description of the resource, _optional_)
+* Example:
+```xml
+<link>
+    <lable>Web Feature Service</lable>
+    <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?]]></url>
+    <type>WFS</type>
+    <description>Projektion CH1903+ / LV95 (EPSG:2056)</description>
+</link>
+```

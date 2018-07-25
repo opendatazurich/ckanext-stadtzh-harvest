@@ -26,9 +26,10 @@
 					  <xs:enumeration value="sporadisch oder unregelmaessig"/>
 					  <xs:enumeration value="stuendlich"/>
 					  <xs:enumeration value="taeglich"/>
-					  <xs:enumeration value="vierzehntäglich"/>
 					  <xs:enumeration value="vierzehntaeglich"/>
 					  <xs:enumeration value="woechentlich"/>
+					  <xs:enumeration value="laufende Nachfuehrung"/>
+					  <xs:enumeration value="keine Nachfuehrung"/>
 					</xs:restriction>
 				  </xs:simpleType>
                 </xs:element>
