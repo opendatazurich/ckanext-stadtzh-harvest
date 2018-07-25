@@ -289,13 +289,19 @@ class StadtzhHarvester(HarvesterBase):
         # check if package already exists and
         existing_package = self._get_existing_package(package_dict)
 
+        # get metadata for resources
         resource_metadata = package_dict.pop('resource_metadata', {})
+        new_resources = self._generate_resources_from_folder(
+            package_dict['datasetFolder']
+        )
+        for resource in new_resources:
+            if resource['name'] in resource_metadata:
+                resource.update(resource_metadata[resource['name']])
 
         # update existing resources, delete old ones, create new ones
         actions, resources_changed = self._resources_actions(
-            package_dict,
             existing_package,
-            resource_metadata
+            new_resources
         )
 
         if existing_package and 'resources' in existing_package:
@@ -374,13 +380,10 @@ class StadtzhHarvester(HarvesterBase):
             log.debug('Could not find pkg %s' % package_dict['name'])
         return existing_package
 
-    def _resources_actions(self, package_dict, existing_package, metadata):
+    def _resources_actions(self, existing_package, new_resources):
         resources_changed = False
         actions = []
-        new_resources = self._generate_resources_dict_array(
-            package_dict['datasetFolder'],
-            metadata
-        )
+
         if not existing_package:
             resources_changed = True
             for r in new_resources:
@@ -826,9 +829,9 @@ class StadtzhHarvester(HarvesterBase):
                 }
         return resources
 
-    def _generate_resources_dict_array(self, dataset, metadata):
+    def _generate_resources_from_folder(self, dataset):
         '''
-        Given a dataset folder, it'll return an array of resource metadata
+        Given a dataset folder, it'll return a list of resource metadata
         '''
         resources = []
         file_list = [
@@ -897,10 +900,6 @@ class StadtzhHarvester(HarvesterBase):
                                 break
                             md5.update(data)
                         resource_dict['zh_hash'] = md5.hexdigest()
-
-                    # update dict with given metadata
-                    if resource_file in metadata:
-                        resource_dict.update(metadata[resource_file])
 
                     # add file to FieldStorage
                     with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
