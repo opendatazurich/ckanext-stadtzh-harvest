@@ -57,6 +57,8 @@ Each dataset consists of a folder containing a `meta.xml` (required!) and an arb
 
 You can find examples for `meta.xml` and `link.xml` files in the [`fixtures` directory of this repository](https://github.com/opendatazurich/ckanext-stadtzh-harvest/tree/master/ckanext/stadtzhharvest/tests/fixtures).
 
+You can use the [`meta.xsd`](https://github.com/opendatazurich/ckanext-stadtzh-harvest/blob/master/meta.xsd) and [`link.xsd`](https://github.com/opendatazurich/ckanext-stadtzh-harvest/blob/master/link.xsd) for validation ( e.g. using a free online [XML Validator](https://www.liquid-technologies.com/online-xsd-validator) )
+
 ### meta.xml
 
 Folder structure:
