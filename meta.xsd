@@ -14,6 +14,7 @@
                 <xs:element name="aktualisierungsintervall">
 				  <xs:simpleType>
 					<xs:restriction base="xs:string">
+					  <xs:enumeration value=""/>
 					  <xs:enumeration value="   "/>
 					  <xs:enumeration value="alle 4 Jahre"/>
 					  <xs:enumeration value="Echtzeit"/>
@@ -26,9 +27,10 @@
 					  <xs:enumeration value="sporadisch oder unregelmaessig"/>
 					  <xs:enumeration value="stuendlich"/>
 					  <xs:enumeration value="taeglich"/>
-					  <xs:enumeration value="vierzehntäglich"/>
 					  <xs:enumeration value="vierzehntaeglich"/>
 					  <xs:enumeration value="woechentlich"/>
+					  <xs:enumeration value="laufende Nachfuehrung"/>
+					  <xs:enumeration value="keine Nachfuehrung"/>
 					</xs:restriction>
 				  </xs:simpleType>
                 </xs:element>
@@ -36,6 +38,7 @@
                 <xs:element name="datentyp">
 				  <xs:simpleType>
 					<xs:restriction base="xs:string">
+					  <xs:enumeration value=""/>
 					  <xs:enumeration value="   "/>
 					  <xs:enumeration value="Bilddatei"/>
 					  <xs:enumeration value="Datenaggregat"/>
