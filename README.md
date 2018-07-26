@@ -53,21 +53,19 @@ Boolean flag (true/false) to determine if the field `date_last_modified` of a da
 If the flag is `true` the date will be updated if the content of any resource of a dataset has changed.
 
 ## Metadata
+Each dataset consists of a folder containing a `meta.xml` (required!) and an arbitrary number of resources.
 
 You can find examples for `meta.xml` and `link.xml` files in the [`fixtures` directory of this repository](https://github.com/opendatazurich/ckanext-stadtzh-harvest/tree/master/ckanext/stadtzhharvest/tests/fixtures).
 
 ### meta.xml
 
-Each dataset constist of a folder containing a `meta.xml` (required!) and an arbitrary number of resources.
-
-Folder struture:
+Folder structure:
 ```
 DWH/bev_zuz_jahr_quartier
 ├── 1993-2012_bev_zuz_jahr_quartier.csv
 ├── bev_zuz_jahr_quartier.csv
 └── meta.xml
 ```
-
 
 #### `titel`
 
@@ -282,7 +280,7 @@ DWH/bev_zuz_jahr_quartier
 Optionally a dataset may contain a `link.xml` to describe APIs or services.
 This is mostly used in the "GEO" dropzone.
 
-Folder struture:
+Folder structure:
 ```
 GEO/alterswohnung
 ├── ARCHIVE
