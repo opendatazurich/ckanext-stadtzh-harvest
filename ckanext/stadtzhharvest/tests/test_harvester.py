@@ -271,6 +271,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(len(results), 1)
         eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
         eq_(results[0]['license_id'], u'cc-by')
+        eq_(results[0]['updateInterval'][0], u'woechentlich')
+        eq_(results[0]['dataType'][0], u'Einzeldaten')
         eq_(len(results[0]['resources']), 1)
 
     def test_harvest_create_dwh(self):
