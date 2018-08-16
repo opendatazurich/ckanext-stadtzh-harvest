@@ -108,6 +108,17 @@ DWH/bev_zuz_jahr_quartier
 <rechtsgrundlage>Stadtratsbeschluss DGA</rechtsgrundlage>
 ```
 
+#### `lizenz`
+
+* **Data type**: String
+* **Cardinality**: 0..1
+* **Description**: Description of the license of this dataset
+* **Values**: `"notspecified"`, `"odc-pddl"`, `"odc-odbl"`, `"odc-by"`, `"cc-zero"`, `"cc-by"`, `"cc-by-sa"`, `"gfdl"`, `"other-open"`, `"other-pd"`, `"other-at"`, `"uk-ogl"`, `"cc-nc"`, `"other-nc"`, `"other-closed"`
+* **Example**:
+```xml
+<lizenz>cc-by</lizenz>
+```
+
 #### `raeumliche_beziehung`
 
 * **Data type**: String
