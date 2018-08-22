@@ -168,7 +168,7 @@ DWH/bev_zuz_jahr_quartier
 * **Data type**: String
 * **Cardinality**: 0..1
 * **Description**: List of categories of this dataset
-* **Values**: comma-seperated list of category-titles
+* **Values**: comma-seperated list of category-titles `"Arbeit und Erwerb"`, `"Basiskarten"`, `"Bauen und Wohnen"`, `"Bevölkerung"`, `"Bildung"`, `"Energie"`, `"Finanzen"`, `"Freizeit"`, `"Gesundheit"`, `"Kriminalität"`, `"Kultur"`, `"Mobilität"`, `"Politik"`, `"Preise"`, `"Soziales"`, `"Tourismus"`, `"Umwelt"`, `"Verwaltung"`, `"Volkswirtschaft"`
 * **Example**:
 ```xml
 <kategorie>Basiskarten, Bevölkerung, Bauen und Wohnen</kategorie>
