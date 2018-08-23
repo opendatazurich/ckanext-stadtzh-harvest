@@ -287,8 +287,7 @@ DWH/bev_zuz_jahr_quartier
 * **Data type**: complex
 * **Cardinality**: 0..1
 * **Description**: List of resources with their metadata
-* **Values**: `<resource>`-elements with:
-	* attribute `dateiname` (name of the resource, _required_)
+* **Values**: `<ressource dateiname="{filename}">` (name of the resource, _required_) elements with:
 	* `<beschreibung>` (description of the resource, _optional_)
 * **Example**:
 ```xml
@@ -297,7 +296,7 @@ DWH/bev_zuz_jahr_quartier
         <beschreibung>This is a test description</beschreibung>
     </ressource>
 </ressourcen>
-```xml
+```
 
 ### link.xml
 
