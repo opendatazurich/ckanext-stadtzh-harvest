@@ -283,6 +283,21 @@ DWH/bev_zuz_jahr_quartier
 <schlagworte>geodaten, vektordaten, punktdaten, standort</schlagworte>
 ```
 
+#### `ressourcen`
+* **Data type**: complex
+* **Cardinality**: 0..1
+* **Description**: List of resources with their metadata
+* **Values**: `<ressource dateiname="{filename}">` (name of the resource, _required_) elements with:
+	* `<beschreibung>` (description of the resource, _optional_)
+* **Example**:
+```xml
+<ressourcen>
+    <ressource dateiname="test.json">
+        <beschreibung>This is a test description</beschreibung>
+    </ressource>
+</ressourcen>
+```
+
 ### link.xml
 
 Optionally a dataset may contain a `link.xml` to describe APIs or services.
