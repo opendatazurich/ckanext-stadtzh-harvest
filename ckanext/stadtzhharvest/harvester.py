@@ -29,14 +29,6 @@ log = logging.getLogger(__name__)
 FILE_NOT_FOUND_URL = 'https://data.stadt-zuerich.ch/filenotfound'
 
 
-class InvalidCommentError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
-
 class MetaXmlNotFoundError(Exception):
     pass
 
@@ -947,7 +939,7 @@ class StadtzhHarvester(HarvesterBase):
                     label = self._get(link, 'label')
                     url = self._get(link, 'url')
                     markdown += '[' + label + '](' + url + ')\n\n'
-            return self._validate_comment(markdown)
+            return markdown
 
     def _json_encode_attributes(self, properties):
         attributes = []
@@ -1186,16 +1178,3 @@ class StadtzhHarvester(HarvesterBase):
             return False
         else:
             return filename
-
-    def _validate_comment(self, markdown):
-        # Validate that they do not contain any HTML tags.
-        match = re.findall('<[a-zA-Z\/]+', markdown)
-        if len(markdown) == 0:
-            log.debug('Comment is empty.')
-            return ''
-        if match:
-            raise InvalidCommentError('Comment not added as it contains '
-                                      'disallowed characters: %s in %s'
-                                      % (match, markdown))
-        else:
-            return markdown
