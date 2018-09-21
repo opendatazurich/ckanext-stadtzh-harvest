@@ -335,11 +335,13 @@ Full example of a link.xml:
 		<lable>Web Map Service</lable>
 		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?]]></url>
 		<type>WMS</type>
+		<description>Further details about the resource</description>
 	</link>
 	<link>
 		<lable>Web Feature Service</lable>
 		<url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?]]></url>
 		<type>WFS</type>
+		<description>Further details about the resource</description>
 	</link>
 </linklist>
 ```
