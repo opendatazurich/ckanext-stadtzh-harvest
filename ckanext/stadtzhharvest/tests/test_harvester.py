@@ -475,3 +475,60 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         eq_(results['count'], num_objects+1)
         return results
+
+    def test_harvest_update_resources_geo(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+        temp_data_path = os.path.join(self.temp_dir, 'GEO')
+        shutil.copytree(data_path, temp_data_path)
+
+        test_config = json.dumps({
+            'data_path': temp_data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': True
+        })
+        meta_xml_path = os.path.join(
+            self.temp_dir,
+            'GEO',
+            'test_dataset',
+            'DEFAULT',
+            'meta.xml'
+        )
+
+        results = self._test_harvest_update_resource(1, meta_xml_path, config=test_config)
+        eq_(len(results['results']), 1)
+        # since 'update_datasets' is set to True, resources should be changed
+        result = results['results'][0]
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        eq_(test_json['description'], 'This is a test description (updated)')
+
+    def _test_harvest_update_resource(self, num_objects, meta_xml_path, **kwargs):
+        harvest_source = self._create_harvest_source(**kwargs)
+
+        # First run, will create datasets as previously tested
+        self._run_full_job(harvest_source['id'], num_objects=num_objects)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        # change data in source
+        with open(meta_xml_path, 'r') as meta_file:
+            meta = meta_file.read()
+        meta = meta.replace('</beschreibung>', ' (updated)</beschreibung>')
+        with open(meta_xml_path, 'w') as meta_file:
+            meta_file.write(meta)
+
+        # Run a second job
+        self._run_full_job(harvest_source['id'], num_objects=num_objects)
+
+        # Check that we still have two datasets
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq)
+
+        eq_(results['count'], num_objects)
+        return results
