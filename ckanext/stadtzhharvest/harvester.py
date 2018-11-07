@@ -447,7 +447,10 @@ class StadtzhHarvester(HarvesterBase):
                     elif action['new_resource']['resource_type'] == 'api':
                         # for APIs, update the URL
                         resource['url'] = action['new_resource']['url']
-                    # update the hash
+
+                    # update fields from new resource
+                    resource['description'] = action['new_resource'].get('description')  # noqa
+                    resource['format'] = action['new_resource'].get('format')
                     resource['zh_hash'] = action['new_resource'].get('zh_hash')
 
                     log.debug("Trying to update resource: %s" % resource)
