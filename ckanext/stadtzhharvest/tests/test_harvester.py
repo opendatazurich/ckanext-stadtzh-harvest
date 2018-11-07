@@ -438,38 +438,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             ]
             assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
-    def test_harvest_update_resources_geo(self):
-        data_path = os.path.join(
-            __location__,
-            'fixtures',
-            'test_geo_dropzone'
-        )
-        temp_data_path = os.path.join(self.temp_dir, 'GEO')
-        shutil.copytree(data_path, temp_data_path)
-
-        test_config = json.dumps({
-            'data_path': temp_data_path,
-            'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo-metadata',
-            'update_datasets': True,
-            'update_date_last_modified': True
-        })
-        meta_xml_path = os.path.join(
-            self.temp_dir,
-            'GEO',
-            'test_dataset',
-            'DEFAULT',
-            'meta.xml'
-        )
-
-        results = self._test_harvest_update_resource(1, meta_xml_path, config=test_config)
-        eq_(len(results['results']), 1)
-        # since 'update_datasets' is set to True, resources should be changed
-        result = results['results'][0]
-        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
-        eq_(test_json['description'], 'This is a test description (updated)')
-
-
     def _test_harvest_update(self, num_objects, mock_dropzone, dropzone_path, meta_xml_path, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
 
@@ -507,6 +475,37 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         eq_(results['count'], num_objects+1)
         return results
+
+    def test_harvest_update_resources_geo(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_geo_dropzone'
+        )
+        temp_data_path = os.path.join(self.temp_dir, 'GEO')
+        shutil.copytree(data_path, temp_data_path)
+
+        test_config = json.dumps({
+            'data_path': temp_data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': True
+        })
+        meta_xml_path = os.path.join(
+            self.temp_dir,
+            'GEO',
+            'test_dataset',
+            'DEFAULT',
+            'meta.xml'
+        )
+
+        results = self._test_harvest_update_resource(1, meta_xml_path, config=test_config)
+        eq_(len(results['results']), 1)
+        # since 'update_datasets' is set to True, resources should be changed
+        result = results['results'][0]
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        eq_(test_json['description'], 'This is a test description (updated)')
 
     def _test_harvest_update_resource(self, num_objects, meta_xml_path, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
