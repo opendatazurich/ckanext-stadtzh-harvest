@@ -465,7 +465,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         results = self._test_harvest_update_resource(1, meta_xml_path, config=test_config)
         eq_(len(results['results']), 1)
         # since 'update_datasets' is set to True, resources should be changed
-        test_json = next(r for r in results[0]['resources'] if r["name"] == "test.json") 
+        result = results['results'][0]
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
         eq_(test_json['description'], 'This is a test description (updated)')
 
 
