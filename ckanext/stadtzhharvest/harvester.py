@@ -958,9 +958,15 @@ class StadtzhHarvester(HarvesterBase):
         for attribut in attribut_list:
             tech_name = attribut.get('technischerfeldname')
             speak_name = attribut.find('sprechenderfeldname').text
+
+            if tech_name:
+                attribute_name = '%s (technisch: %s)' % (speak_name, tech_name)
+            else:
+                attribute_name = speak_name
+
             attributes.append(
                 (
-                    '%s (technisch: %s)' % (speak_name, tech_name),
+                    attribute_name,
                     attribut.find('feldbeschreibung').text
                 )
             )
