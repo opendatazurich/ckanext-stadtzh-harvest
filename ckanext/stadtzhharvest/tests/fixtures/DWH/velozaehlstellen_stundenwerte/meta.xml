@@ -112,7 +112,7 @@
 				<sprechenderfeldname>Ausfall</sprechenderfeldname>
 				<feldbeschreibung>0 = kein Ausfall der Messstation, 1= Ausfall der Messstation (siehe dazu Ausfallprotokoll)</feldbeschreibung>
 			</attributelement>
-			<attributelement technischerfeldname="Anzahl">
+			<attributelement>
 				<sprechenderfeldname>Gezählte Velofahrten</sprechenderfeldname>
 				<feldbeschreibung>Anzahl Velos pro Stunde an der jeweiligen Messstelle</feldbeschreibung>
 			</attributelement>
