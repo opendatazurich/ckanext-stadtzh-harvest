@@ -152,6 +152,41 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         assert 'test.json' in metadata['resource_metadata'], "test.json is not defined"
         eq_(metadata['resource_metadata']['test.json']['description'], u'This is a test description')
 
+    def test_load_metadata_attributes(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'velozaehlstellen_stundenwerte'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'DWH'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+
+        attributes = json.loads(metadata['sszFields'])
+        eq_(len(attributes), 9)
+
+        jahr = attributes[1]
+        eq_(jahr[0], 'Jahr (technisch: Vkjahr Id)')
+        eq_(jahr[1], 'Jahreszahl (z.B. 2012)')
+
+        # attribute without tech. name
+        anzahl = attributes[8]
+        eq_(anzahl[0], u'Gezählte Velofahrten')
+        eq_(anzahl[1], u'Anzahl Velos pro Stunde an der jeweiligen Messstelle')
+
 
 class FunctionalHarvestTest(object):
     @classmethod
