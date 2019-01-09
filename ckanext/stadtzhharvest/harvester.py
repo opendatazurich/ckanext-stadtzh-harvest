@@ -994,22 +994,23 @@ class StadtzhHarvester(HarvesterBase):
             )
 
     def _create_notifications_for_deleted_datasets(self):
-        current_datasets = self._get_immediate_subdirectories(
+        current_dirs = self._get_immediate_subdirectories(
             self.config['data_path']
         )
+        current_datasets = [self._validate_package_id(d) for d in current_dirs]
         cached_datasets = self._get_immediate_subdirectories(
             os.path.join(self.DIFF_PATH, self.config['metadata_dir'])
         )
-        for package_id in cached_datasets:
+        for package_dir in cached_datasets:
             # Validated package_id can only contain alphanumerics + underscores
-            package_id = self._validate_package_id(package_id)
+            package_id = self._validate_package_id(package_dir)
             if package_id and package_id not in current_datasets:
                 log.debug('Dataset `%s` has been deleted' % package_id)
                 # delete the metadata directory
                 metadata_dir = os.path.join(
                     self.DIFF_PATH,
                     self.config['metadata_dir'],
-                    package_id
+                    package_dir
                 )
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
