@@ -100,6 +100,7 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'data_path', required=True)
         self._validate_string_config(config_obj, 'metadata_dir', required=True)
         self._validate_string_config(config_obj, 'metafile_dir')
+        self._validate_string_config(config_obj, 'dataset_prefix')
         self._validate_boolean_config(config_obj, 'update_datasets')
         self._validate_boolean_config(config_obj, 'update_date_last_modified')
 
@@ -130,6 +131,8 @@ class StadtzhHarvester(HarvesterBase):
             self.config['update_datasets'] = False
         if 'update_date_last_modified' not in self.config:
             self.config['update_date_last_modified'] = False
+        if 'dataset_prefix' not in self.config:
+            self.config['dataset_prefix'] = ''
 
         log.debug('Using config: %r' % self.config)
 
@@ -150,8 +153,12 @@ class StadtzhHarvester(HarvesterBase):
 
             # foreach -> meta.xml -> create entry
             for dataset in datasets:
-                log.debug(self._validate_package_id(dataset))
-                dataset_id = self._validate_package_id(dataset)
+                # use dataset_prefix to make dataset names unique
+                dataset_name = (
+                    '%s%s' % (self.config['dataset_prefix'], dataset)
+                )
+                dataset_id = self._validate_package_id(dataset_name)
+                log.debug("Gather %s" % dataset_id)
                 if dataset_id:
                     meta_xml_path = os.path.join(
                         self.config['data_path'],
