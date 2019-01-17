@@ -913,12 +913,13 @@ class StadtzhHarvester(HarvesterBase):
 
     def _node_exists_and_is_nonempty(self, dataset_node, element_name):
         element = dataset_node.find(element_name)
-        if element is None:
+        if element is None or element.text is None:
             return None
-        elif element.text is None:
-            return None
-        else:
-            return element.text
+        elif element.text.startswith('<![CDATA'):
+            match = re.search('^(<!\[CDATA\[)([^\]]*)(\]\]>)$', element.text)
+            if match:
+                return match.group(2)
+        return element.text
 
     def _get(self, node, name, default=''):
         element = self._node_exists_and_is_nonempty(node, name)
