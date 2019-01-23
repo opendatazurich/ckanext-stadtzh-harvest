@@ -9,6 +9,7 @@ import ckantoolkit.tests.helpers as h
 
 import ckanext.harvest.model as harvest_model
 from ckanext.harvest import queue
+from ckan.lib.helpers import url_for
 
 import ckanext.stadtzhharvest.harvester as plugin
 import ckanext.stadtzhtheme.plugin as theme
@@ -389,6 +390,17 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
         eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
+    def _test_harvest_create(self, num_objects, **kwargs):
+        harvest_source = self._create_harvest_source(**kwargs)
+
+        self._run_full_job(harvest_source['id'], num_objects=num_objects)
+
+        # Check that correct amount of datasets were created
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq)
+        eq_(results['count'], num_objects)
+        return results
+
     def test_fail_with_invalid_url_resources(self):
         data_path = os.path.join(
             __location__,
@@ -403,21 +415,50 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'update_date_last_modified': True
         })
 
-        # this should fail
-        results = self._test_harvest_create(1, config=test_config)
-        eq_(len(results['results']), 0)
-        result = results['results'][0]
+        # harvesting this dropzone should not fail
+        # but generate an error on the log
+        harvest_source = self._create_harvest_source(config=test_config)
+        self._run_full_job(harvest_source['id'], num_objects=1)
 
-    def _test_harvest_create(self, num_objects, **kwargs):
-        harvest_source = self._create_harvest_source(**kwargs)
-
-        self._run_full_job(harvest_source['id'], num_objects=num_objects)
-
-        # Check that two datasets were created
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
         results = h.call_action('package_search', {}, fq=fq)
-        eq_(results['count'], num_objects)
-        return results
+        eq_(results['count'], 1)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        # Get the harvest source with the updated status
+        harvest_source = h.call_action('harvest_source_show',
+                                       id=harvest_source['id'])
+        last_job_status = harvest_source['status']['last_job']
+        eq_(last_job_status['status'], 'Finished')
+
+        error_count = len(last_job_status['object_error_summary'])
+        eq_(error_count, 1)
+        eq_(last_job_status['stats']['added'], 1)
+        eq_(last_job_status['stats']['updated'], 0)
+        eq_(last_job_status['stats']['deleted'], 0)
+        eq_(last_job_status['stats']['not modified'], 0)
+        eq_(last_job_status['stats']['errored'], 1)
+
+        obj_summary = last_job_status['object_error_summary']
+        assert 'Error while handling action' in obj_summary[0][0], "Error msg 1 does not match: %r" % obj_summary
+        assert 'Invalid URL (CDATA)' in obj_summary[0][0], "Error msg 2 does not match: %r" % obj_summary
+        assert 'Please provide a valid URL' in obj_summary[0][0], "Error msg 3 does not match: %r" % obj_summary
+
+        # make sure other resources are there
+        result = results['results'][0]
+        eq_(len(result['resources']), 2)
+        try:
+            assert next(r for r in result['resources'] if r["name"] == "fail.json") 
+            assert next(r for r in result['resources'] if r["name"] == "Web Map Service")
+        except StopIteration:
+            raise AssertionError('Resources fail.json/Web Map Service not found')
+
+        # make sure search still works after failed harvesting
+        url = url_for('dataset.search')
+        app = self._get_test_app()
+        response = app.get(url, status=200)
 
     def test_harvest_update_dwh(self):
         data_path = os.path.join(
