@@ -389,6 +389,25 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
         eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
+    def test_fail_with_invalid_url_resources(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'fail_dropzone'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'fail-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+
+        # this should fail
+        results = self._test_harvest_create(1, config=test_config)
+        eq_(len(results['results']), 0)
+        result = results['results'][0]
+
     def _test_harvest_create(self, num_objects, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
 
