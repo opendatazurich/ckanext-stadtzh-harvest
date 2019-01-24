@@ -880,7 +880,8 @@ class StadtzhHarvester(HarvesterBase):
                 if resource_file:
                     resource_dict = {
                         'name': resource_file,
-                        'url': '',
+                        'url': resource_file,
+                        'url_type': 'upload',
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
                     }
