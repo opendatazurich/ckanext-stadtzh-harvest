@@ -457,7 +457,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # make sure search still works after failed harvesting
         url = url_for('dataset.search')
-        app = self._get_test_app()
+        app = h._get_test_app()
         response = app.get(url, status=200)
 
     def test_harvest_update_dwh(self):
