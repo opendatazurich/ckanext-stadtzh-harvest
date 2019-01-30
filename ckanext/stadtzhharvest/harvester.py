@@ -880,7 +880,8 @@ class StadtzhHarvester(HarvesterBase):
                 if resource_file:
                     resource_dict = {
                         'name': resource_file,
-                        'url': '',
+                        'url': resource_file,
+                        'url_type': 'upload',
                         'format': resource_file.split('.')[-1],
                         'resource_type': 'file'
                     }
@@ -915,10 +916,6 @@ class StadtzhHarvester(HarvesterBase):
         element = dataset_node.find(element_name)
         if element is None or element.text is None:
             return None
-        elif element.text.startswith('<![CDATA'):
-            match = re.search('^(<!\[CDATA\[)([^\]]*)(\]\]>)$', element.text)
-            if match:
-                return match.group(2)
         return element.text
 
     def _get(self, node, name, default=''):
