@@ -305,6 +305,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         results = self._test_harvest_create(1, config=test_config)['results']
         eq_(len(results), 1)
+        eq_(results[0]['name'], u'test_dataset')
         eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
         eq_(results[0]['license_id'], u'cc-by')
         eq_(results[0]['updateInterval'][0], u'woechentlich')
@@ -389,6 +390,55 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
         eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
+
+    def test_harvest_create_with_dataset_prefix(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'test_dropzone'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': '',
+            'metadata_dir': 'test-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': False,
+            'dataset_prefix': 'testprefix-',
+        })
+
+        results = self._test_harvest_create(1, config=test_config)['results']
+        eq_(len(results), 1)
+        eq_(results[0]['name'], u'testprefix-test_dataset')
+        eq_(results[0]['title'], u'Administrative Einteilungen Stadt Zürich')
+        eq_(results[0]['license_id'], u'cc-by')
+        eq_(results[0]['updateInterval'][0], u'woechentlich')
+        eq_(results[0]['dataType'][0], u'Einzeldaten')
+        eq_(len(results[0]['resources']), 1)
+
+    def test_harvest_create_dwh(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'DWH'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': '',
+            'metadata_dir': 'dwh-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': False
+        })
+
+        results = self._test_harvest_create(3, config=test_config)
+        eq_(len(results['results']), 3)
+        for result in results['results']:
+            expected_titles = [
+                u'Geburten nach Jahr, Geschlecht und Stadtquartier',
+                u'Test Nachnamen in der Stadt Zürich',
+                u'Daten der permanenten Velozählstellen - Stundenwerte',
+            ]
+
+            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def _test_harvest_create(self, num_objects, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
