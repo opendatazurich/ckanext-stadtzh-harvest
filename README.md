@@ -25,7 +25,8 @@ Example:
     "metadata_dir": "geo-metadata",
     "metafile_dir": "DEFAULT",
     "update_datasets": false,
-    "update_date_last_modified": true
+    "update_date_last_modified": true,
+    "dataset_prefix": ""
 }
 ```
 
@@ -51,6 +52,13 @@ If the flag is `false` no updates will be performed, only new datasets will be a
 
 Boolean flag (true/false) to determine if the field `date_last_modified` of a dataset should be updated by the harvester or not.
 If the flag is `true` the date will be updated if the content of any resource of a dataset has changed.
+
+### `dataset_prefix`
+
+Defines a prefix for all dataset names harvested by this harvester.
+This is useful if a test harvester imports the same dataset as a regular harvester and it should be ensured, that the they can co-exists without overriding each others dataset.
+
+E.g. if a harvester imports a dataset "velowege", it will be imported as "velowege"; if `dataset_prefix` is set to `"test_"`, it will be imported as `test_velowege`.
 
 ## Metadata
 Each dataset consists of a folder containing a `meta.xml` (required!) and an arbitrary number of resources.
