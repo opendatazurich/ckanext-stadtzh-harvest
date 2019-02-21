@@ -185,7 +185,8 @@ class StadtzhHarvester(HarvesterBase):
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
 
-            self._create_notifications_for_deleted_datasets()
+            delete_ids = self._check_for_deleted_datasets(harvest_job)
+            ids.extend(delete_ids)
             return ids
         except Exception, e:
             log.exception(e)
@@ -264,8 +265,7 @@ class StadtzhHarvester(HarvesterBase):
             return False
 
         try:
-            self._import_package(harvest_object)
-            return True
+            return self._import_package(harvest_object)
         except Exception, e:
             log.exception(e)
             self._save_object_error(
@@ -284,6 +284,11 @@ class StadtzhHarvester(HarvesterBase):
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
         context = self._create_new_context()
+
+        # check if dataset must be deleted
+        import_action = package_dict.pop('import_action', 'update')
+        if import_action == 'delete':
+            return self._delete_dataset(package_dict)
 
         # check if package already exists and
         existing_package = self._get_existing_package(package_dict)
@@ -366,6 +371,9 @@ class StadtzhHarvester(HarvesterBase):
         )
         Session.commit()
         return True
+
+    def _delete_dataset(self, package_dict):
+        raise NotImplementedError
 
     def _get_existing_package(self, package_dict):
         context = self._create_new_context()
@@ -991,14 +999,13 @@ class StadtzhHarvester(HarvesterBase):
 
     def _diff_path(self, package_id):
         today = datetime.date.today()
-        package_id = self._validate_package_id(package_id)
         if package_id:
             return os.path.join(
                 self.DIFF_PATH,
                 '%s-%s.html' % (str(today), package_id)
             )
 
-    def _create_notifications_for_deleted_datasets(self):
+    def _check_for_deleted_datasets(self, harvest_job):
         current_dirs = self._get_immediate_subdirectories(
             self.config['data_path']
         )
@@ -1006,6 +1013,7 @@ class StadtzhHarvester(HarvesterBase):
         cached_datasets = self._get_immediate_subdirectories(
             os.path.join(self.DIFF_PATH, self.config['metadata_dir'])
         )
+        delete_ids = []
         for package_dir in cached_datasets:
             # Validated package_id can only contain alphanumerics + underscores
             package_id = self._validate_package_id(package_dir)
@@ -1019,17 +1027,38 @@ class StadtzhHarvester(HarvesterBase):
                 )
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
-                # only send notification if there is a package in CKAN
-                if model.Package.get(package_id):
-                    path = self._diff_path(package_id)
-                    with open(path, 'w') as deleted_info:
-                        deleted_info.write(
-                            "<!DOCTYPE html>\n<html>\n<body>\n"
-                            "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
-                            "</a></h2></body></html>\n"
-                            % (self.CKAN_SITE_URL, package_id, package_id)
-                        )
-                    log.debug('Wrote deleted notification to file `%s`' % path)
+
+                # only continue if package exists in CKAN
+                dataset_name = (
+                    '%s%s' % (self.config['dataset_prefix'], package_id)
+                )
+                if not model.Package.get(dataset_name):
+                    log.debug('Package `%s` not found in CKAN' % dataset_name)
+                    return
+
+                self._create_notification_for_deleted_dataset(package_id)
+                if self.config['delete_missing_datasets']:
+                    log.info('Add `%s` for deletion', today)
+                    id = self._save_harvest_object(
+                        {
+                            'datasetID': dataset_name,
+                            'import_action': 'delete'
+                        },
+                        harvest_job
+                    )
+                    delete_ids.append(id)
+        return deleted_ids
+
+    def _create_notification_for_deleted_dataset(self, package_id):
+        path = self._diff_path(package_id)
+        with open(path, 'w') as deleted_info:
+            deleted_info.write(
+                "<!DOCTYPE html>\n<html>\n<body>\n"
+                "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
+                "</a></h2></body></html>\n"
+                % (self.CKAN_SITE_URL, package_id, package_id)
+            )
+        log.debug('Wrote deleted notification to file `%s`' % path)
 
     def _create_notification_for_new_dataset(self, package_dict):
         # Validated package_id can only contain alphanumerics and underscores
