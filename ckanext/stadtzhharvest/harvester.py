@@ -1053,28 +1053,22 @@ class StadtzhHarvester(HarvesterBase):
                 raise ValueError(
                     "Package name '%s' is not valid" % package_dict['name']
                 )
-            new_metadata_path = os.path.join(
-                self.DIFF_PATH,
-                self.config['metadata_dir'],
-                package_name
-            )
-            prev_metadata_path = os.path.join(
+            metadata_path = os.path.join(
                 self.DIFF_PATH,
                 self.config['metadata_dir'],
                 package_name
             )
             new_metadata_file = os.path.join(
-                new_metadata_path,
+                metadata_path,
                 'metadata-%s' % str(datetime.date.today())
             )
             prev_metadata_file = os.path.join(
-                new_metadata_path,
+                metadata_path,
                 'metadata-previous'
             )
 
             for path in [self.DIFF_PATH,
-                         new_metadata_path,
-                         prev_metadata_path]:
+                         metadata_path]:
                 if not os.path.isdir(path):
                     os.makedirs(path)
 
