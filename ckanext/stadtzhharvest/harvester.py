@@ -313,13 +313,13 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
-            log.debug('Dataset `%s` has been added' % package_dict['id'])
+            log.debug('Dataset `%s` has been added' % package_dict['name'])
         else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
             dataset_id = self._update_package(package_dict, harvest_object)
-            log.debug('Dataset `%s` has been updated' % package_dict['id'])
+            log.debug('Dataset `%s` has been updated' % package_dict['name'])
 
         # create diffs if there is a previous package
         if existing_package:
@@ -1048,20 +1048,20 @@ class StadtzhHarvester(HarvesterBase):
     def _create_diffs(self, package_dict):
         try:
             # Validated package_id can only contain alphanumerics + underscores
-            package_id = self._validate_package_id(package_dict['id'])
-            if not package_id:
+            package_name = self._validate_package_id(package_dict['name'])
+            if not package_name:
                 raise ValueError(
-                    "Package ID '%s' is not valid" % package_dict['id']
+                    "Package name '%s' is not valid" % package_dict['name']
                 )
             new_metadata_path = os.path.join(
                 self.DIFF_PATH,
                 self.config['metadata_dir'],
-                package_id
+                package_name
             )
             prev_metadata_path = os.path.join(
                 self.DIFF_PATH,
                 self.config['metadata_dir'],
-                package_id
+                package_name
             )
             new_metadata_file = os.path.join(
                 new_metadata_path,
@@ -1081,7 +1081,7 @@ class StadtzhHarvester(HarvesterBase):
             if not os.path.isfile(new_metadata_file):
                 log.debug(
                     '%s Metadata JSON missing for the dataset: %s'
-                    % (new_metadata_file, package_id)
+                    % (new_metadata_file, package_name)
                 )
                 with open(new_metadata_file, 'w') as new_metadata:
                     new_metadata.write('')
@@ -1089,7 +1089,8 @@ class StadtzhHarvester(HarvesterBase):
 
             if not os.path.isfile(prev_metadata_file):
                 log.debug(
-                    'No earlier metadata JSON for the dataset: %s' % package_id
+                    'No earlier metadata JSON for the dataset: %s'
+                    % package_name
                 )
                 with open(prev_metadata_file, 'w') as prev_metadata:
                     prev_metadata.write('')
@@ -1102,17 +1103,22 @@ class StadtzhHarvester(HarvesterBase):
 
             if prev == new:
                 log.debug(
-                    'No change in metadata for the dataset: %s' % package_id
+                    'No change in metadata for the dataset: %s'
+                    % package_name
                 )
             else:
                 with open(prev_metadata_file) as prev_metadata:
                     with open(new_metadata_file) as new_metadata:
-                        with open(self._diff_path(package_id), 'w') as diff:
+                        with open(self._diff_path(package_name), 'w') as diff:
                             diff.write(
                                 "<!DOCTYPE html>\n<html>\n<body>\n"
                                 "<h2>Metadata diff for the dataset <a href=\""
                                 "%s/dataset/%s\">%s</a></h2></body></html>\n"
-                                % (self.CKAN_SITE_URL, package_id, package_id)
+                                % (
+                                    self.CKAN_SITE_URL,
+                                    package_name,
+                                    package_name
+                                )
                             )
                             d = difflib.HtmlDiff(wrapcolumn=60)
                             umlauts = {
@@ -1135,7 +1141,7 @@ class StadtzhHarvester(HarvesterBase):
                             diff.write(html)
                             log.debug(
                                 'Metadata diff generated for the dataset: %s'
-                                % package_id
+                                % package_name
                             )
 
             os.remove(prev_metadata_file)
