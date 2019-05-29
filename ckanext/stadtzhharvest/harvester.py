@@ -287,7 +287,10 @@ class StadtzhHarvester(HarvesterBase):
 
         # check if dataset must be deleted
         import_action = package_dict.pop('import_action', 'update')
+        log.debug(import_action)
+        log.debug(package_dict['name'])
         if import_action == 'delete':
+            harvest_object.current = False
             return self._delete_dataset(package_dict)
 
         # check if package already exists and
@@ -373,7 +376,11 @@ class StadtzhHarvester(HarvesterBase):
         return True
 
     def _delete_dataset(self, package_dict):
-        raise NotImplementedError
+        context = self._create_new_context()
+        get_action('dataset_purge')(
+            context.copy(),
+            package_dict
+        )
 
     def _get_existing_package(self, package_dict):
         context = self._create_new_context()
@@ -1034,11 +1041,11 @@ class StadtzhHarvester(HarvesterBase):
                 )
                 if not model.Package.get(dataset_name):
                     log.debug('Package `%s` not found in CKAN' % dataset_name)
-                    return
+                    continue
 
                 self._create_notification_for_deleted_dataset(package_id)
                 if self.config['delete_missing_datasets']:
-                    log.info('Add `%s` for deletion', today)
+                    log.info('Add `%s` for deletion', dataset_name)
                     id = self._save_harvest_object(
                         {
                             'datasetID': dataset_name,
@@ -1047,7 +1054,7 @@ class StadtzhHarvester(HarvesterBase):
                         harvest_job
                     )
                     delete_ids.append(id)
-        return deleted_ids
+        return delete_ids
 
     def _create_notification_for_deleted_dataset(self, package_id):
         path = self._diff_path(package_id)
