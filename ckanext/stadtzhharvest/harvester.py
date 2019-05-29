@@ -290,6 +290,7 @@ class StadtzhHarvester(HarvesterBase):
         log.debug(import_action)
         log.debug(package_dict['name'])
         if import_action == 'delete':
+            harvest_object.current = False
             return self._delete_dataset(package_dict)
 
         # check if package already exists and
