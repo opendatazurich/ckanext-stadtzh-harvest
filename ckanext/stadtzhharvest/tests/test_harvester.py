@@ -277,6 +277,22 @@ class FunctionalHarvestTest(object):
 
         return harvest_source
 
+    def _update_harvest_source(self, **kwargs):
+
+        source_dict = {
+            'title': 'Stadt ZH Source',
+            'name': 'test-stadtzh-source',
+            'url': 'http://stadthzh',
+            'source_type': 'stadtzh_harvester',
+        }
+
+        source_dict.update(**kwargs)
+
+        harvest_source = h.call_action('harvest_source_update',
+                                       {}, **source_dict)
+
+        return harvest_source
+
     def _create_harvest_job(self, harvest_source_id):
 
         harvest_job = h.call_action('harvest_job_create',
@@ -557,6 +573,87 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         url = url_for('search')
         app = h._get_test_app()
         response = app.get(url, status=200)
+
+
+    def test_delete_dataset(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'DWH'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'delete_missing_datasets': True,
+            'metafile_dir': '',
+            'metadata_dir': 'dwh-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': True
+        })
+
+        # harvesting the default DWH-dropzone
+        harvest_source = self._create_harvest_source(config=test_config)
+        self._run_full_job(harvest_source['id'], num_objects=3)
+
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq)
+        eq_(results['count'], 3)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        # Get the harvest source with the updated status
+        harvest_source = h.call_action('harvest_source_show',
+                                       id=harvest_source['id'])
+        last_job_status = harvest_source['status']['last_job']
+        eq_(last_job_status['status'], 'Finished')
+
+        error_count = len(last_job_status['object_error_summary'])
+        eq_(error_count, 0)
+        eq_(last_job_status['stats']['added'], 3)
+        eq_(last_job_status['stats']['updated'], 0)
+        eq_(last_job_status['stats']['deleted'], 0)
+        eq_(last_job_status['stats']['not modified'], 0)
+        eq_(last_job_status['stats']['errored'], 0)
+
+        # run a second harvest-job with updated dropzone-path where two datasets are deleted
+        data_path_deleted = os.path.join(
+            __location__,
+            'fixtures',
+            'delete_dataset_dropzone'
+        )
+        test_config_deleted = json.dumps({
+            'data_path': data_path_deleted,
+            'delete_missing_datasets': True,
+            'metafile_dir': '',
+            'metadata_dir': 'dwh-metadata',
+            'update_datasets': True,
+            'update_date_last_modified': True
+        })
+
+        harvest_source = self._update_harvest_source(config=test_config_deleted)
+        self._run_full_job(harvest_source['id'], num_objects=3)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq)
+        eq_(results['count'], 1)
+
+        # Get the harvest source with the updated status
+        harvest_source = h.call_action('harvest_source_show',
+                                       id=harvest_source['id'])
+        last_job_status = harvest_source['status']['last_job']
+        eq_(last_job_status['status'], 'Finished')
+
+        error_count = len(last_job_status['object_error_summary'])
+        eq_(error_count, 0)
+        eq_(last_job_status['stats']['added'], 0)
+        eq_(last_job_status['stats']['updated'], 1)
+        eq_(last_job_status['stats']['deleted'], 2)
+        eq_(last_job_status['stats']['not modified'], 0)
+        eq_(last_job_status['stats']['errored'], 0)
+
 
     def test_harvest_update_dwh(self):
         data_path = os.path.join(
