@@ -379,11 +379,16 @@ class StadtzhHarvester(HarvesterBase):
         return True
 
     def _delete_dataset(self, package_dict):
-        context = self._create_new_context()
-        get_action('dataset_purge')(
-            context.copy(),
-            package_dict
-        )
+        try:
+            context = self._create_new_context()
+            get_action('dataset_purge')(
+                context.copy(),
+                package_dict
+            )
+            return True
+        except Exception, e:
+            log.exception(e)
+            return False
 
     def _get_existing_package(self, package_dict):
         context = self._create_new_context()

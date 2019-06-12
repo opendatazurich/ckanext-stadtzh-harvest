@@ -526,7 +526,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         app = h._get_test_app()
         response = app.get(url, status=200)
 
-
     def test_delete_dataset(self):
         data_path = os.path.join(
             __location__,
@@ -605,7 +604,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(last_job_status['stats']['deleted'], 2)
         eq_(last_job_status['stats']['not modified'], 0)
         eq_(last_job_status['stats']['errored'], 0)
-
 
     def test_harvest_update_dwh(self):
         data_path = os.path.join(
