@@ -103,6 +103,7 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'dataset_prefix')
         self._validate_boolean_config(config_obj, 'update_datasets')
         self._validate_boolean_config(config_obj, 'update_date_last_modified')
+        self._validate_boolean_config(config_obj, 'delete_missing_datasets')
 
         return config_str
 
@@ -133,6 +134,8 @@ class StadtzhHarvester(HarvesterBase):
             self.config['update_date_last_modified'] = False
         if 'dataset_prefix' not in self.config:
             self.config['dataset_prefix'] = ''
+        if 'delete_missing_datasets' not in self.config:
+            self.config['delete_missing_datasets'] = False
 
         log.debug('Using config: %r' % self.config)
 
