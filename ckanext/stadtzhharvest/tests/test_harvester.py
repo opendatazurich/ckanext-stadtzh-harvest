@@ -522,7 +522,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             raise AssertionError('Resources fail.json/Web Map Service not found')
 
         # make sure search still works after failed harvesting
-        url = url_for('search')
+        url = url_for('home')
         app = h._get_test_app()
         response = app.get(url, status=200)
 

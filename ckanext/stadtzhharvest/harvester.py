@@ -103,7 +103,10 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'dataset_prefix')
         self._validate_boolean_config(config_obj, 'update_datasets')
         self._validate_boolean_config(config_obj, 'update_date_last_modified')
-        self._validate_boolean_config(config_obj, 'delete_missing_datasets')
+        self._validate_boolean_config(
+            config_obj,
+            'delete_missing_datasets',
+            required=False)
 
         return config_str
 
@@ -379,16 +382,12 @@ class StadtzhHarvester(HarvesterBase):
         return True
 
     def _delete_dataset(self, package_dict):
-        try:
-            context = self._create_new_context()
-            get_action('dataset_purge')(
-                context.copy(),
-                package_dict
-            )
-            return True
-        except Exception, e:
-            log.exception(e)
-            return False
+        context = self._create_new_context()
+        get_action('dataset_purge')(
+            context.copy(),
+            package_dict
+        )
+        return True
 
     def _get_existing_package(self, package_dict):
         context = self._create_new_context()
