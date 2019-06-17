@@ -26,7 +26,8 @@ Example:
     "metafile_dir": "DEFAULT",
     "update_datasets": false,
     "update_date_last_modified": true,
-    "dataset_prefix": ""
+    "dataset_prefix": "",
+    "delete_missing_datasets": false
 }
 ```
 
@@ -59,6 +60,10 @@ Defines a prefix for all dataset names harvested by this harvester.
 This is useful if a test harvester imports the same dataset as a regular harvester and it should be ensured, that the they can co-exists without overriding each others dataset.
 
 E.g. if a harvester imports a dataset "velowege", it will be imported as "velowege"; if `dataset_prefix` is set to `"test_"`, it will be imported as `test_velowege`.
+
+### `delete_missing_datasets`
+
+Boolean flag (true/false) to determine if this harvester should delete existing datasets that are no longer included in the harvest-source. 
 
 ## Metadata
 Each dataset consists of a folder containing a `meta.xml` (required!) and an arbitrary number of resources.
