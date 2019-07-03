@@ -188,6 +188,54 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
         eq_(anzahl[0], u'Gezählte Velofahrten')
         eq_(anzahl[1], u'Anzahl Velos pro Stunde an der jeweiligen Messstelle')
 
+    def test_load_metadata_groups_and_tags(self):
+        harvester = plugin.StadtzhHarvester()
+        dataset_folder = 'nachnamen_2014'
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'DWH'
+        )
+
+        test_meta_xml_path = os.path.join(
+            data_path,
+            dataset_folder,
+            'meta.xml'
+        )
+
+        metadata = harvester._load_metadata_from_path(
+            test_meta_xml_path,
+            dataset_folder,
+            dataset_folder
+        )
+        eq_(metadata['datasetFolder'], dataset_folder)
+        eq_(metadata['datasetID'], dataset_folder)
+
+        # tags
+        eq_(len(metadata['tags']), 5)
+        eq_(
+            metadata['tags'],
+            [
+                    {'name': 'sachdaten'},
+                    {'name': 'tabellen'},
+                    {'name': 'tag-mit-spaces'},
+                    {'name': 'gross-klein'},
+                    {'name': 'umlaute-auo'},
+            ]
+        )
+        
+        # groups
+        def check_group(id, name, title):
+            group_result = h.call_action('group_show', {}, id=id)
+            eq_(group_result['id'], id)
+            eq_(group_result['name'], name)
+            eq_(group_result['title'], title)
+        
+        eq_(len(metadata['groups']), 3)
+        check_group(metadata['groups'][0]['name'], 'tourismus', u'Tourismus')
+        check_group(metadata['groups'][1]['name'], 'freizeit', u'Freizeit')
+        check_group(metadata['groups'][2]['name'], 'bevolkerung', u'Bevölkerung')
+        
 
 class FunctionalHarvestTest(object):
     @classmethod

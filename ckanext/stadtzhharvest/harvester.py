@@ -19,7 +19,7 @@ from ckan.logic import get_action, NotFound
 import ckan.plugins.toolkit as tk
 from ckan import plugins as p
 from ckan.lib.helpers import json
-from ckan.lib.munge import munge_title_to_name
+from ckan.lib.munge import munge_title_to_name, munge_tag
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
@@ -786,7 +786,7 @@ class StadtzhHarvester(HarvesterBase):
         tags_node = dataset_node.find('schlagworte')
         if tags_node is not None and tags_node.text:
             for tag in tags_node.text.split(', '):
-                tags.append({'name': tag})
+                tags.append({'name': munge_tag(tag)})
         log.debug('Added tags: %s' % str(tags))
         return tags
 

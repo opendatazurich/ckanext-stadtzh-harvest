@@ -3,7 +3,7 @@
 	<datensatz>
 		<titel>Test Nachnamen in der Stadt Zürich</titel>
 		<beschreibung>TEST: Anzahl Personen nach Nachnamen, die mindestens drei Mal vorkommen.</beschreibung>
-		<kategorie>Bevölkerung</kategorie>
+		<kategorie>Tourismus, Freizeit, Bevölkerung</kategorie>
 		<rechtsgrundlage></rechtsgrundlage>
 		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
 		<lieferant>Statistik Stadt Zürich, Präsidialdepartement</lieferant>
@@ -14,7 +14,7 @@
 		<aktualisierungsdatum>30.10.2014</aktualisierungsdatum>
 		<datentyp>Datenaggregat</datentyp>
 		<aktualisierungsintervall>jährlich</aktualisierungsintervall>
-		<schlagworte>sachdaten, tabellen</schlagworte>
+		<schlagworte>sachdaten, tabellen, tag mit spaces, GROSS-klein, umlaute-äüö</schlagworte>
 		<aktuelle_version>1.0</aktuelle_version>
 		<bemerkungen>
 			<bemerkung>
