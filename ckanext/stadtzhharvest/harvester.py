@@ -146,7 +146,10 @@ class StadtzhHarvester(HarvesterBase):
         log.debug('In StadtzhHarvester gather_stage')
         self._set_config(harvest_job.source.config)
 
+        # generated ids of the harvest objects
         ids = []
+        # cleaned dataset names used as ids for the datasets
+        gathered_dataset_ids = []
         try:
             # list directories in dropzone folder
             datasets = self._remove_hidden_files(
@@ -166,6 +169,7 @@ class StadtzhHarvester(HarvesterBase):
                 dataset_id = self._validate_package_id(dataset_name)
                 log.debug("Gather %s" % dataset_id)
                 if dataset_id:
+                    gathered_dataset_ids.append(dataset_id)
                     meta_xml_path = os.path.join(
                         self.config['data_path'],
                         dataset,
@@ -191,8 +195,12 @@ class StadtzhHarvester(HarvesterBase):
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
 
-            delete_ids = self._check_for_deleted_datasets(harvest_job)
-            ids.extend(delete_ids)
+            if self.config['delete_missing_datasets']:
+                delete_ids = self._check_for_deleted_datasets(
+                    harvest_job, gathered_dataset_ids
+                )
+                ids.extend(delete_ids)
+
             return ids
         except Exception, e:
             log.exception(e)
@@ -293,8 +301,6 @@ class StadtzhHarvester(HarvesterBase):
 
         # check if dataset must be deleted
         import_action = package_dict.pop('import_action', 'update')
-        log.debug(import_action)
-        log.debug(package_dict['name'])
         if import_action == 'delete':
             harvest_object.current = False
             return self._delete_dataset(package_dict)
@@ -400,6 +406,21 @@ class StadtzhHarvester(HarvesterBase):
             existing_package = None
             log.debug('Could not find pkg %s' % package_dict['name'])
         return existing_package
+
+    def _get_existing_packages_names(self, harvest_job):
+        context = self._create_new_context()
+        try:
+            existing_packages = get_action('package_search')(
+                context,
+                {'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id)}
+            )
+            existing_packages_names = [pkg['name']
+                                       for pkg in existing_packages['results']]
+        except NotFound:
+            existing_packages_names = []
+            log.debug('Could not find pkges for source %s'
+                      % harvest_job.source_id)
+        return existing_packages_names
 
     def _resources_actions(self, existing_package, new_resources):
         resources_changed = False
@@ -1019,48 +1040,39 @@ class StadtzhHarvester(HarvesterBase):
                 '%s-%s.html' % (str(today), package_id)
             )
 
-    def _check_for_deleted_datasets(self, harvest_job):
-        current_dirs = self._get_immediate_subdirectories(
-            self.config['data_path']
+    def _check_for_deleted_datasets(self, harvest_job,
+                                    gathered_dataset_names):
+        existing_packages_names = self._get_existing_packages_names(
+            harvest_job
         )
-        current_datasets = [self._validate_package_id(d) for d in current_dirs]
-        cached_datasets = self._get_immediate_subdirectories(
-            os.path.join(self.DIFF_PATH, self.config['metadata_dir'])
-        )
+        delete_names = list(set(existing_packages_names) -
+                            set(gathered_dataset_names))
+        # gather delete harvest ids
         delete_ids = []
-        for package_dir in cached_datasets:
-            # Validated package_id can only contain alphanumerics + underscores
-            package_id = self._validate_package_id(package_dir)
-            if package_id and package_id not in current_datasets:
-                log.debug('Dataset `%s` has been deleted' % package_id)
-                # delete the metadata directory
-                metadata_dir = os.path.join(
-                    self.DIFF_PATH,
-                    self.config['metadata_dir'],
-                    package_dir
-                )
+        for package_name in delete_names:
+            log.debug('Dataset `%s` has been deleted' % package_name)
+            metadata_dir = os.path.join(
+                self.DIFF_PATH,
+                self.config['metadata_dir'],
+                package_name
+            )
+            # delete metadata directory
+            # TODO: delete directories unimported (error) packages
+            if os.path.isdir(metadata_dir):
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
 
-                # only continue if package exists in CKAN
-                dataset_name = (
-                    '%s%s' % (self.config['dataset_prefix'], package_id)
+            self._create_notification_for_deleted_dataset(package_name)
+            if self.config['delete_missing_datasets']:
+                log.info('Add `%s` for deletion', package_name)
+                id = self._save_harvest_object(
+                    {
+                        'datasetID': package_name,
+                        'import_action': 'delete'
+                    },
+                    harvest_job
                 )
-                if not model.Package.get(dataset_name):
-                    log.debug('Package `%s` not found in CKAN' % dataset_name)
-                    continue
-
-                self._create_notification_for_deleted_dataset(package_id)
-                if self.config['delete_missing_datasets']:
-                    log.info('Add `%s` for deletion', dataset_name)
-                    id = self._save_harvest_object(
-                        {
-                            'datasetID': dataset_name,
-                            'import_action': 'delete'
-                        },
-                        harvest_job
-                    )
-                    delete_ids.append(id)
+                delete_ids.append(id)
         return delete_ids
 
     def _create_notification_for_deleted_dataset(self, package_id):
