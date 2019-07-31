@@ -137,6 +137,7 @@ class StadtzhHarvester(HarvesterBase):
         log.debug('Using config: %r' % self.config)
 
     def gather_stage(self, harvest_job):
+        # just a new comment
         log.debug('In StadtzhHarvester gather_stage')
         self._set_config(harvest_job.source.config)
 
