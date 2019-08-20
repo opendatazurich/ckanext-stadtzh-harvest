@@ -194,7 +194,6 @@ class StadtzhHarvester(HarvesterBase):
 
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
-
             if self.config['delete_missing_datasets']:
                 delete_ids = self._check_for_deleted_datasets(
                     harvest_job, gathered_dataset_ids
@@ -414,6 +413,14 @@ class StadtzhHarvester(HarvesterBase):
                 context,
                 {'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id)}
             )
+            if (existing_packages['count']) > len(existing_packages):
+                existing_packages = get_action('package_search')(
+                    context,
+                    {'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id),
+                     'rows': existing_packages['count']}
+                )
+            log.info('Found %d number of packages for source %s' %
+                     (existing_packages['count'], harvest_job.source_id))
             existing_packages_names = [pkg['name']
                                        for pkg in existing_packages['results']]
         except NotFound:
@@ -1049,6 +1056,7 @@ class StadtzhHarvester(HarvesterBase):
                             set(gathered_dataset_names))
         # gather delete harvest ids
         delete_ids = []
+
         for package_name in delete_names:
             log.debug('Dataset `%s` has been deleted' % package_name)
             metadata_dir = os.path.join(
