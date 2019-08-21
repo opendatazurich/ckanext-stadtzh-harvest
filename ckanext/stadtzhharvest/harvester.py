@@ -408,27 +408,32 @@ class StadtzhHarvester(HarvesterBase):
 
     def _get_existing_packages_names(self, harvest_job):
         context = self._create_new_context()
-        try:
-            existing_packages = get_action('package_search')(
-                context,
-                {'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id)}
-            )
-            if (existing_packages['count']) > len(existing_packages):
+        n = 2
+        page = 1
+        existing_packages_names = []
+        while True:
+            search_params = {
+                'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id),
+                'rows': n,
+                'start': n * (page - 1),
+            }
+            try:
                 existing_packages = get_action('package_search')(
-                    context,
-                    {'fq': 'harvest_source_id:"{0}"'.format(
-                        harvest_job.source_id
-                     ),
-                     'rows': existing_packages['count']}
+                    context, search_params
                 )
-            log.info('Found %d number of packages for source %s' %
-                     (existing_packages['count'], harvest_job.source_id))
-            existing_packages_names = [pkg['name']
-                                       for pkg in existing_packages['results']]
-        except NotFound:
-            existing_packages_names = []
-            log.debug('Could not find pkges for source %s'
-                      % harvest_job.source_id)
+                if len(existing_packages['results']):
+                    existing_packages_names.extend(
+                        [pkg['name'] for pkg in existing_packages['results']]
+                    )
+                    page = page + 1
+                else:
+                    break
+            except NotFound:
+                if page == 1:
+                    log.debug('Could not find pkges for source %s'
+                              % harvest_job.source_id)
+        log.info('Found %d number of packages for source %s' %
+                 (len(existing_packages_names), harvest_job.source_id))
         return existing_packages_names
 
     def _resources_actions(self, existing_package, new_resources):
