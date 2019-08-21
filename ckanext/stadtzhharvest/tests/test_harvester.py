@@ -665,8 +665,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         # Run the jobs to mark the previous one as Finished
         self._run_jobs()
 
-        fq = "+type:dataset harvest_source_id:{0}+rows:11".format(harvest_source['id'])
-        results = h.call_action('package_search', {}, fq=fq)
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq, rows=11)
         eq_(results['count'], 3)
 
         # Get the harvest source with the updated status
