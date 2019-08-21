@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Gemeinschaftszentrum</titel>
+		<beschreibung>Liste der städtischen Gemeinschaftszentren</beschreibung>
+		<rechtsgrundlage>Stadtratsbeschluss DGA</rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<aktualisierungsintervall></aktualisierungsintervall>
+		<aktualisierungsdatum></aktualisierungsdatum>
+		<datentyp></datentyp>
+		<erstmalige_veroeffentlichung></erstmalige_veroeffentlichung>
+		<kategorie></kategorie>
+		<lieferant></lieferant>
+		<publikationen></publikationen>
+		<zeitraum>laufende Nachführung</zeitraum>
+		<quelle>Sozialpartement</quelle>
+		<datenqualitaet></datenqualitaet>
+		<aktuelle_version>1.0</aktuelle_version>
+		<anwendungen>
+			<anwendung>
+				<titel>Stadtplan</titel>
+				<beschreibung>Verwendung des Datensatzes im Stadtplan</beschreibung>
+				<url>http://www.stadtplan.stadt-zuerich.ch/zueriplan/stadtplan.aspx?166b34ac-1f73-4c6b-a1cf-e0d6a4ded51c</url>
+			</anwendung>
+			<anwendung>
+				<titel>Das Geoportal der Stadt Zürich</titel>
+				<beschreibung>Hier finden Sie weitere interessante Applikationen</beschreibung>
+				<url>http://www.stadt-zuerich.ch/content/ted/de/index/geoz/geoportal/applikationen.html</url>
+			</anwendung>
+		</anwendungen>
+		<publikationen></publikationen>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Vorschau WMS (statisches Bild):</titel>
+				<text></text>
+				<link>
+				  <label>Layer Gemeinschaftszentrum</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?VERSION=1.3.0&REQUEST=GetMap&CRS=EPSG:21781&Styles=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=FALSE&bbox=676000,241000,690000,255000&WIDTH=800&HEIGHT=800&Layers=Stadtplan,Gemeinschaftszentrum"]]></url>
+			  </link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Vorschau WFS (XML):</titel>
+				<text></text>
+			  <link>
+				  <label>Layer Gemeinschaftszentrum</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?VERSION=1.3.0&REQUEST=DescribeFeatureType&typename=Gemeinschaftszentrum"]]></url>
+			  </link>
+			</bemerkung>
+		</bemerkungen>
+		<attributliste> 
+			<attributelement technischerfeldname="NAME">
+				<sprechenderfeldname>Name</sprechenderfeldname>
+				<feldbeschreibung>Name des Objektes, CHAR 70 Zeichen lang</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="ADRESSE">
+				<sprechenderfeldname>Adresse</sprechenderfeldname>
+				<feldbeschreibung>Adresse des Objektes, CHAR 70 Zeichen lang</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="PLZ">
+				<sprechenderfeldname>Postleitzahl</sprechenderfeldname>
+				<feldbeschreibung>Postleitzahl des Objektes, CHAR 4 Zeichen lang</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="ORT">
+				<sprechenderfeldname>Ortsanme</sprechenderfeldname>
+				<feldbeschreibung>Ortsname des Objektes, CHAR 50 Zeichen lang</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TEL">
+				<sprechenderfeldname>Telefonnummer</sprechenderfeldname>
+				<feldbeschreibung>Telefonnummer des Objektes, CHAR 20 Zeichen lang</feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="WWW">
+				<sprechenderfeldname>Url</sprechenderfeldname>
+				<feldbeschreibung>Webseite mit weiteren Informationen, CHAR 250 Zeichen lang</feldbeschreibung>
+			</attributelement>
+		</attributliste>
+		<schlagworte>geodaten, vektordaten, punktdaten, standort</schlagworte>
+	</datensatz>
+</datensammlung>

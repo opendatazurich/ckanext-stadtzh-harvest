@@ -1,0 +1,11 @@
+{"name":"Gericht","type":"FeatureCollection"
+,"features":[
+{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54700449277901,47.3715259671025]},"properties":{"Name":"Obergericht des Kantons Zürich","Adresse":"Hirschengraben 13","PLZ":"8001","Ort":"Zürich","Tel":"+41 44 257 91 91","www":"http://www.obergericht-zh.ch"}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52595468538207,47.3742986914329]},"properties":{"Name":"Bezirksgericht Zürich","Adresse":"Badenerstrasse 90","PLZ":"8004","Ort":"Zürich","Tel":"+41 44 248 21 11","www":"http://www.bezirksgericht-zh.ch"}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52191622355772,47.3756139666311]},"properties":{"Name":"Arbeitsgericht","Adresse":"Wengistrasse 30","PLZ":"8026","Ort":"Zürich","Tel":"+41 44 248 20 62","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52191622355772,47.3756139666311]},"properties":{"Name":"Einzelrichteramt für Erbschaftssachen","Adresse":"Wengistrasse 30","PLZ":"8026","Ort":"Zürich","Tel":"+41 44 248 20 95","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.54679585144131,47.3720757108553]},"properties":{"Name":"Handelsgericht des Kantons Zürich","Adresse":"Hirschengraben 15","PLZ":"8001","Ort":"Zürich","Tel":"+41 44 257 91 91","www":"http://www.handelsgericht-zh.ch"}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52192905816447,47.3756141156728]},"properties":{"Name":"Schlichtungsbehörde in Miet- und Pachtsachen","Adresse":"Wengistrasse 30","PLZ":"8026","Ort":"Zürich","Tel":"+41 44 248 22 73","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52191622355772,47.3756139666311]},"properties":{"Name":"Eheschutzrichteramt","Adresse":"Wengistrasse 30","PLZ":"8026","Ort":"Zürich","Tel":"+41 44 248 20 82","www":""}}
+,{"type":"Feature","geometry":{"type":"Point","coordinates":[8.52192905816447,47.3756141156728]},"properties":{"Name":"Mietgericht","Adresse":"Wengistrasse 30","PLZ":"8026","Ort":"Zürich","Tel":"+41 44 248 21 73","www":""}}
+]}

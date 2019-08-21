@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Hydrant_Oberflur</titel>
+		<beschreibung>Liste der Oberflur-Hydranten in der Stadt Zürich</beschreibung>
+		<rechtsgrundlage>Stadtratsbeschluss DGA</rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<aktualisierungsintervall></aktualisierungsintervall>
+		<aktualisierungsdatum></aktualisierungsdatum>
+		<datentyp></datentyp>
+		<erstmalige_veroeffentlichung></erstmalige_veroeffentlichung>
+		<kategorie></kategorie>
+		<lieferant></lieferant>
+		<publikationen></publikationen>
+		<zeitraum>laufende Nachführung</zeitraum>
+		<quelle>Departement der Industriellen Betriebe</quelle>
+		<datenqualitaet></datenqualitaet>
+		<aktuelle_version>1.0</aktuelle_version>
+		<anwendungen>
+			<anwendung>
+				<titel>Das Geoportal der Stadt Zürich</titel>
+				<beschreibung>Hier finden Sie weitere interessante Applikationen</beschreibung>
+				<url>http://www.stadt-zuerich.ch/content/ted/de/index/geoz/geoportal/applikationen.html</url>
+			</anwendung>
+		</anwendungen>
+		<publikationen></publikationen>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Vorschau WMS (statisches Bild):</titel>
+				<text></text>
+				<link>
+				  <label>Layer Hydrant_Oberflur</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?VERSION=1.3.0&REQUEST=GetMap&CRS=EPSG:21781&Styles=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=FALSE&bbox=676000,241000,690000,255000&WIDTH=800&HEIGHT=800&Layers=Stadtplan,Hydrant_Oberflur"]]></url>
+			  </link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Vorschau WFS (XML):</titel>
+				<text></text>
+			  <link>
+				  <label>Layer Hydrant_Oberflur</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?VERSION=1.3.0&REQUEST=DescribeFeatureType&typename=Hydrant_Oberflur"]]></url>
+			  </link>
+			</bemerkung>
+		</bemerkungen>
+		<attributliste> 
+			<attributelement technischerfeldname="ART_TXT">
+				<sprechenderfeldname>Art</sprechenderfeldname>
+				<feldbeschreibung>Art des Objekts, CHAR 28 Zeichen lang</feldbeschreibung>
+			</attributelement>
+		</attributliste>
+		<schlagworte>geodaten, vektordaten, punktdaten, standort, Infrastruktur, Wasser, Wasserversorgung</schlagworte>
+	</datensatz>
+</datensammlung>

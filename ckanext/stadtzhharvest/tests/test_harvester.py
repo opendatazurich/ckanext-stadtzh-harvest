@@ -605,6 +605,84 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(last_job_status['stats']['not modified'], 0)
         eq_(last_job_status['stats']['errored'], 0)
 
+    def test_delete_dataset_when_source_has_more_than_ten_datasets(self):
+        data_path = os.path.join(
+            __location__,
+            'fixtures',
+            'GEO2'
+        )
+        test_config = json.dumps({
+            'data_path': data_path,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo2-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+
+        # harvesting the default DWH-dropzone
+        harvest_source = self._create_harvest_source(config=test_config)
+        self._run_full_job(harvest_source['id'], num_objects=11)
+
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq, rows=11)
+        eq_(results['count'], 11)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        # Get the harvest source with the updated status
+        harvest_source = h.call_action('harvest_source_show',
+                                       id=harvest_source['id'])
+        last_job_status = harvest_source['status']['last_job']
+        eq_(last_job_status['status'], 'Finished')
+
+        error_count = len(last_job_status['object_error_summary'])
+        eq_(error_count, 0)
+        eq_(last_job_status['stats']['added'], 11)
+        eq_(last_job_status['stats']['updated'], 0)
+        eq_(last_job_status['stats']['deleted'], 0)
+        eq_(last_job_status['stats']['not modified'], 0)
+        eq_(last_job_status['stats']['errored'], 0)
+
+        # run a second harvest-job with updated dropzone-path where two datasets are deleted
+        data_path_deleted = os.path.join(
+            __location__,
+            'fixtures',
+            'delete_dataset_dropzone_GEO2'
+        )
+        test_config_deleted = json.dumps({
+            'data_path': data_path_deleted,
+            'delete_missing_datasets': True,
+            'metafile_dir': 'DEFAULT',
+            'metadata_dir': 'geo2-metadata',
+            'update_datasets': False,
+            'update_date_last_modified': True
+        })
+
+        harvest_source = self._update_harvest_source(config=test_config_deleted)
+        self._run_full_job(harvest_source['id'], num_objects=11)
+
+        # Run the jobs to mark the previous one as Finished
+        self._run_jobs()
+
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq, rows=11)
+        eq_(results['count'], 3)
+
+        # Get the harvest source with the updated status
+        harvest_source = h.call_action('harvest_source_show',
+                                       id=harvest_source['id'])
+        last_job_status = harvest_source['status']['last_job']
+        eq_(last_job_status['status'], 'Finished')
+
+        error_count = len(last_job_status['object_error_summary'])
+        eq_(error_count, 0)
+        eq_(last_job_status['stats']['added'], 0)
+        eq_(last_job_status['stats']['updated'], 3)
+        eq_(last_job_status['stats']['deleted'], 8)
+        eq_(last_job_status['stats']['not modified'], 0)
+        eq_(last_job_status['stats']['errored'], 0)
+
     def test_harvest_update_dwh(self):
         data_path = os.path.join(
             __location__,
