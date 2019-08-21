@@ -623,8 +623,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         harvest_source = self._create_harvest_source(config=test_config)
         self._run_full_job(harvest_source['id'], num_objects=11)
 
-        fq = "+type:dataset harvest_source_id:{0}+rows:11".format(harvest_source['id'])
-        results = h.call_action('package_search', {}, fq=fq)
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source['id'])
+        results = h.call_action('package_search', {}, fq=fq, rows=11)
         eq_(results['count'], 11)
 
         # Run the jobs to mark the previous one as Finished
