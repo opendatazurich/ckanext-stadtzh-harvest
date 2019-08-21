@@ -416,7 +416,9 @@ class StadtzhHarvester(HarvesterBase):
             if (existing_packages['count']) > len(existing_packages):
                 existing_packages = get_action('package_search')(
                     context,
-                    {'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id),
+                    {'fq': 'harvest_source_id:"{0}"'.format(
+                        harvest_job.source_id
+                    ),
                      'rows': existing_packages['count']}
                 )
             log.info('Found %d number of packages for source %s' %
