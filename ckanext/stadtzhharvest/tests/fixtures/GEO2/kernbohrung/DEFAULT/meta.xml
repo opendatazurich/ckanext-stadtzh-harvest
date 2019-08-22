@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datensammlung>
+	<datensatz>
+		<titel>Kernbohrungen (Baugrundarchiv)</titel>
+		<beschreibung>Diese Sammlung dokumentiert geotechnische Informationen von Baugrunduntersuchungen auf dem Gebiet der Stadt Zürich</beschreibung>
+		<rechtsgrundlage>Stadtratsbeschluss DGA</rechtsgrundlage>
+		<raeumliche_beziehung>Stadt Zürich</raeumliche_beziehung>
+		<aktualisierungsintervall></aktualisierungsintervall>
+		<aktualisierungsdatum></aktualisierungsdatum>
+		<datentyp></datentyp>
+		<erstmalige_veroeffentlichung></erstmalige_veroeffentlichung>
+		<kategorie></kategorie>
+		<lieferant></lieferant>
+		<publikationen></publikationen>
+		<zeitraum>laufende Nachführung</zeitraum>
+		<quelle>Tiefbau- und Entsorgungsdepartement</quelle>
+		<datenqualitaet></datenqualitaet>
+		<aktuelle_version>1.0</aktuelle_version>
+		<anwendungen>
+			<anwendung>
+				<titel>Stadtplan</titel>
+				<beschreibung>Verwendung des Datensatzes im Stadtplan</beschreibung>
+				<url>http://www.stadtplan.stadt-zuerich.ch/zueriplan/stadtplan.aspx?d7bd323b-49cc-44cf-8845-a212a8e6e74c</url>
+			</anwendung>
+			<anwendung>
+				<titel>Das Geoportal der Stadt Zürich</titel>
+				<beschreibung>Hier finden Sie weitere interessante Applikationen</beschreibung>
+				<url>http://www.stadt-zuerich.ch/content/ted/de/index/geoz/geoportal/applikationen.html</url>
+			</anwendung>
+		</anwendungen>
+		<publikationen></publikationen>
+		<bemerkungen>
+			<bemerkung>
+				<titel>Vorschau WMS (statisches Bild):</titel>
+				<text></text>
+				<link>
+				  <label>Layer Kernbohrung</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WMSServer?VERSION=1.3.0&REQUEST=GetMap&CRS=EPSG:21781&Styles=&FORMAT=image/png&BGCOLOR=0xFFFFFF&TRANSPARENT=FALSE&bbox=676000,241000,690000,255000&WIDTH=800&HEIGHT=800&Layers=Stadtplan,Kernbohrung"]]></url>
+			  </link>
+			</bemerkung>
+			<bemerkung>
+				<titel>Vorschau WFS (XML):</titel>
+				<text></text>
+			  <link>
+				  <label>Layer Kernbohrung</label>
+				  <url><![CDATA[http://www.gis.stadt-zuerich.ch/maps/services/wms/WMS-ZH-STZH-OGD/MapServer/WFSServer?VERSION=1.3.0&REQUEST=DescribeFeatureType&typename=Kernbohrung"]]></url>
+			  </link>
+			</bemerkung>
+		</bemerkungen>
+		<attributliste> 
+			<attributelement technischerfeldname="ID_BOHRUNG">
+				<sprechenderfeldname>ID</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="ARCHIVNR">
+				<sprechenderfeldname>Archivnummer</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TITEL">
+				<sprechenderfeldname>Titel</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="BEZEICHNUN">
+				<sprechenderfeldname>Bezeichnung</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="DATUM">
+				<sprechenderfeldname>Datum</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="BERICHTE">
+				<sprechenderfeldname>Berichte</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="RAMMSONDIE">
+				<sprechenderfeldname>Rammsondierungen</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="SONDIERBOH">
+				<sprechenderfeldname>Sondierbohrungen</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="KOMBINIERT">
+				<sprechenderfeldname>kombinierte Sondierungen</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="SITUATION">
+				<sprechenderfeldname>Situation</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="LAENGENPRO">
+				<sprechenderfeldname>Längenprofil</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="QUERPROFIL">
+				<sprechenderfeldname>Querprofil</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="DIAGRAMME">
+				<sprechenderfeldname>Diagramme</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TEIFE_RS">
+				<sprechenderfeldname>Bohrtiefe (Rammsondierung)</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TEIFE_SB">
+				<sprechenderfeldname>Bohrtiefe (Sondierbohrung)</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TIEFE_KS">
+				<sprechenderfeldname>Bohrtiefe (kombinierte Sondierungen)</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TYP">
+				<sprechenderfeldname>Typ</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="TEL">
+				<sprechenderfeldname>Telefon</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+			<attributelement technischerfeldname="NAME">
+				<sprechenderfeldname>Name</sprechenderfeldname>
+				<feldbeschreibung></feldbeschreibung>
+			</attributelement>
+		</attributliste>
+		<schlagworte>geodaten, vektordaten, punktdaten, standort</schlagworte>
+	</datensatz>
+</datensammlung>

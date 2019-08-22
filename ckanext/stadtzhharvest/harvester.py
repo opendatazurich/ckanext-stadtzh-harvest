@@ -103,6 +103,10 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_string_config(config_obj, 'dataset_prefix')
         self._validate_boolean_config(config_obj, 'update_datasets')
         self._validate_boolean_config(config_obj, 'update_date_last_modified')
+        self._validate_boolean_config(
+            config_obj,
+            'delete_missing_datasets',
+            required=False)
 
         return config_str
 
@@ -133,6 +137,8 @@ class StadtzhHarvester(HarvesterBase):
             self.config['update_date_last_modified'] = False
         if 'dataset_prefix' not in self.config:
             self.config['dataset_prefix'] = ''
+        if 'delete_missing_datasets' not in self.config:
+            self.config['delete_missing_datasets'] = False
 
         log.debug('Using config: %r' % self.config)
 
@@ -140,7 +146,10 @@ class StadtzhHarvester(HarvesterBase):
         log.debug('In StadtzhHarvester gather_stage')
         self._set_config(harvest_job.source.config)
 
+        # generated ids of the harvest objects
         ids = []
+        # cleaned dataset names used as ids for the datasets
+        gathered_dataset_ids = []
         try:
             # list directories in dropzone folder
             datasets = self._remove_hidden_files(
@@ -160,6 +169,7 @@ class StadtzhHarvester(HarvesterBase):
                 dataset_id = self._validate_package_id(dataset_name)
                 log.debug("Gather %s" % dataset_id)
                 if dataset_id:
+                    gathered_dataset_ids.append(dataset_id)
                     meta_xml_path = os.path.join(
                         self.config['data_path'],
                         dataset,
@@ -184,8 +194,12 @@ class StadtzhHarvester(HarvesterBase):
 
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
+            if self.config['delete_missing_datasets']:
+                delete_ids = self._check_for_deleted_datasets(
+                    harvest_job, gathered_dataset_ids
+                )
+                ids.extend(delete_ids)
 
-            self._create_notifications_for_deleted_datasets()
             return ids
         except Exception, e:
             log.exception(e)
@@ -264,8 +278,7 @@ class StadtzhHarvester(HarvesterBase):
             return False
 
         try:
-            self._import_package(harvest_object)
-            return True
+            return self._import_package(harvest_object)
         except Exception, e:
             log.exception(e)
             self._save_object_error(
@@ -284,6 +297,12 @@ class StadtzhHarvester(HarvesterBase):
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
         context = self._create_new_context()
+
+        # check if dataset must be deleted
+        import_action = package_dict.pop('import_action', 'update')
+        if import_action == 'delete':
+            harvest_object.current = False
+            return self._delete_dataset(package_dict)
 
         # check if package already exists and
         existing_package = self._get_existing_package(package_dict)
@@ -313,13 +332,13 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
             self._create_notification_for_new_dataset(package_dict)
-            log.debug('Dataset `%s` has been added' % package_dict['id'])
+            log.debug('Dataset `%s` has been added' % package_dict['name'])
         else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
             dataset_id = self._update_package(package_dict, harvest_object)
-            log.debug('Dataset `%s` has been updated' % package_dict['id'])
+            log.debug('Dataset `%s` has been updated' % package_dict['name'])
 
         # create diffs if there is a previous package
         if existing_package:
@@ -367,6 +386,14 @@ class StadtzhHarvester(HarvesterBase):
         Session.commit()
         return True
 
+    def _delete_dataset(self, package_dict):
+        context = self._create_new_context()
+        get_action('dataset_purge')(
+            context.copy(),
+            package_dict
+        )
+        return True
+
     def _get_existing_package(self, package_dict):
         context = self._create_new_context()
         try:
@@ -378,6 +405,36 @@ class StadtzhHarvester(HarvesterBase):
             existing_package = None
             log.debug('Could not find pkg %s' % package_dict['name'])
         return existing_package
+
+    def _get_existing_packages_names(self, harvest_job):
+        context = self._create_new_context()
+        n = 2
+        page = 1
+        existing_packages_names = []
+        while True:
+            search_params = {
+                'fq': 'harvest_source_id:"{0}"'.format(harvest_job.source_id),
+                'rows': n,
+                'start': n * (page - 1),
+            }
+            try:
+                existing_packages = get_action('package_search')(
+                    context, search_params
+                )
+                if len(existing_packages['results']):
+                    existing_packages_names.extend(
+                        [pkg['name'] for pkg in existing_packages['results']]
+                    )
+                    page = page + 1
+                else:
+                    break
+            except NotFound:
+                if page == 1:
+                    log.debug('Could not find pkges for source %s'
+                              % harvest_job.source_id)
+        log.info('Found %d number of packages for source %s' %
+                 (len(existing_packages_names), harvest_job.source_id))
+        return existing_packages_names
 
     def _resources_actions(self, existing_package, new_resources):
         resources_changed = False
@@ -991,45 +1048,58 @@ class StadtzhHarvester(HarvesterBase):
 
     def _diff_path(self, package_id):
         today = datetime.date.today()
-        package_id = self._validate_package_id(package_id)
         if package_id:
             return os.path.join(
                 self.DIFF_PATH,
                 '%s-%s.html' % (str(today), package_id)
             )
 
-    def _create_notifications_for_deleted_datasets(self):
-        current_dirs = self._get_immediate_subdirectories(
-            self.config['data_path']
+    def _check_for_deleted_datasets(self, harvest_job,
+                                    gathered_dataset_names):
+        existing_packages_names = self._get_existing_packages_names(
+            harvest_job
         )
-        current_datasets = [self._validate_package_id(d) for d in current_dirs]
-        cached_datasets = self._get_immediate_subdirectories(
-            os.path.join(self.DIFF_PATH, self.config['metadata_dir'])
-        )
-        for package_dir in cached_datasets:
-            # Validated package_id can only contain alphanumerics + underscores
-            package_id = self._validate_package_id(package_dir)
-            if package_id and package_id not in current_datasets:
-                log.debug('Dataset `%s` has been deleted' % package_id)
-                # delete the metadata directory
-                metadata_dir = os.path.join(
-                    self.DIFF_PATH,
-                    self.config['metadata_dir'],
-                    package_dir
-                )
+        delete_names = list(set(existing_packages_names) -
+                            set(gathered_dataset_names))
+        # gather delete harvest ids
+        delete_ids = []
+
+        for package_name in delete_names:
+            log.debug('Dataset `%s` has been deleted' % package_name)
+            metadata_dir = os.path.join(
+                self.DIFF_PATH,
+                self.config['metadata_dir'],
+                package_name
+            )
+            # delete metadata directory
+            # TODO: delete directories unimported (error) packages
+            if os.path.isdir(metadata_dir):
                 log.debug('Removing metadata dir `%s`' % metadata_dir)
                 shutil.rmtree(metadata_dir)
-                # only send notification if there is a package in CKAN
-                if model.Package.get(package_id):
-                    path = self._diff_path(package_id)
-                    with open(path, 'w') as deleted_info:
-                        deleted_info.write(
-                            "<!DOCTYPE html>\n<html>\n<body>\n"
-                            "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
-                            "</a></h2></body></html>\n"
-                            % (self.CKAN_SITE_URL, package_id, package_id)
-                        )
-                    log.debug('Wrote deleted notification to file `%s`' % path)
+
+            self._create_notification_for_deleted_dataset(package_name)
+            if self.config['delete_missing_datasets']:
+                log.info('Add `%s` for deletion', package_name)
+                id = self._save_harvest_object(
+                    {
+                        'datasetID': package_name,
+                        'import_action': 'delete'
+                    },
+                    harvest_job
+                )
+                delete_ids.append(id)
+        return delete_ids
+
+    def _create_notification_for_deleted_dataset(self, package_id):
+        path = self._diff_path(package_id)
+        with open(path, 'w') as deleted_info:
+            deleted_info.write(
+                "<!DOCTYPE html>\n<html>\n<body>\n"
+                "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
+                "</a></h2></body></html>\n"
+                % (self.CKAN_SITE_URL, package_id, package_id)
+            )
+        log.debug('Wrote deleted notification to file `%s`' % path)
 
     def _create_notification_for_new_dataset(self, package_dict):
         # Validated package_id can only contain alphanumerics and underscores
@@ -1048,40 +1118,34 @@ class StadtzhHarvester(HarvesterBase):
     def _create_diffs(self, package_dict):
         try:
             # Validated package_id can only contain alphanumerics + underscores
-            package_id = self._validate_package_id(package_dict['id'])
-            if not package_id:
+            package_name = self._validate_package_id(package_dict['name'])
+            if not package_name:
                 raise ValueError(
-                    "Package ID '%s' is not valid" % package_dict['id']
+                    "Package name '%s' is not valid" % package_dict['name']
                 )
-            new_metadata_path = os.path.join(
+            metadata_path = os.path.join(
                 self.DIFF_PATH,
                 self.config['metadata_dir'],
-                package_id
-            )
-            prev_metadata_path = os.path.join(
-                self.DIFF_PATH,
-                self.config['metadata_dir'],
-                package_id
+                package_name
             )
             new_metadata_file = os.path.join(
-                new_metadata_path,
+                metadata_path,
                 'metadata-%s' % str(datetime.date.today())
             )
             prev_metadata_file = os.path.join(
-                new_metadata_path,
+                metadata_path,
                 'metadata-previous'
             )
 
             for path in [self.DIFF_PATH,
-                         new_metadata_path,
-                         prev_metadata_path]:
+                         metadata_path]:
                 if not os.path.isdir(path):
                     os.makedirs(path)
 
             if not os.path.isfile(new_metadata_file):
                 log.debug(
                     '%s Metadata JSON missing for the dataset: %s'
-                    % (new_metadata_file, package_id)
+                    % (new_metadata_file, package_name)
                 )
                 with open(new_metadata_file, 'w') as new_metadata:
                     new_metadata.write('')
@@ -1089,7 +1153,8 @@ class StadtzhHarvester(HarvesterBase):
 
             if not os.path.isfile(prev_metadata_file):
                 log.debug(
-                    'No earlier metadata JSON for the dataset: %s' % package_id
+                    'No earlier metadata JSON for the dataset: %s'
+                    % package_name
                 )
                 with open(prev_metadata_file, 'w') as prev_metadata:
                     prev_metadata.write('')
@@ -1102,17 +1167,22 @@ class StadtzhHarvester(HarvesterBase):
 
             if prev == new:
                 log.debug(
-                    'No change in metadata for the dataset: %s' % package_id
+                    'No change in metadata for the dataset: %s'
+                    % package_name
                 )
             else:
                 with open(prev_metadata_file) as prev_metadata:
                     with open(new_metadata_file) as new_metadata:
-                        with open(self._diff_path(package_id), 'w') as diff:
+                        with open(self._diff_path(package_name), 'w') as diff:
                             diff.write(
                                 "<!DOCTYPE html>\n<html>\n<body>\n"
                                 "<h2>Metadata diff for the dataset <a href=\""
                                 "%s/dataset/%s\">%s</a></h2></body></html>\n"
-                                % (self.CKAN_SITE_URL, package_id, package_id)
+                                % (
+                                    self.CKAN_SITE_URL,
+                                    package_name,
+                                    package_name
+                                )
                             )
                             d = difflib.HtmlDiff(wrapcolumn=60)
                             umlauts = {
@@ -1135,7 +1205,7 @@ class StadtzhHarvester(HarvesterBase):
                             diff.write(html)
                             log.debug(
                                 'Metadata diff generated for the dataset: %s'
-                                % package_id
+                                % package_name
                             )
 
             os.remove(prev_metadata_file)
