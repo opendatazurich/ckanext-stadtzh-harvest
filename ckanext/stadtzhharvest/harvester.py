@@ -408,7 +408,7 @@ class StadtzhHarvester(HarvesterBase):
 
     def _get_existing_packages_names(self, harvest_job):
         context = self._create_new_context()
-        n = 2
+        n = 500
         page = 1
         existing_packages_names = []
         while True:
