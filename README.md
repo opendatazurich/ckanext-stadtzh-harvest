@@ -35,10 +35,6 @@ Example:
 
 The path to the dropzone
 
-### `metadata_dir`
-
-The path where the diff files are stored, this is used to compare the metadata from the previous days harvest job.
-
 ### `metafile_dir`
 
 The name of the directory where the `meta.xml` is located.
