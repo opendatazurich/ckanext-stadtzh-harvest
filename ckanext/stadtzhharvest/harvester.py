@@ -4,8 +4,6 @@ import os
 import errno
 import re
 import datetime
-import difflib
-import shutil
 import traceback
 import uuid
 import hashlib
@@ -84,7 +82,6 @@ class StadtzhHarvester(HarvesterBase):
         HarvesterBase.__init__(self, **kwargs)
         try:
             self.CKAN_SITE_URL = config['ckan.site_url']
-            self.DIFF_PATH = config['metadata.diffpath']
         except KeyError as e:
             raise Exception("'%s' not found in config" % e.message)
 
@@ -98,7 +95,6 @@ class StadtzhHarvester(HarvesterBase):
     def validate_config(self, config_str):
         config_obj = json.loads(config_str)
         self._validate_string_config(config_obj, 'data_path', required=True)
-        self._validate_string_config(config_obj, 'metadata_dir', required=True)
         self._validate_string_config(config_obj, 'metafile_dir')
         self._validate_string_config(config_obj, 'dataset_prefix')
         self._validate_boolean_config(config_obj, 'update_datasets')
@@ -190,7 +186,6 @@ class StadtzhHarvester(HarvesterBase):
                             harvest_job
                         )
                         continue
-                    self._generate_diff_file(dataset_id, metadata)
 
                     id = self._save_harvest_object(metadata, harvest_job)
                     ids.append(id)
@@ -234,31 +229,6 @@ class StadtzhHarvester(HarvesterBase):
         )
 
         return metadata
-
-    def _generate_diff_file(self, dataset_id, metadata):
-        dataset_diff_path = os.path.join(
-            self.DIFF_PATH,
-            self.config['metadata_dir'],
-            dataset_id
-        )
-        if not os.path.isdir(dataset_diff_path):
-            os.makedirs(dataset_diff_path)
-
-        diff_file = os.path.join(
-            self.DIFF_PATH,
-            self.config['metadata_dir'],
-            dataset_id, 'metadata-' + str(datetime.date.today())
-        )
-        with open(diff_file, 'w') as meta_json:
-            meta_json.write(
-                json.dumps(
-                    metadata,
-                    sort_keys=True,
-                    indent=4,
-                    separators=(',', ': ')
-                )
-            )
-            log.debug('Metadata JSON created')
 
     def fetch_stage(self, harvest_object):
         log.debug('In StadtzhHarvester fetch_stage')
@@ -331,7 +301,6 @@ class StadtzhHarvester(HarvesterBase):
         # or if this harvester is allowed to update packages
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
-            self._create_notification_for_new_dataset(package_dict)
             log.debug('Dataset `%s` has been added' % package_dict['name'])
         else:
             # Don't change the dataset name even if the title has
@@ -339,10 +308,6 @@ class StadtzhHarvester(HarvesterBase):
             package_dict['id'] = existing_package['id']
             dataset_id = self._update_package(package_dict, harvest_object)
             log.debug('Dataset `%s` has been updated' % package_dict['name'])
-
-        # create diffs if there is a previous package
-        if existing_package:
-            self._create_diffs(package_dict)
 
         # set the date_last_modified if any resource changed
         if self.config['update_date_last_modified'] and resources_changed:
@@ -1066,18 +1031,7 @@ class StadtzhHarvester(HarvesterBase):
 
         for package_name in delete_names:
             log.debug('Dataset `%s` has been deleted' % package_name)
-            metadata_dir = os.path.join(
-                self.DIFF_PATH,
-                self.config['metadata_dir'],
-                package_name
-            )
-            # delete metadata directory
-            # TODO: delete directories unimported (error) packages
-            if os.path.isdir(metadata_dir):
-                log.debug('Removing metadata dir `%s`' % metadata_dir)
-                shutil.rmtree(metadata_dir)
 
-            self._create_notification_for_deleted_dataset(package_name)
             if self.config['delete_missing_datasets']:
                 log.info('Add `%s` for deletion', package_name)
                 id = self._save_harvest_object(
@@ -1089,130 +1043,6 @@ class StadtzhHarvester(HarvesterBase):
                 )
                 delete_ids.append(id)
         return delete_ids
-
-    def _create_notification_for_deleted_dataset(self, package_id):
-        path = self._diff_path(package_id)
-        with open(path, 'w') as deleted_info:
-            deleted_info.write(
-                "<!DOCTYPE html>\n<html>\n<body>\n"
-                "<h2>Dataset deleted: <a href=\"%s/dataset/%s\">%s"
-                "</a></h2></body></html>\n"
-                % (self.CKAN_SITE_URL, package_id, package_id)
-            )
-        log.debug('Wrote deleted notification to file `%s`' % path)
-
-    def _create_notification_for_new_dataset(self, package_dict):
-        # Validated package_id can only contain alphanumerics and underscores
-        package_id = self._validate_package_id(package_dict['id'])
-        if package_id:
-            path = self._diff_path(package_id)
-            with open(path, 'w') as new_info:
-                new_info.write(
-                    "<!DOCTYPE html>\n<html>\n<body>\n"
-                    "<h2>New dataset added: <a href=\"%s/dataset/%s\">%s"
-                    "</a></h2></body></html>\n"
-                    % (self.CKAN_SITE_URL, package_id, package_id)
-                )
-            log.debug('Wrote added dataset notification to file `%s`' % path)
-
-    def _create_diffs(self, package_dict):
-        try:
-            # Validated package_id can only contain alphanumerics + underscores
-            package_name = self._validate_package_id(package_dict['name'])
-            if not package_name:
-                raise ValueError(
-                    "Package name '%s' is not valid" % package_dict['name']
-                )
-            metadata_path = os.path.join(
-                self.DIFF_PATH,
-                self.config['metadata_dir'],
-                package_name
-            )
-            new_metadata_file = os.path.join(
-                metadata_path,
-                'metadata-%s' % str(datetime.date.today())
-            )
-            prev_metadata_file = os.path.join(
-                metadata_path,
-                'metadata-previous'
-            )
-
-            for path in [self.DIFF_PATH,
-                         metadata_path]:
-                if not os.path.isdir(path):
-                    os.makedirs(path)
-
-            if not os.path.isfile(new_metadata_file):
-                log.debug(
-                    '%s Metadata JSON missing for the dataset: %s'
-                    % (new_metadata_file, package_name)
-                )
-                with open(new_metadata_file, 'w') as new_metadata:
-                    new_metadata.write('')
-                log.debug('Created new empty metadata file.')
-
-            if not os.path.isfile(prev_metadata_file):
-                log.debug(
-                    'No earlier metadata JSON for the dataset: %s'
-                    % package_name
-                )
-                with open(prev_metadata_file, 'w') as prev_metadata:
-                    prev_metadata.write('')
-                log.debug('Created new empty metadata file.')
-
-            with open(prev_metadata_file) as prev_metadata:
-                with open(new_metadata_file) as new_metadata:
-                    prev = prev_metadata.read()
-                    new = new_metadata.read()
-
-            if prev == new:
-                log.debug(
-                    'No change in metadata for the dataset: %s'
-                    % package_name
-                )
-            else:
-                with open(prev_metadata_file) as prev_metadata:
-                    with open(new_metadata_file) as new_metadata:
-                        with open(self._diff_path(package_name), 'w') as diff:
-                            diff.write(
-                                "<!DOCTYPE html>\n<html>\n<body>\n"
-                                "<h2>Metadata diff for the dataset <a href=\""
-                                "%s/dataset/%s\">%s</a></h2></body></html>\n"
-                                % (
-                                    self.CKAN_SITE_URL,
-                                    package_name,
-                                    package_name
-                                )
-                            )
-                            d = difflib.HtmlDiff(wrapcolumn=60)
-                            umlauts = {
-                                "\\u00e4": "ä",
-                                "\\u00f6": "ö",
-                                "\\u00fc": "ü",
-                                "\\u00c4": "Ä",
-                                "\\u00d6": "Ö",
-                                "\\u00dc": "Ü",
-                                "ISO-8859-1": "UTF-8"
-                            }
-                            html = d.make_file(
-                                prev_metadata,
-                                new_metadata,
-                                context=True,
-                                numlines=1
-                            )
-                            for code in umlauts.keys():
-                                html = html.replace(code, umlauts[code])
-                            diff.write(html)
-                            log.debug(
-                                'Metadata diff generated for the dataset: %s'
-                                % package_name
-                            )
-
-            os.remove(prev_metadata_file)
-            log.debug('Deleted previous day\'s metadata file.')
-            os.rename(new_metadata_file, prev_metadata_file)
-        except AttributeError:
-            pass
 
     def _find_or_create_organization(self, package_dict, context):
         # Find or create the organization the dataset should get assigned to.

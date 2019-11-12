@@ -22,7 +22,6 @@ Example:
 ```json
 {
     "data_path": "/home/liip/dropzones/GEO",
-    "metadata_dir": "geo-metadata",
     "metafile_dir": "DEFAULT",
     "update_datasets": false,
     "update_date_last_modified": true,
@@ -34,10 +33,6 @@ Example:
 ### `data_path`
 
 The path to the dropzone
-
-### `metadata_dir`
-
-The path where the diff files are stored, this is used to compare the metadata from the previous days harvest job.
 
 ### `metafile_dir`
 
