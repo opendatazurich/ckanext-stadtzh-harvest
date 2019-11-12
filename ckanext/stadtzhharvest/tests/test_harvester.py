@@ -362,7 +362,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
-            'metadata_dir': 'test-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
         })
@@ -385,7 +384,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
-            'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
         })
@@ -410,7 +408,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -430,7 +427,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -464,7 +460,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
-            'metadata_dir': 'test-metadata',
             'update_datasets': True,
             'update_date_last_modified': False,
             'dataset_prefix': 'testprefix-',
@@ -488,7 +483,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': '',
-            'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
         })
@@ -524,7 +518,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'fail-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -584,7 +577,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'data_path': data_path,
             'delete_missing_datasets': True,
             'metafile_dir': '',
-            'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': True
         })
@@ -624,7 +616,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'data_path': data_path_deleted,
             'delete_missing_datasets': True,
             'metafile_dir': '',
-            'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': True
         })
@@ -662,7 +653,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo2-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -702,7 +692,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             'data_path': data_path_deleted,
             'delete_missing_datasets': True,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo2-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -743,7 +732,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': temp_data_path,
             'metafile_dir': '',
-            'metadata_dir': 'dwh-metadata',
             'update_datasets': True,
             'update_date_last_modified': False
         })
@@ -780,7 +768,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': temp_data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo-metadata',
             'update_datasets': False,
             'update_date_last_modified': True
         })
@@ -854,7 +841,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_config = json.dumps({
             'data_path': temp_data_path,
             'metafile_dir': 'DEFAULT',
-            'metadata_dir': 'geo-metadata',
             'update_datasets': True,
             'update_date_last_modified': True
         })
