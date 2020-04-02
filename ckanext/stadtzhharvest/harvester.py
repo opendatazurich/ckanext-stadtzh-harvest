@@ -342,8 +342,11 @@ class StadtzhHarvester(HarvesterBase):
             package_dict,
             harvest_object
         )
+        existing_resource_ids = [resource['id'] for resource in package_dict['resources']]
+        new_resource_ids = [id for id in resource_ids if id not in existing_resource_ids]
+        ordered_resource_ids = existing_resource_ids + new_resource_ids
 
-        reorder = {'id': str(package_dict['id']), 'order': resource_ids}
+        reorder = {'id': str(package_dict['id']), 'order': ordered_resource_ids}
         tk.get_action('package_resource_reorder')(
             context.copy(),
             data_dict=reorder
