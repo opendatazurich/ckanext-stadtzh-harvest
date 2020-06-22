@@ -45,6 +45,7 @@ def retry_open_file(path, mode, tries=10, close=True):
     open file handle
     """
     error = None
+    the_file = None
     while tries:
         try:
             the_file = open(path, mode)
@@ -58,7 +59,7 @@ def retry_open_file(path, mode, tries=10, close=True):
         else:
             break
     if not tries:
-        if not the_file.closed:
+        if the_file and not the_file.closed:
             the_file.close()
         raise error
     yield the_file
