@@ -1082,7 +1082,7 @@ class StadtzhHarvester(HarvesterBase):
             )
             return False
         else:
-            return munge_title_to_name(package_id)
+            return munge_title_to_name(package_id).strip('-')
 
     def _validate_filename(self, filename):
         # Validate that they do not contain any HTML tags.
