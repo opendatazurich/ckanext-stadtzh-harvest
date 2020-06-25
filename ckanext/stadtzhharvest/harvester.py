@@ -302,6 +302,10 @@ class StadtzhHarvester(HarvesterBase):
         # or if this harvester is allowed to update packages
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
+            if not dataset_id:
+                # No need to log an error here as it was logged in _create_package
+                return False
+
             log.debug('Dataset `%s` has been added' % package_dict['name'])
         else:
             # Don't change the dataset name even if the title has
@@ -1078,7 +1082,7 @@ class StadtzhHarvester(HarvesterBase):
             )
             return False
         else:
-            return munge_title_to_name(package_id)
+            return munge_title_to_name(package_id).strip('-')
 
     def _validate_filename(self, filename):
         # Validate that they do not contain any HTML tags.
