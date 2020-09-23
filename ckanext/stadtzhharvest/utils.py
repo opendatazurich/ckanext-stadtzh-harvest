@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from ckan.lib.munge import munge_title_to_name
-from ckan.logic import get_action, NotFound
+from ckan.logic import get_action
 from ckan import model
 from ckan.model import Session
 
