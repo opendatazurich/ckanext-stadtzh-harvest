@@ -303,7 +303,8 @@ class StadtzhHarvester(HarvesterBase):
         if not existing_package:
             dataset_id = self._create_package(package_dict, harvest_object)
             if not dataset_id:
-                # No need to log an error here as it was logged in _create_package
+                # No need to log an error here
+                # as it was logged in _create_package
                 return False
 
             log.debug('Dataset `%s` has been added' % package_dict['name'])

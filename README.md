@@ -373,4 +373,3 @@ Full example of a link.xml:
     <description>Projektion CH1903+ / LV95 (EPSG:2056)</description>
 </link>
 ```
-
