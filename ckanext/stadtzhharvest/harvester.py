@@ -342,10 +342,10 @@ class StadtzhHarvester(HarvesterBase):
             package_dict,
             harvest_object
         )
-        existing_resource_ids = [resource['id'] for resource in package_dict['resources']]
-        new_resource_ids = [id for id in resource_ids if id not in existing_resource_ids]
-        ordered_resource_ids = existing_resource_ids + new_resource_ids
-
+        ordered_resource_ids = _keep_order_of_existing_resources(
+            package_dict,
+            resource_ids
+        )
         reorder = {'id': str(package_dict['id']), 'order': ordered_resource_ids}
         tk.get_action('package_resource_reorder')(
             context.copy(),
@@ -449,6 +449,7 @@ class StadtzhHarvester(HarvesterBase):
         return (actions, resources_changed)
 
     def _import_resources(self, actions, package_dict, harvest_object):
+        actions.sort(key=_sort_new_resources_by_name)
         resource_ids = []
         context = self._create_new_context()
         for action in actions:
@@ -1096,3 +1097,21 @@ class StadtzhHarvester(HarvesterBase):
             return False
         else:
             return filename
+
+def _keep_order_of_existing_resources(package_dict, resource_ids):
+    """keep order of existing resources and put new resources
+    at the end of the list"""
+    existing_resource_ids = []
+    if package_dict.get('resources'):
+        existing_resource_ids = \
+            [resource['id'] for resource in package_dict['resources']]
+    new_resource_ids = \
+        [id for id in resource_ids if id not in existing_resource_ids]
+    return existing_resource_ids + new_resource_ids
+
+def _sort_new_resources_by_name(action):
+    """order new resources by their name"""
+    if action.get('new_resource'):
+        return action['new_resource'].get('name')
+    else:
+        return action['old_resource'].get('id')
