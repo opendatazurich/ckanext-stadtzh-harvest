@@ -454,6 +454,7 @@ class StadtzhHarvester(HarvesterBase):
         return (actions, resources_changed)
 
     def _import_resources(self, actions, package_dict, harvest_object):
+        actions.sort(key=_sort_new_resources_by_name)
         resource_ids = []
         context = self._create_new_context()
         for action in actions:
@@ -1113,3 +1114,10 @@ def _keep_order_of_existing_resources(package_dict, resource_ids):
     new_resource_ids = \
         [id for id in resource_ids if id not in existing_resource_ids]
     return existing_resource_ids + new_resource_ids
+
+def _sort_new_resources_by_name(action):
+    """order new resources by their name"""
+    if action.get('new_resource'):
+        return action['new_resource'].get('name')
+    else:
+        return action['old_resource'].get('id')
