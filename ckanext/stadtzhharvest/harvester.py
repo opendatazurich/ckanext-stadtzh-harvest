@@ -282,7 +282,8 @@ class StadtzhHarvester(HarvesterBase):
             if resource['name'] in resource_metadata:
                 resource.update(resource_metadata[resource['name']])
 
-        # update existing resources, delete old ones, create new ones
+        # set the actions to do with the resources after the package is
+        # updated or created
         actions, resources_changed = self._resources_actions(
             existing_package,
             new_resources
