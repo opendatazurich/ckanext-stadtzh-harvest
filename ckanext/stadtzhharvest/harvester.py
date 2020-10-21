@@ -347,8 +347,11 @@ class StadtzhHarvester(HarvesterBase):
             package_dict,
             harvest_object
         )
-
-        reorder = {'id': str(package_dict['id']), 'order': resource_ids}
+        ordered_resource_ids = _keep_order_of_existing_resources(
+            package_dict,
+            resource_ids
+        )
+        reorder = {'id': str(package_dict['id']), 'order': ordered_resource_ids}
         tk.get_action('package_resource_reorder')(
             context.copy(),
             data_dict=reorder
@@ -1098,3 +1101,15 @@ class StadtzhHarvester(HarvesterBase):
             return False
         else:
             return filename
+
+
+def _keep_order_of_existing_resources(package_dict, resource_ids):
+    """keep order of existing resources and put new resources
+    at the end of the list"""
+    existing_resource_ids = []
+    if package_dict.get('resources'):
+        existing_resource_ids = \
+            [resource['id'] for resource in package_dict['resources']]
+    new_resource_ids = \
+        [id for id in resource_ids if id not in existing_resource_ids]
+    return existing_resource_ids + new_resource_ids
