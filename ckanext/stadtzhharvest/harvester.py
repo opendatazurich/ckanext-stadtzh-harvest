@@ -301,14 +301,11 @@ class StadtzhHarvester(HarvesterBase):
                 # No need to log an error here
                 # as it was logged in _create_package
                 return False
-
-            log.debug('Dataset `%s` has been added' % package_dict['name'])
         else:
             # Don't change the dataset name even if the title has
             package_dict['name'] = existing_package['name']
             package_dict['id'] = existing_package['id']
             dataset_id = self._update_package(package_dict, harvest_object)
-            log.debug('Dataset `%s` has been updated' % package_dict['name'])
 
         # set the date_last_modified if any resource changed
         if self.config['update_date_last_modified'] and resources_changed:
