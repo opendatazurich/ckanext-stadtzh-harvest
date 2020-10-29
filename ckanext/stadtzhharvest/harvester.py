@@ -21,7 +21,8 @@ from ckan.lib.munge import munge_title_to_name, munge_tag
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
-from ckanext.stadtzhharvest.utils import stadtzhharvest_find_or_create_organization
+from ckanext.stadtzhharvest.utils import (stadtzhharvest_find_or_create_organization,
+                                          stadtzhharvest_create_new_context)
 import logging
 log = logging.getLogger(__name__)
 
@@ -261,7 +262,7 @@ class StadtzhHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
         package_dict['id'] = harvest_object.guid
         package_dict['name'] = munge_title_to_name(package_dict[u'datasetID'])
-        context = self._create_new_context()
+        context = stadtzhharvest_create_new_context()
 
         # check if dataset must be deleted
         import_action = package_dict.pop('import_action', 'update')
@@ -289,7 +290,7 @@ class StadtzhHarvester(HarvesterBase):
 
         if existing_package and 'resources' in existing_package:
             package_dict['resources'] = existing_package['resources']
-        stadtzhharvest_find_or_create_organization(package_dict, context.copy())
+        stadtzhharvest_find_or_create_organization(package_dict)
 
         # import the package if it does not yet exists => it's a new package
         # or if this harvester is allowed to update packages
@@ -312,7 +313,7 @@ class StadtzhHarvester(HarvesterBase):
         if self.config['update_date_last_modified'] and resources_changed:
             theme_plugin = StadtzhThemePlugin()
             package_schema = theme_plugin.update_package_schema()
-            schema_context = self._create_new_context()
+            schema_context = stadtzhharvest_create_new_context()
             schema_context['ignore_auth'] = True
             schema_context['schema'] = package_schema
             today = datetime.datetime.now().strftime('%d.%m.%Y')
@@ -357,7 +358,7 @@ class StadtzhHarvester(HarvesterBase):
         return True
 
     def _delete_dataset(self, package_dict):
-        context = self._create_new_context()
+        context = stadtzhharvest_create_new_context()
         get_action('dataset_purge')(
             context.copy(),
             package_dict
@@ -365,7 +366,7 @@ class StadtzhHarvester(HarvesterBase):
         return True
 
     def _get_existing_package(self, package_dict):
-        context = self._create_new_context()
+        context = stadtzhharvest_create_new_context()
         try:
             existing_package = get_action('package_show')(
                 context,
@@ -377,7 +378,7 @@ class StadtzhHarvester(HarvesterBase):
         return existing_package
 
     def _get_existing_packages_names(self, harvest_job):
-        context = self._create_new_context()
+        context = stadtzhharvest_create_new_context()
         n = 500
         page = 1
         existing_packages_names = []
@@ -453,7 +454,7 @@ class StadtzhHarvester(HarvesterBase):
     def _import_resources(self, actions, package_dict, harvest_object):
         actions.sort(key=_sort_new_resources_by_name)
         resource_ids = []
-        context = self._create_new_context()
+        context = stadtzhharvest_create_new_context()
         for action in actions:
             res_name = action['res_name']
             try:
@@ -542,17 +543,6 @@ class StadtzhHarvester(HarvesterBase):
                 )
                 continue
         return resource_ids
-
-    def _create_new_context(self):
-        # get the site user
-        site_user = tk.get_action('get_site_user')(
-                                  {'model': model, 'ignore_auth': True}, {})
-        context = {
-            'model': model,
-            'session': Session,
-            'user': site_user['name'],
-        }
-        return context
 
     def _create_package(self, dataset, harvest_object):
         theme_plugin = StadtzhThemePlugin()
