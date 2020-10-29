@@ -21,6 +21,7 @@ from ckan.lib.munge import munge_title_to_name, munge_tag
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
+from ckanext.stadtzhharvest.utils import stadtzhharvest_find_or_create_organization
 import logging
 log = logging.getLogger(__name__)
 
@@ -71,13 +72,6 @@ class StadtzhHarvester(HarvesterBase):
     '''
     Harvester for the City of Zurich
     '''
-
-    ORGANIZATION = {
-        'de': u'Stadt Zürich',
-        'fr': u'fr_Stadt Zürich',
-        'it': u'it_Stadt Zürich',
-        'en': u'en_Stadt Zürich',
-    }
 
     def __init__(self, **kwargs):
         HarvesterBase.__init__(self, **kwargs)
@@ -295,8 +289,7 @@ class StadtzhHarvester(HarvesterBase):
 
         if existing_package and 'resources' in existing_package:
             package_dict['resources'] = existing_package['resources']
-
-        self._find_or_create_organization(package_dict, context.copy())
+        stadtzhharvest_find_or_create_organization(package_dict, context.copy())
 
         # import the package if it does not yet exists => it's a new package
         # or if this harvester is allowed to update packages
