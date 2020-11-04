@@ -21,8 +21,9 @@ from ckan.lib.munge import munge_title_to_name, munge_tag
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
-from ckanext.stadtzhharvest.utils import (stadtzhharvest_find_or_create_organization,
-                                          stadtzhharvest_create_new_context)
+from ckanext.stadtzhharvest.utils import \
+    stadtzhharvest_find_or_create_organization, \
+    stadtzhharvest_create_new_context
 import logging
 log = logging.getLogger(__name__)
 
