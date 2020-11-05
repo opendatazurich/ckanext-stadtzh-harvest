@@ -32,6 +32,8 @@ fi
 sudo cp solr_schema.xml /etc/solr/conf/schema.xml
 sudo service jetty restart
 
+sudo cp ckan/ckanext/multilingual/solr/german_stop.txt /var/solr/data/ckan/conf/german_stop.txt
+
 echo "Creating the PostgreSQL user and database..."
 sudo -u postgres psql -c "CREATE USER ckan_default WITH PASSWORD 'pass';"
 sudo -u postgres psql -c 'CREATE DATABASE ckan_test WITH OWNER ckan_default;'
