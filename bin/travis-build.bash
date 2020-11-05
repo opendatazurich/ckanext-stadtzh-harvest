@@ -30,6 +30,8 @@ then
     sed -i s/2\.7/2.8/g solr_schema.xml
 fi
 sudo cp solr_schema.xml /etc/solr/conf/schema.xml
+sudo cp ckan/ckanext/multilingual/solr/german_stop.txt /etc/solr/conf/german_stop.txt
+sudo cp german_dictionary.txt /etc/solr/conf/german_dictionary.txt
 sudo service jetty restart
 
 echo "Creating the PostgreSQL user and database..."
