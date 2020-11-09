@@ -8,7 +8,7 @@ python:
 - '2.7'
 
 env:
-    - CKANVERSION=2.7
+    - CKANVERSION=2.7 JAVA_OPTS=-Xmx2g
 
 services:
     - redis-server
