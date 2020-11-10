@@ -669,9 +669,9 @@ class StadtzhHarvester(HarvesterBase):
 
         return obj.id
 
-    def _get_group_ids(self, group_list):
+    def _get_group_names(self, group_list):
         '''
-        Return the group ids for the given groups.
+        Return the group names for the given groups.
         The list should contain group tuples: (name, title)
         If a group does not exist in CKAN, create it.
         '''
@@ -689,11 +689,11 @@ class StadtzhHarvester(HarvesterBase):
         for name, title in group_list:
             data_dict = {'id': name}
             try:
-                group_id = get_action('group_show')(
+                group_name = get_action('group_show')(
                     context.copy(),
                     data_dict
-                )['id']
-                groups.append({'name': group_id})
+                )['name']
+                groups.append({'name': group_name})
                 log.debug('Added group %s' % name)
             except:
                 data_dict['name'] = name
@@ -713,7 +713,7 @@ class StadtzhHarvester(HarvesterBase):
                         data_dict
                     )
                     log.debug("Created group %s" % group)
-                    groups.append({'name': group['id']})
+                    groups.append({'name': group['name']})
                 except:
                     log.debug(
                         'Couldn\'t create group: %s'
@@ -725,7 +725,7 @@ class StadtzhHarvester(HarvesterBase):
 
     def _dropzone_get_groups(self, dataset_node):
         '''
-        Get the groups from the node, normalize them and get the ids.
+        Get the groups from the node, normalize them and get the names.
         '''
         categories = self._get(dataset_node, 'kategorie')
         if categories:
@@ -734,7 +734,7 @@ class StadtzhHarvester(HarvesterBase):
             for title in group_titles:
                 name = munge_title_to_name(title)
                 groups.append((name, title))
-            return self._get_group_ids(groups)
+            return self._get_group_names(groups)
         else:
             return []
 
