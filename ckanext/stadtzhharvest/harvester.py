@@ -1105,6 +1105,6 @@ def _keep_order_of_existing_resources(package_dict, resource_ids):
 def _sort_new_resources_by_name(action):
     """order new resources by their name"""
     if action.get('new_resource'):
-        return action['new_resource'].get('name')
+        return action['new_resource'].get('name').lower()
     else:
         return action['old_resource'].get('id')
