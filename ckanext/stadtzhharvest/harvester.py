@@ -1096,7 +1096,9 @@ def _keep_order_of_existing_resources(package_dict, resource_ids):
     existing_resource_ids = []
     if package_dict.get('resources'):
         existing_resource_ids = \
-            [resource['id'] for resource in package_dict['resources']]
+            [resource['id']
+             for resource in package_dict['resources']
+             if resource['id'] in resource_ids]
     new_resource_ids = \
         [id for id in resource_ids if id not in existing_resource_ids]
     return existing_resource_ids + new_resource_ids
