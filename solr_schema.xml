@@ -158,6 +158,13 @@ schema. In this case the version should be set to the next CKAN version number.
 
     <field name="_version_" type="string" indexed="true" stored="true"/>
 
+    <!-- Field used for suggestions's filtering -->
+    <field name="suggestions_context" type="string" stored="true" multiValued="true" />
+    <field name="cleaned_groups" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="cleaned_tags" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="cleaned_licence_id" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="cleaned_res_format" type="string" indexed="true" stored="true" multiValued="true"/>
+
     <dynamicField name="*_date" type="date" indexed="true" stored="true" multiValued="false"/>
 
     <dynamicField name="extras_*" type="text" indexed="true" stored="true" multiValued="false"/>
