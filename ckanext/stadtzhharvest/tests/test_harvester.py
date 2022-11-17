@@ -303,7 +303,7 @@ class FunctionalHarvestTest(object):
 
 
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester")
-@pytest.mark.usefixtures('with_plugins')
+@pytest.mark.usefixtures('with_plugins', 'clean_index')
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
         data_path = os.path.join(__location__, "fixtures", "test_dropzone")
