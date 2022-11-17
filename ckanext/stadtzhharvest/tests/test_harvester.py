@@ -6,11 +6,10 @@ import pytest
 import shutil
 import tempfile
 
-import ckantoolkit.tests.helpers as h
-
 import ckanext.harvest.model as harvest_model
 from ckanext.harvest import queue
 from ckan.lib.helpers import url_for
+from ckan.tests import helpers
 
 import ckanext.stadtzhharvest.harvester as plugin
 import ckanext.stadtzhtheme.plugin as theme
@@ -20,7 +19,12 @@ __location__ = os.path.realpath(
 )
 
 
-class TestStadtzhHarvester(h.FunctionalTestBase):
+@pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester")
+@pytest.mark.usefixtures('with_plugins')
+class TestStadtzhHarvester(object):
+    def setup(self):
+        helpers.reset_db()
+
     def test_load_metadata_from_path(self):
         harvester = plugin.StadtzhHarvester()
         dataset_folder = "test_dataset"
@@ -167,7 +171,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
 
         # groups
         def check_group(id, name, title):
-            group_result = h.call_action("group_show", {}, id=id)
+            group_result = helpers.call_action("group_show", {}, id=id)
             assert group_result["id"] == id
             assert group_result["name"] == name
             assert group_result["title"] == title
@@ -183,7 +187,7 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
 class FunctionalHarvestTest(object):
     @classmethod
     def setup_class(cls):
-        h.reset_db()
+        helpers.reset_db()
 
         cls.gather_consumer = queue.get_gather_consumer()
         cls.fetch_consumer = queue.get_fetch_consumer()
@@ -201,7 +205,7 @@ class FunctionalHarvestTest(object):
         self.temp_dir = tempfile.mkdtemp()
 
     def teardown(self):
-        h.reset_db()
+        helpers.reset_db()
         shutil.rmtree(self.temp_dir)
 
     def _create_harvest_source(self, **kwargs):
@@ -215,7 +219,7 @@ class FunctionalHarvestTest(object):
 
         source_dict.update(**kwargs)
 
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_create", {}, **source_dict
         )
 
@@ -232,7 +236,7 @@ class FunctionalHarvestTest(object):
 
         source_dict.update(**kwargs)
 
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_update", {}, **source_dict
         )
 
@@ -240,7 +244,7 @@ class FunctionalHarvestTest(object):
 
     def _create_harvest_job(self, harvest_source_id):
 
-        harvest_job = h.call_action(
+        harvest_job = helpers.call_action(
             "harvest_job_create", {}, source_id=harvest_source_id
         )
 
@@ -248,7 +252,7 @@ class FunctionalHarvestTest(object):
 
     def _run_jobs(self, harvest_source_id=None):
         try:
-            h.call_action("harvest_jobs_run", {}, source_id=harvest_source_id)
+            helpers.call_action("harvest_jobs_run", {}, source_id=harvest_source_id)
         except Exception as e:
             if str(e) == "There are no new harvesting jobs":
                 pass
@@ -298,6 +302,8 @@ class FunctionalHarvestTest(object):
         self._fetch_queue(num_objects)
 
 
+@pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester")
+@pytest.mark.usefixtures('with_plugins')
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
         data_path = os.path.join(__location__, "fixtures", "test_dropzone")
@@ -435,11 +441,11 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # Check that correct amount of datasets were created
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == num_objects
         return results
 
-    def test_fail_with_invalid_url_resources(self):
+    def test_fail_with_invalid_url_resources(self, app):
         data_path = os.path.join(__location__, "fixtures", "fail_dropzone")
         test_config = json.dumps(
             {
@@ -456,14 +462,14 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         self._run_full_job(harvest_source["id"], num_objects=1)
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == 1
 
         # Run the jobs to mark the previous one as Finished
         self._run_jobs()
 
         # Get the harvest source with the updated status
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_show", id=harvest_source["id"]
         )
         last_job_status = harvest_source["status"]["last_job"]
@@ -507,7 +513,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # make sure search still works after failed harvesting
         url = url_for("home")
-        app = h._get_test_app()
         app.get(url, status=200)
 
     def test_delete_dataset(self):
@@ -527,14 +532,14 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         self._run_full_job(harvest_source["id"], num_objects=3)
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == 3
 
         # Run the jobs to mark the previous one as Finished
         self._run_jobs()
 
         # Get the harvest source with the updated status
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_show", id=harvest_source["id"]
         )
         last_job_status = harvest_source["status"]["last_job"]
@@ -572,11 +577,11 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         self._run_jobs()
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == 1
 
         # Get the harvest source with the updated status
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_show", id=harvest_source["id"]
         )
         last_job_status = harvest_source["status"]["last_job"]
@@ -606,14 +611,14 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         self._run_full_job(harvest_source["id"], num_objects=11)
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq, rows=11)
+        results = helpers.call_action("package_search", {}, fq=fq, rows=11)
         assert results["count"] == 11
 
         # Run the jobs to mark the previous one as Finished
         self._run_jobs()
 
         # Get the harvest source with the updated status
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_show", id=harvest_source["id"]
         )
         last_job_status = harvest_source["status"]["last_job"]
@@ -651,11 +656,11 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         self._run_jobs()
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq, rows=11)
+        results = helpers.call_action("package_search", {}, fq=fq, rows=11)
         assert results["count"] == 3
 
         # Get the harvest source with the updated status
-        harvest_source = h.call_action(
+        harvest_source = helpers.call_action(
             "harvest_source_show", id=harvest_source["id"]
         )
         last_job_status = harvest_source["status"]["last_job"]
@@ -782,7 +787,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # Check that we still have two datasets
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
 
         assert results["count"] == num_objects + 1
         return results
@@ -840,7 +845,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # Check that we still have two datasets
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = h.call_action("package_search", {}, fq=fq)
+        results = helpers.call_action("package_search", {}, fq=fq)
 
         assert results["count"] == num_objects
         return results
