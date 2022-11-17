@@ -21,8 +21,7 @@ setup(
     install_requires=[
         # -*- Extra requirements: -*-
     ],
-    entry_points=
-    """
+    entry_points="""
     [ckan.plugins]
     stadtzh_harvester=ckanext.stadtzhharvest.harvester:StadtzhHarvester
     """,

@@ -223,19 +223,19 @@ class TestStadtzhHarvester(h.FunctionalTestBase):
                     {'name': 'umlaute-auo'},
             ]
         )
-        
+
         # groups
         def check_group(id, name, title):
             group_result = h.call_action('group_show', {}, id=id)
             eq_(group_result['id'], id)
             eq_(group_result['name'], name)
             eq_(group_result['title'], title)
-        
+
         eq_(len(metadata['groups']), 3)
         check_group(metadata['groups'][0]['name'], 'tourismus', u'Tourismus')
         check_group(metadata['groups'][1]['name'], 'freizeit', u'Freizeit')
         check_group(metadata['groups'][2]['name'], 'bevolkerung', u'Bevölkerung')
-        
+
 
 class FunctionalHarvestTest(object):
     @classmethod
@@ -439,16 +439,16 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(result['license_id'], u'cc-zero')
         eq_(len(result['resources']), 4)
 
-        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json")
         eq_(test_json['description'], u'This is a test description')
 
-        test_csv = next(r for r in result['resources'] if r["name"] == "test.csv") 
+        test_csv = next(r for r in result['resources'] if r["name"] == "test.csv")
         eq_(test_csv['description'], u'')
 
-        wms = next(r for r in result['resources'] if r["name"] == "Web Map Service") 
+        wms = next(r for r in result['resources'] if r["name"] == "Web Map Service")
         eq_(wms['description'], u'')
 
-        wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service") 
+        wfs = next(r for r in result['resources'] if r["name"] == "Web Feature Service")
         eq_(wfs['description'], u'Dies ist eine Spezial-Beschreibung')
 
     def test_harvest_create_with_dataset_prefix(self):
@@ -473,30 +473,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(results[0]['updateInterval'][0], u'woechentlich')
         eq_(results[0]['dataType'][0], u'Einzeldaten')
         eq_(len(results[0]['resources']), 1)
-
-    def test_harvest_create_dwh(self):
-        data_path = os.path.join(
-            __location__,
-            'fixtures',
-            'DWH'
-        )
-        test_config = json.dumps({
-            'data_path': data_path,
-            'metafile_dir': '',
-            'update_datasets': True,
-            'update_date_last_modified': False
-        })
-
-        results = self._test_harvest_create(3, config=test_config)
-        eq_(len(results['results']), 3)
-        for result in results['results']:
-            expected_titles = [
-                u'Geburten nach Jahr, Geschlecht und Stadtquartier',
-                u'Test Nachnamen in der Stadt Zürich',
-                u'Daten der permanenten Velozählstellen - Stundenwerte',
-            ]
-
-            assert result['title'] in expected_titles, "Title does not match result: %s" % result
 
     def _test_harvest_create(self, num_objects, **kwargs):
         harvest_source = self._create_harvest_source(**kwargs)
@@ -557,7 +533,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         result = results['results'][0]
         eq_(len(result['resources']), 2)
         try:
-            assert next(r for r in result['resources'] if r["name"] == "fail.json") 
+            assert next(r for r in result['resources'] if r["name"] == "fail.json")
             assert next(r for r in result['resources'] if r["name"] == "Web Map Service")
         except StopIteration:
             raise AssertionError('Resources fail.json/Web Map Service not found')
@@ -565,7 +541,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         # make sure search still works after failed harvesting
         url = url_for('home')
         app = h._get_test_app()
-        response = app.get(url, status=200)
+        app.get(url, status=200)
 
     def test_delete_dataset(self):
         data_path = os.path.join(
@@ -856,7 +832,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         eq_(len(results['results']), 1)
         # since 'update_datasets' is set to True, resources should be changed
         result = results['results'][0]
-        test_json = next(r for r in result['resources'] if r["name"] == "test.json") 
+        test_json = next(r for r in result['resources'] if r["name"] == "test.json")
         eq_(test_json['description'], 'This is a test description (updated)')
 
     def _test_harvest_update_resource(self, num_objects, meta_xml_path, **kwargs):
