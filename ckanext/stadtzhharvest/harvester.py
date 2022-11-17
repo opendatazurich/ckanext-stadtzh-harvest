@@ -8,6 +8,7 @@ import traceback
 import uuid
 import hashlib
 from contextlib import contextmanager
+from six import text_type
 import defusedxml.ElementTree as etree
 from cgi import FieldStorage
 from pylons import config
@@ -175,7 +176,7 @@ class StadtzhHarvester(HarvesterBase):
                             dataset_id,
                             dataset
                         )
-                    except Exception, e:
+                    except Exception as e:
                         log.exception(e)
                         self._save_gather_error(
                             'Could not parse metadata in %s: %s / %s'
@@ -193,7 +194,7 @@ class StadtzhHarvester(HarvesterBase):
                 ids.extend(delete_ids)
 
             return ids
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             self._save_gather_error(
                 'Unable to get content from folder: %s: %s / %s'
@@ -246,7 +247,7 @@ class StadtzhHarvester(HarvesterBase):
 
         try:
             return self._import_package(harvest_object)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             self._save_object_error(
                 (
@@ -321,7 +322,7 @@ class StadtzhHarvester(HarvesterBase):
                     schema_context,
                     {'id': dataset_id, 'dateLastUpdated': today}
                 )
-            except p.toolkit.ValidationError, e:
+            except p.toolkit.ValidationError as e:
                 self._save_object_error(
                     'Update validation Error: %s' % str(e.error_summary),
                     harvest_object,
@@ -527,7 +528,7 @@ class StadtzhHarvester(HarvesterBase):
                         'Unknown action, we should never reach this point'
                     )
 
-            except Exception, e:
+            except Exception as e:
                 self._save_object_error(
                     'Error while handling action %s for resource %s in pkg %s: %r %s'  # noqa
                     % (
@@ -548,8 +549,8 @@ class StadtzhHarvester(HarvesterBase):
         package_schema = theme_plugin.create_package_schema()
 
         # We need to explicitly provide a package ID
-        dataset['id'] = unicode(uuid.uuid4())
-        package_schema['id'] = [unicode]
+        dataset['id'] = text_type(uuid.uuid4())
+        package_schema['id'] = [text_type]
 
         # get the site user
         site_user = tk.get_action('get_site_user')(
@@ -577,7 +578,7 @@ class StadtzhHarvester(HarvesterBase):
 
         try:
             p.toolkit.get_action('package_create')(context, dataset)
-        except p.toolkit.ValidationError, e:
+        except p.toolkit.ValidationError as e:
             self._save_object_error(
                 'Create validation Error: %s' % str(e.error_summary),
                 harvest_object,
@@ -636,7 +637,7 @@ class StadtzhHarvester(HarvesterBase):
             }
             try:
                 get_action('package_update')(context, dataset)
-            except p.toolkit.ValidationError, e:
+            except p.toolkit.ValidationError as e:
                 self._save_object_error(
                     'Update validation Error: %s' % str(e.error_summary),
                     harvest_object,
@@ -1000,7 +1001,7 @@ class StadtzhHarvester(HarvesterBase):
                 name for name in os.listdir(directory)
                 if os.path.isdir(os.path.join(directory, name))
             ]
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 # directory does not exist
                 return []
