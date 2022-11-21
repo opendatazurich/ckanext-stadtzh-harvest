@@ -25,7 +25,7 @@ def stadtzhharvest_find_or_create_organization(package_dict):
             data_dict
         )['id']
         return package_dict
-    except:
+    except Exception:
         data_dict = {
             'permission': 'edit_group',
             'id': munge_title_to_name(ORGANIZATION['de']),

@@ -696,7 +696,7 @@ class StadtzhHarvester(HarvesterBase):
                 )['name']
                 groups.append({'name': group_name})
                 log.debug('Added group %s' % name)
-            except:
+            except Exception:
                 data_dict['name'] = name
                 data_dict['title'] = title
                 data_dict['image_url'] = (
@@ -715,7 +715,7 @@ class StadtzhHarvester(HarvesterBase):
                     )
                     log.debug("Created group %s" % group)
                     groups.append({'name': group['name']})
-                except:
+                except Exception:
                     log.debug(
                         'Couldn\'t create group: %s'
                         % (traceback.format_exc())
@@ -1050,7 +1050,7 @@ class StadtzhHarvester(HarvesterBase):
                 context.copy(),
                 data_dict
             )['id']
-        except:
+        except Exception:
             data_dict = {
                 'permission': 'edit_group',
                 'id': munge_title_to_name(self.ORGANIZATION['de']),

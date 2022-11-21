@@ -252,7 +252,8 @@ class FunctionalHarvestTest(object):
 
     def _run_jobs(self, harvest_source_id=None):
         try:
-            helpers.call_action("harvest_jobs_run", {}, source_id=harvest_source_id)
+            helpers.call_action(
+                "harvest_jobs_run", {}, source_id=harvest_source_id)
         except Exception as e:
             if str(e) == "There are no new harvesting jobs":
                 pass
