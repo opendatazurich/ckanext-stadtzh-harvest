@@ -81,13 +81,5 @@ jobs:
         ckan config-tool test.ini "ckan.plugins = "
         ckan -c test.ini db init
         ckan config-tool test.ini "ckan.plugins = harvest ckan_harvester stadtzh_harvester stadtzhtheme"
-    - name: Compile catalogue (py2)
-      if: ${{ matrix.ckan-version == '2.9-py2' }}
-      run: |
-        python setup.py compile_catalog
-    - name: Compile catalogue (py3)
-      if: ${{ matrix.ckan-version != '2.9-py2' }}
-      run: |
-        python3 setup.py compile_catalog
     - name: Run tests
       run: pytest --ckan-ini=test.ini --cov=ckanext.stadtzhharvest --disable-warnings ckanext/stadtzhharvest/tests
