@@ -8,7 +8,7 @@ import traceback
 import uuid
 import hashlib
 from contextlib import contextmanager
-from six import text_type
+from six import string_types, text_type
 import defusedxml.ElementTree as etree
 from cgi import FieldStorage
 from ckan import model
@@ -106,7 +106,7 @@ class StadtzhHarvester(HarvesterBase):
     def _validate_string_config(self, source, field, required=False):
         if field in source:
             value = source[field]
-            if not isinstance(value, basestring):
+            if not isinstance(value, string_types):
                 raise ValueError('%s must be a string' % field)
         elif required:
             raise ValueError('%s is required' % field)
