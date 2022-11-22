@@ -11,7 +11,6 @@ from contextlib import contextmanager
 from six import text_type
 import defusedxml.ElementTree as etree
 from cgi import FieldStorage
-from pylons import config
 from ckan import model
 from ckan.model import Session
 from ckan.logic import get_action, NotFound
@@ -79,7 +78,7 @@ class StadtzhHarvester(HarvesterBase):
     def __init__(self, **kwargs):
         HarvesterBase.__init__(self, **kwargs)
         try:
-            self.CKAN_SITE_URL = config['ckan.site_url']
+            self.CKAN_SITE_URL = tk.config['ckan.site_url']
         except KeyError as e:
             raise Exception("'%s' not found in config" % e.message)
 
