@@ -58,7 +58,7 @@ def stadtzhharvest_create_new_context():
     return context
 
 
-def stadtzhharvest_get_group_names(self, group_list):
+def stadtzhharvest_get_group_names(group_list):
     """Return the group names for the given groups.
     The list should contain group tuples: (name, title)
     If a group does not exist in CKAN, create it.
@@ -88,7 +88,7 @@ def stadtzhharvest_get_group_names(self, group_list):
             data_dict['title'] = title
             data_dict['image_url'] = (
                     '%s/kategorien/%s.png'
-                    % (self.CKAN_SITE_URL, name)
+                    % (tk.config['ckan.site_url'], name)
             )
             log.debug(
                 'Couldn\'t get group id. '
