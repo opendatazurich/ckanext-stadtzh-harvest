@@ -88,6 +88,9 @@ jobs:
         ckan -c test.ini db init
         ckan config-tool test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
     - name: Check solr schema
-      run: curl http://solr:8983/solr/ckan/schema
+      run: |
+        curl http://solr:8983/solr/admin/cores?action=STATUS
+        curl http://solr:8983/solr/ckan/schema
+        docker-compose -f docker-compose.dev.yml exec solr ls -lah /opt/solr/server/solr/configsets/ckan/conf/
     - name: Run tests
       run: pytest --ckan-ini=test.ini --cov=ckanext.stadtzhharvest --disable-warnings ckanext/stadtzhharvest/tests
