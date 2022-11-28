@@ -30,12 +30,11 @@ jobs:
       solr:
         image: ckan/ckan-solr:${{ matrix.ckan-version }}
         env:
-          SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
           SOLR_HEAP: 1024m
         volumes:
-          - ./solr/schema.xml:${SOLR_CONFIG_CKAN_DIR}/managed-schema
-          - ./solr/german_dictionary.txt:${SOLR_CONFIG_CKAN_DIR}/german_dictionary.txt
-          - ./solr/solrconfig.xml:${SOLR_CONFIG_CKAN_DIR}/solrconfig.xml
+          - ./solr/schema.xml:/opt/solr/server/solr/configsets/ckan/conf/managed-schema
+          - ./solr/german_dictionary.txt:/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt
+          - ./solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
