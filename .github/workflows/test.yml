@@ -16,10 +16,7 @@ jobs:
         run: flake8 . --count --statistics --exclude ckan
       - name: Check files
         run: |
-          pwd
-          ls -lah
-          ls -lah /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/
-          ls -lah /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/
+          cat ${{ github.workspace }}/solr/schema.xml
 
   test:
     needs: lint
