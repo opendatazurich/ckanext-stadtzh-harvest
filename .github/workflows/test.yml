@@ -28,7 +28,7 @@ jobs:
       image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
     services:
       solr:
-        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+        image: ckan/ckan-solr:2.9-solr8
         env:
           SOLR_HEAP: 1024m
         volumes:
@@ -91,6 +91,5 @@ jobs:
       run: |
         curl http://solr:8983/solr/admin/cores?action=STATUS
         curl http://solr:8983/solr/ckan/schema
-        docker-compose -f docker-compose.dev.yml exec solr ls -lah /opt/solr/server/solr/configsets/ckan/conf/
     - name: Run tests
       run: pytest --ckan-ini=test.ini --cov=ckanext.stadtzhharvest --disable-warnings ckanext/stadtzhharvest/tests
