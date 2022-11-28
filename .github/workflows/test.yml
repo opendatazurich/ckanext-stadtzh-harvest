@@ -14,6 +14,12 @@ jobs:
         run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics --extend-exclude ckan
       - name: Run flake8
         run: flake8 . --count --statistics --exclude ckan
+      - name: Check files
+        run: |
+          pwd
+          ls -lah
+          ls -lah /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/
+          ls -lah /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/
 
   test:
     needs: lint
