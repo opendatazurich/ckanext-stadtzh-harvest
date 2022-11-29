@@ -16,7 +16,9 @@ jobs:
         run: flake8 . --count --statistics --exclude ckan
       - name: Check files
         run: |
-          cat ${{ github.workspace }}/solr/schema.xml
+          cat /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/schema.xml
+          cat /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/solrconfig.xml
+          cat /home/runner/work/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/german_dictionary.txt
 
   test:
     needs: lint
@@ -38,7 +40,7 @@ jobs:
         volumes:
           - ${{ github.workspace }}/solr/schema.xml:/opt/solr/server/solr/configsets/ckan/conf/managed-schema
           - ${{ github.workspace }}/solr/german_dictionary.txt:/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt
-#          - ${{ github.workspace }}/solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
+          - ${{ github.workspace }}/solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
