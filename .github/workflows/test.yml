@@ -36,9 +36,9 @@ jobs:
           SOLR_HEAP: 1024m
           SOLR_SCHEMA_FILE: /opt/solr/server/solr/configsets/ckan/conf/schema.xml
         volumes:
-          - ${{ github.workspace }}/solr/schema.xml:/opt/solr/server/solr/configsets/ckan/conf/schema.xml
+          - ${{ github.workspace }}/solr/schema.xml:/opt/solr/server/solr/configsets/ckan/conf/managed-schema
           - ${{ github.workspace }}/solr/german_dictionary.txt:/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt
-#          - ${{ github.workspace }}/solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
+          - ${{ github.workspace }}/solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
