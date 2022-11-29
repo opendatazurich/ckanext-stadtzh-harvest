@@ -95,5 +95,6 @@ jobs:
       run: |
         curl http://solr:8983/solr/admin/cores?action=STATUS
         curl http://solr:8983/solr/ckan/schema
+        curl http://solr:8983/solr/ckan/admin/file
     - name: Run tests
       run: pytest --ckan-ini=test.ini --cov=ckanext.stadtzhharvest --disable-warnings ckanext/stadtzhharvest/tests
