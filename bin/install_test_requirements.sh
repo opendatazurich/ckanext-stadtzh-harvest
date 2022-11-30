@@ -22,7 +22,7 @@ else
 fi
 
 # Replace default path to CKAN core config file with the one on the container
-sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' ../test.ini
+sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini
 
 # Init db and enable required plugins
 ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = "
