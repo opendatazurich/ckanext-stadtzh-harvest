@@ -9,7 +9,7 @@ import uuid
 import hashlib
 from functools import cmp_to_key
 from contextlib import contextmanager
-from six import string_types, text_type
+from six import PY3, string_types, text_type
 import defusedxml.ElementTree as etree
 from cgi import FieldStorage
 from ckan import model
@@ -889,6 +889,10 @@ class StadtzhHarvester(HarvesterBase):
                     for link in links:
                         url = self._get(link, 'url')
                         if url:
+                            if PY3:
+                                # Python 3 unicode objects must be encoded
+                                # before hashing
+                                url = url.encode('utf-8')
                             # generate hash for URL
                             md5 = hashlib.md5()
                             md5.update(url)
