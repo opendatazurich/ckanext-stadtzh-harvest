@@ -55,8 +55,6 @@ jobs:
           -v "${{ github.workspace }}/solr/solrconfig.xml":"/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml" \
           ckan/ckan-solr:2.9-solr8
         docker start test_solr
-        docker ps --all --filter name=test_solr --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
-        docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" test_solr
     - name: Create ckan container
       run: |
         /usr/bin/docker create --name test_ckan --network ${{ job.container.network }} --network-alias ckan \
@@ -67,18 +65,10 @@ jobs:
           -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" \
           --entrypoint "tail" openknowledge/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
         docker start test_ckan
-        docker ps --all --filter name=test_ckan --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
-        docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" test_ckan
     - name: Install requirements and set up ckanext
       run: |
         docker exec test_ckan /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
-    - name: Check solr schema
-      run: |
-        curl http://localhost:8983/solr/admin/cores?action=STATUS
-        curl http://localhost:8983/solr/ckan/schema
-        curl http://localhost:8983/solr/ckan/admin/file
     - name: Run tests
       run: |
-        docker ps
         docker exec test_ckan pytest --ckan-ini=/__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini \
           --cov=ckanext.stadtzhharvest --disable-warnings /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/ckanext/stadtzhharvest/tests
