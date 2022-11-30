@@ -25,6 +25,6 @@ fi
 sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' ../test.ini
 
 # Init db and enable required plugins
-ckan config-tool test.ini "ckan.plugins = "
-ckan -c test.ini db init
-ckan config-tool test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
+ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = "
+ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db init
+ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
