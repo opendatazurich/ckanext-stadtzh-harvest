@@ -71,6 +71,7 @@ jobs:
         docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" test_ckan
     - name: Install requirements
       run: |
+        docker-compose exec ckan pwd && ls && ls /__w/
         docker-compose exec ckan pip install -r ${{ github.workspace }}/requirements.txt
         docker-compose exec ckan pip install -r ${{ github.workspace }}/dev-requirements.txt
         docker-compose exec ckan pip install -e ${{ github.workspace }}/
