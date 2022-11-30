@@ -78,5 +78,7 @@ jobs:
         curl http://localhost:8983/solr/ckan/schema
         curl http://localhost:8983/solr/ckan/admin/file
     - name: Run tests
-      run: docker exec test_ckan pytest --ckan-ini=/__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini \
-        --cov=ckanext.stadtzhharvest --disable-warnings /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/ckanext/stadtzhharvest/tests
+      run: |
+        docker ps
+        docker exec test_ckan pytest --ckan-ini=/__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini \
+          --cov=ckanext.stadtzhharvest --disable-warnings /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/ckanext/stadtzhharvest/tests
