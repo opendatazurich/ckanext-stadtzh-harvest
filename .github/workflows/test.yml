@@ -48,8 +48,8 @@ jobs:
     - name: Create solr container
       run: |
         /usr/bin/docker create --name test_solr --network ${{ job.container.network }} --network-alias solr \
-          --workdir /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest \
-          -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=/opt/solr/server/solr/configsets/ckan/conf/schema.xml" \
+          --workdir /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest --publish 8983:8983 \
+          -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
           -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
           -v "${{ github.workspace }}/solr/german_dictionary.txt":"/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt" \
           -v "${{ github.workspace }}/solr/solrconfig.xml":"/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml" \
