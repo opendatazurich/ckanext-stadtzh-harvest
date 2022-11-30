@@ -14,11 +14,6 @@ jobs:
         run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics --extend-exclude ckan
       - name: Run flake8
         run: flake8 . --count --statistics --exclude ckan
-      - name: Check files
-        run: |
-          cat /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/schema.xml
-          cat /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/solrconfig.xml
-          cat /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/german_dictionary.txt
 
   test:
     needs: lint
@@ -31,16 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
+      network: test_stadtzh_harvest
     services:
-      solr:
-        image: ckan/ckan-solr:2.9-solr8
-        env:
-          SOLR_HEAP: 1024m
-          SOLR_SCHEMA_FILE: /opt/solr/server/solr/configsets/ckan/conf/schema.xml
-        volumes:
-          - /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/schema.xml:/opt/solr/server/solr/configsets/ckan/conf/managed-schema
-          - /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/german_dictionary.txt:/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt
-          - /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/solr/solrconfig.xml:/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
@@ -61,6 +48,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Create solr container
+      run: |
+        /usr/bin/docker create --name test_solr --label 290506 --network test_stadtzh_harvest --network-alias solr \
+        -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=/opt/solr/server/solr/configsets/ckan/conf/schema.xml" \
+        -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
+        -v "${{ github.workspace }}/solr/german_dictionary.txt":"/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt" \
+        -v "${{ github.workspace }}/solr/solrconfig.xml":"/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml" \
+        ckan/ckan-solr:2.9-solr8
+        docker start test_solr
+        docker ps --all --filter name=ogdzh_solr --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+        docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" ogdzh_solr
     - name: Install requirements
       run: |
         pip install -r requirements.txt
