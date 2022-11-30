@@ -72,7 +72,7 @@ jobs:
     - name: Install requirements
       run: |
         docker exec test_ckan whoami
-        docker exec test_ckan pwd && ls -lah /srv/app/requirements.txt && pip install -r /srv/app/requirements.txt
+        docker exec test_ckan pwd && ls -lah /srv/app/ && pip install -r /srv/app/requirements.txt
         docker exec test_ckan pip install -r ./dev-requirements.txt
         docker exec test_ckan pip install -e .
         docker exec test_ckan pip install -U requests[security]
