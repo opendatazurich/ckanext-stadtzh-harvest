@@ -49,6 +49,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Create solr container
       run: |
+        exit
         /usr/bin/docker create --name test_solr --label 290506 --network ${{ job.container.network }} --network-alias solr \
         -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=/opt/solr/server/solr/configsets/ckan/conf/schema.xml" \
         -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
