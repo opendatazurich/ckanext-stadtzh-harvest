@@ -71,11 +71,11 @@ jobs:
         docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" test_ckan
     - name: Install requirements
       run: |
-        docker-compose exec ckan pwd && ls && ls /__w/
-        docker-compose exec ckan pip install -r ${{ github.workspace }}/requirements.txt
-        docker-compose exec ckan pip install -r ${{ github.workspace }}/dev-requirements.txt
-        docker-compose exec ckan pip install -e ${{ github.workspace }}/
-        docker-compose exec ckan pip install -U requests[security]
+        docker exec test_ckan pwd && ls && ls /__w/
+        docker exec test_ckan pip install -r ${{ github.workspace }}/requirements.txt
+        docker exec test_ckan pip install -r ${{ github.workspace }}/dev-requirements.txt
+        docker exec test_ckan pip install -e ${{ github.workspace }}/
+        docker exec test_ckan pip install -U requests[security]
     - name: Install required ckanexts
       run: |
         pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat && \
