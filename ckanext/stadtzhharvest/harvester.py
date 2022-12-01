@@ -23,7 +23,8 @@ from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 from ckanext.stadtzhharvest.utils import \
     stadtzhharvest_find_or_create_organization, \
-    stadtzhharvest_create_new_context
+    stadtzhharvest_create_new_context, \
+    stadtzhharvest_get_group_names
 import logging
 log = logging.getLogger(__name__)
 
@@ -669,60 +670,6 @@ class StadtzhHarvester(HarvesterBase):
 
         return obj.id
 
-    def _get_group_names(self, group_list):
-        '''
-        Return the group names for the given groups.
-        The list should contain group tuples: (name, title)
-        If a group does not exist in CKAN, create it.
-        '''
-        # get site user
-        site_user = tk.get_action('get_site_user')(
-                                  {'model': model, 'ignore_auth': True}, {})
-
-        context = {
-            'model': model,
-            'session': Session,
-            'ignore_auth': True,
-            'user': site_user['name'],
-        }
-        groups = []
-        for name, title in group_list:
-            data_dict = {'id': name}
-            try:
-                group_name = get_action('group_show')(
-                    context.copy(),
-                    data_dict
-                )['name']
-                groups.append({'name': group_name})
-                log.debug('Added group %s' % name)
-            except:
-                data_dict['name'] = name
-                data_dict['title'] = title
-                data_dict['image_url'] = (
-                    '%s/kategorien/%s.png'
-                    % (self.CKAN_SITE_URL, name)
-                )
-                log.debug(
-                    'Couldn\'t get group id. '
-                    'Creating the group `%s` with data_dict: %s'
-                    % (name, data_dict)
-                )
-                try:
-                    group = get_action('group_create')(
-                        context.copy(),
-                        data_dict
-                    )
-                    log.debug("Created group %s" % group)
-                    groups.append({'name': group['name']})
-                except:
-                    log.debug(
-                        'Couldn\'t create group: %s'
-                        % (traceback.format_exc())
-                    )
-                    raise
-
-        return groups
-
     def _dropzone_get_groups(self, dataset_node):
         '''
         Get the groups from the node, normalize them and get the names.
@@ -734,7 +681,7 @@ class StadtzhHarvester(HarvesterBase):
             for title in group_titles:
                 name = munge_title_to_name(title)
                 groups.append((name, title))
-            return self._get_group_names(groups)
+            return stadtzhharvest_get_group_names(groups)
         else:
             return []
 
