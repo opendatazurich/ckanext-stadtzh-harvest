@@ -7,13 +7,13 @@ pip install -e /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/
 pip install -U requests[security]
 
 # Install ckanext dependencies
-pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat && \
-  pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest && \
-  pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/master/requirements.txt && \
-  pip install -e git+https://github.com/ckan/ckanext-xloader.git#egg=ckanext-xloader && \
-  pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt && \
-  pip install -e git+https://github.com/opendatazurich/ckanext-stadtzh-theme.git@dockerizing#egg=ckanext-stadtzh-theme && \
-  pip install -r https://raw.githubusercontent.com/opendatazurich/ckanext-stadtzh-theme/dockerizing/pip-requirements.txt
+pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat
+pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest
+pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/master/requirements.txt
+pip install -e git+https://github.com/ckan/ckanext-xloader.git#egg=ckanext-xloader
+pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt
+pip install -e git+https://github.com/opendatazurich/ckanext-stadtzh-theme.git@dockerizing#egg=ckanext-stadtzh-theme
+pip install -r https://raw.githubusercontent.com/opendatazurich/ckanext-stadtzh-theme/dockerizing/pip-requirements.txt
 
 if [ "$1" = "2.9-py2" ]; then
   pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/master/requirements-py2.txt
