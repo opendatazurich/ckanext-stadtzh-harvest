@@ -42,6 +42,7 @@ jobs:
       CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
       CKAN_SOLR_URL: http://solr:8983/solr/ckan
       CKAN_REDIS_URL: redis://redis:6379/1
+      SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
 
     steps:
     - uses: actions/checkout@v3
@@ -49,10 +50,10 @@ jobs:
       run: |
         /usr/bin/docker create --name test_solr --network ${{ job.container.network }} --network-alias solr \
           --workdir /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest --publish 8983:8983 \
-          -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
-          -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"/opt/solr/server/solr/configsets/ckan/conf/managed-schema" \
-          -v "${{ github.workspace }}/solr/german_dictionary.txt":"/opt/solr/server/solr/configsets/ckan/conf/german_dictionary.txt" \
-          -v "${{ github.workspace }}/solr/solrconfig.xml":"/opt/solr/server/solr/configsets/ckan/conf/solrconfig.xml" \
+          -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=$SOLR_CONFIG_CKAN_DIR/managed-schema" \
+          -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"$SOLR_CONFIG_CKAN_DIR/managed-schema" \
+          -v "${{ github.workspace }}/solr/german_dictionary.txt":"$SOLR_CONFIG_CKAN_DIR/german_dictionary.txt" \
+          -v "${{ github.workspace }}/solr/solrconfig.xml":"$SOLR_CONFIG_CKAN_DIR/solrconfig.xml" \
           ckan/ckan-solr:2.9-solr8
         docker start test_solr
     - name: Create ckan container
