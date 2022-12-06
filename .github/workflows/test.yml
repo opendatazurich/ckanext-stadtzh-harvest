@@ -2,7 +2,7 @@ name: Tests
 on: [push, pull_request]
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
 
     name: CKAN ${{ matrix.ckan-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     services:
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
