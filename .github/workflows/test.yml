@@ -2,10 +2,10 @@ name: Tests
 on: [push, pull_request]
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: '2.7'
       - name: Install requirements
@@ -23,12 +23,8 @@ jobs:
       fail-fast: false
 
     name: CKAN ${{ matrix.ckan-version }}
-    runs-on: ubuntu-latest
-    container:
-      image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
+    runs-on: ubuntu-20.04
     services:
-      solr:
-        image: ckan/ckan-solr:${{ matrix.ckan-version }}
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:
@@ -46,40 +42,34 @@ jobs:
       CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
       CKAN_SOLR_URL: http://solr:8983/solr/ckan
       CKAN_REDIS_URL: redis://redis:6379/1
+      SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install requirements
+    - uses: actions/checkout@v3
+    - name: Create solr container
       run: |
-        pip install -r requirements.txt
-        pip install -r dev-requirements.txt
-        pip install -e .
-        pip install -U requests[security]
-    - name: Install required ckanexts
+        /usr/bin/docker create --name test_solr --network ${{ job.container.network }} --network-alias solr \
+          --workdir /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest --publish 8983:8983 \
+          -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=$SOLR_CONFIG_CKAN_DIR/managed-schema" \
+          -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"$SOLR_CONFIG_CKAN_DIR/managed-schema" \
+          -v "${{ github.workspace }}/solr/german_dictionary.txt":"$SOLR_CONFIG_CKAN_DIR/german_dictionary.txt" \
+          -v "${{ github.workspace }}/solr/solrconfig.xml":"$SOLR_CONFIG_CKAN_DIR/solrconfig.xml" \
+          ckan/ckan-solr:2.9-solr8
+        docker start test_solr
+    - name: Create ckan container
       run: |
-        pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat && \
-        pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest && \
-        pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/master/requirements.txt && \
-        pip install -e git+https://github.com/ckan/ckanext-xloader.git#egg=ckanext-xloader && \
-        pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt && \
-        pip install -e git+https://github.com/opendatazurich/ckanext-stadtzh-theme.git@dockerizing#egg=ckanext-stadtzh-theme && \
-        pip install -r https://raw.githubusercontent.com/opendatazurich/ckanext-stadtzh-theme/dockerizing/pip-requirements.txt
-    - name: Install py2 ckanext-dcat requirements
-      if: ${{ matrix.ckan-version == '2.9-py2' }}
+        /usr/bin/docker create --name test_ckan --network ${{ job.container.network }} --network-alias ckan \
+          -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" \
+          -v "/home/runner/work":"/__w" -v "/home/runner/runners/2.299.1/externals":"/__e":ro \
+          -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" \
+          -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" \
+          -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" \
+          --entrypoint "tail" openknowledge/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
+        docker start test_ckan
+    - name: Install requirements and set up ckanext
       run: |
-        pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/master/requirements-py2.txt
-    - name: Install py3 ckanext-dcat requirements
-      if: ${{ matrix.ckan-version != '2.9-py2' }}
-      run: |
-        pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/master/requirements.txt
-    - name: Adjust test.ini
-      run: |
-        # Replace default path to CKAN core config file with the one on the container
-        sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
-    - name: Setup extension (CKAN >= 2.9)
-      run: |
-        ckan config-tool test.ini "ckan.plugins = "
-        ckan -c test.ini db init
-        ckan config-tool test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
+        docker exec test_ckan /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
     - name: Run tests
-      run: pytest --ckan-ini=test.ini --cov=ckanext.stadtzhharvest --disable-warnings ckanext/stadtzhharvest/tests
+      run: |
+        docker exec test_ckan pytest --ckan-ini=/__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini \
+          --cov=ckanext.stadtzhharvest --disable-warnings /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/ckanext/stadtzhharvest/tests
