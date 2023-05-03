@@ -59,7 +59,7 @@ jobs:
     - name: Create ckan container
       run: |
         /usr/bin/docker create --name test_ckan --network ${{ job.container.network }} --network-alias ckan \
-          -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock"
+          -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" \
           --entrypoint "tail" openknowledge/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
         docker start test_ckan
     - name: Install requirements and set up ckanext
