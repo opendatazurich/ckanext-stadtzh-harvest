@@ -2,12 +2,10 @@ name: Tests
 on: [push, pull_request]
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-        with:
-          python-version: '2.7'
       - name: Install requirements
         run: pip install flake8 pycodestyle
       - name: Check syntax
@@ -23,7 +21,7 @@ jobs:
       fail-fast: false
 
     name: CKAN ${{ matrix.ckan-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
