@@ -837,13 +837,9 @@ class StadtzhHarvester(HarvesterBase):
                     for link in links:
                         url = self._get(link, 'url')
                         if url:
-                            if PY3:
-                                # Python 3 unicode objects must be encoded
-                                # before hashing
-                                url = url.encode('utf-8')
                             # generate hash for URL
                             md5 = hashlib.md5()
-                            md5.update(url)
+                            md5.update(url.encode('utf-8'))
                             resources.append({
                                 'url': url,
                                 'zh_hash': md5.hexdigest(),
