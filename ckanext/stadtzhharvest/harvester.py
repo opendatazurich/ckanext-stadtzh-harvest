@@ -19,6 +19,7 @@ import ckan.plugins.toolkit as tk
 from ckan import plugins as p
 from ckan.lib.helpers import json
 from ckan.lib.munge import munge_title_to_name, munge_tag
+import ckan.lib.navl.validators as validators
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
@@ -551,7 +552,7 @@ class StadtzhHarvester(HarvesterBase):
 
         # We need to explicitly provide a package ID
         dataset['id'] = text_type(uuid.uuid4())
-        package_schema['id'] = [text_type]
+        package_schema['id'] = [validators.unicode_safe]
 
         # get the site user
         site_user = tk.get_action('get_site_user')(
