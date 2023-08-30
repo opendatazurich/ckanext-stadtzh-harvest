@@ -872,7 +872,7 @@ class StadtzhHarvester(HarvesterBase):
                         resource_dict['zh_hash'] = md5.hexdigest()
 
                     # add file to FieldStorage
-                    with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
+                    with retry_open_file(resource_path, 'rb', close=False) as f:  # noqa
                         field_storage = FlaskFileStorage(f, f.name)
                         resource_dict['upload'] = field_storage
 
