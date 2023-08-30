@@ -2,12 +2,10 @@ name: Tests
 on: [push, pull_request]
 jobs:
   lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-        with:
-          python-version: '2.7'
       - name: Install requirements
         run: pip install flake8 pycodestyle
       - name: Check syntax
@@ -42,6 +40,7 @@ jobs:
       CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
       CKAN_SOLR_URL: http://solr:8983/solr/ckan
       CKAN_REDIS_URL: redis://redis:6379/1
+      WORKDIR: /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest
       SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
 
     steps:
@@ -49,7 +48,7 @@ jobs:
     - name: Create solr container
       run: |
         /usr/bin/docker create --name test_solr --network ${{ job.container.network }} --network-alias solr \
-          --workdir /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest --publish 8983:8983 \
+          --workdir $WORKDIR --publish 8983:8983 \
           -e "SOLR_HEAP=1024m" -e "SOLR_SCHEMA_FILE=$SOLR_CONFIG_CKAN_DIR/managed-schema" \
           -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"$SOLR_CONFIG_CKAN_DIR/managed-schema" \
           -v "${{ github.workspace }}/solr/german_dictionary.txt":"$SOLR_CONFIG_CKAN_DIR/german_dictionary.txt" \
@@ -68,8 +67,8 @@ jobs:
         docker start test_ckan
     - name: Install requirements and set up ckanext
       run: |
-        docker exec test_ckan /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
+        docker exec test_ckan $WORKDIR/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
     - name: Run tests
       run: |
-        docker exec test_ckan pytest --ckan-ini=/__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini \
-          --cov=ckanext.stadtzhharvest --disable-warnings /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/ckanext/stadtzhharvest/tests
+        docker exec test_ckan pytest --ckan-ini=$WORKDIR/test.ini \
+          --cov=ckanext.stadtzhharvest --disable-warnings $WORKDIR/ckanext/stadtzhharvest/tests
