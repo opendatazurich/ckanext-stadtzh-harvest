@@ -11,7 +11,7 @@ from functools import cmp_to_key
 from contextlib import contextmanager
 from six import PY3, string_types, text_type
 import defusedxml.ElementTree as etree
-from cgi import FieldStorage
+from werkzeug.datastructures import FileStorage as FlaskFileStorage
 from ckan import model
 from ckan.model import Session
 from ckan.logic import get_action, NotFound
@@ -877,9 +877,7 @@ class StadtzhHarvester(HarvesterBase):
 
                     # add file to FieldStorage
                     with retry_open_file(resource_path, 'r', close=False) as f:  # noqa
-                        field_storage = FieldStorage()
-                        field_storage.file = f
-                        field_storage.filename = f.name
+                        field_storage = FlaskFileStorage(f, f.name)
                         resource_dict['upload'] = field_storage
 
                     resources.append(resource_dict)
