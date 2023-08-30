@@ -515,7 +515,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             )
 
         # make sure search still works after failed harvesting
-        url = url_for("home")
+        url = url_for("home.index")
         app.get(url, status=200)
 
     def test_delete_dataset(self):
