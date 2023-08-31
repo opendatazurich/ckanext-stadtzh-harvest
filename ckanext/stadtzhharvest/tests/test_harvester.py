@@ -487,13 +487,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         assert last_job_status["stats"]["errored"] == 1
 
         obj_summary = last_job_status["object_error_summary"]
-        assert "Error while handling action" in obj_summary[0][0], (
+        assert "Error while handling action" in obj_summary[0]["message"], (
             "Error msg 1 does not match: %r" % obj_summary
         )
-        assert "Invalid URL (CDATA)" in obj_summary[0][0], (
+        assert "Invalid URL (CDATA)" in obj_summary[0]["message"], (
             "Error msg 2 does not match: %r" % obj_summary
         )
-        assert "Please provide a valid URL" in obj_summary[0][0], (
+        assert "Please provide a valid URL" in obj_summary[0]["message"], (
             "Error msg 3 does not match: %r" % obj_summary
         )
 
