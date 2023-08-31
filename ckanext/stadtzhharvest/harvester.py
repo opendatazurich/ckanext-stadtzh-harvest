@@ -9,7 +9,6 @@ import uuid
 import hashlib
 from functools import cmp_to_key
 from contextlib import contextmanager
-from six import PY3, string_types, text_type
 import defusedxml.ElementTree as etree
 from werkzeug.datastructures import FileStorage as FlaskFileStorage
 from ckan import model
@@ -109,7 +108,7 @@ class StadtzhHarvester(HarvesterBase):
     def _validate_string_config(self, source, field, required=False):
         if field in source:
             value = source[field]
-            if not isinstance(value, string_types):
+            if not isinstance(value, str):
                 raise ValueError('%s must be a string' % field)
         elif required:
             raise ValueError('%s is required' % field)
@@ -551,7 +550,7 @@ class StadtzhHarvester(HarvesterBase):
         package_schema = theme_plugin.create_package_schema()
 
         # We need to explicitly provide a package ID
-        dataset['id'] = text_type(uuid.uuid4())
+        dataset['id'] = str(uuid.uuid4())
         package_schema['id'] = [validators.unicode_safe]
 
         # get the site user
