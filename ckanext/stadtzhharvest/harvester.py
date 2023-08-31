@@ -91,7 +91,7 @@ class StadtzhHarvester(HarvesterBase):
         return {
             "name": "stadtzh_harvester",
             "title": "Harvester for the City of Zurich",
-            "description": "Harvester for the DWH and GEO dropzones of the City of Zurich",  # noqa
+            "description": "Harvester for the DWH and GEO dropzones of the City of Zurich",
         }
 
     def validate_config(self, config_str):
@@ -453,9 +453,7 @@ class StadtzhHarvester(HarvesterBase):
                         resource["url"] = action["new_resource"]["url"]
 
                     # update fields from new resource
-                    resource["description"] = action["new_resource"].get(
-                        "description"
-                    )  # noqa
+                    resource["description"] = action["new_resource"].get("description")
                     resource["format"] = action["new_resource"].get("format")
                     resource["zh_hash"] = action["new_resource"].get("zh_hash")
 
@@ -487,7 +485,7 @@ class StadtzhHarvester(HarvesterBase):
 
             except Exception as e:
                 self._save_object_error(
-                    "Error while handling action %s for resource %s in pkg %s: %r %s"  # noqa
+                    "Error while handling action %s for resource %s in pkg %s: %r %s"
                     % (
                         action,
                         res_name,
@@ -531,9 +529,7 @@ class StadtzhHarvester(HarvesterBase):
         # Defer constraints and flush so the dataset can be indexed with
         # the harvest object id (on the after_show hook from the harvester
         # plugin)
-        model.Session.execute(
-            "SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED"
-        )  # noqa
+        model.Session.execute("SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED")
         model.Session.flush()
 
         try:
@@ -557,7 +553,7 @@ class StadtzhHarvester(HarvesterBase):
         previous_object = (
             model.Session.query(HarvestObject)
             .filter(HarvestObject.guid == harvest_object.guid)
-            .filter(HarvestObject.current == True)  # noqa
+            .filter(HarvestObject.current == True)
             .first()
         )
 
@@ -577,9 +573,7 @@ class StadtzhHarvester(HarvesterBase):
         # Defer constraints and flush so the dataset can be indexed with
         # the harvest object id (on the after_show hook from the harvester
         # plugin)
-        model.Session.execute(
-            "SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED"
-        )  # noqa
+        model.Session.execute("SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED")
         model.Session.flush()
 
         # only update pkg if this harvester allows it
@@ -649,34 +643,32 @@ class StadtzhHarvester(HarvesterBase):
         """
 
         return {
-            "datasetID": dataset_id,  # noqa
-            "datasetFolder": dataset_folder,  # noqa
-            "title": dataset_node.find("titel").text,  # noqa
-            "url": self._get(dataset_node, "lieferant"),  # noqa
-            "notes": dataset_node.find("beschreibung").text,  # noqa
-            "author": dataset_node.find("quelle").text,  # noqa
-            "maintainer": "Open Data Zürich",  # noqa
-            "maintainer_email": "opendata@zuerich.ch",  # noqa
-            "license_id": self._get(dataset_node, "lizenz", default="cc-zero"),  # noqa
-            "tags": self._generate_tags(dataset_node),  # noqa
-            "groups": self._dropzone_get_groups(dataset_node),  # noqa
-            "spatialRelationship": self._get(
-                dataset_node, "raeumliche_beziehung"
-            ),  # noqa
+            "datasetID": dataset_id,
+            "datasetFolder": dataset_folder,
+            "title": dataset_node.find("titel").text,
+            "url": self._get(dataset_node, "lieferant"),
+            "notes": dataset_node.find("beschreibung").text,
+            "author": dataset_node.find("quelle").text,
+            "maintainer": "Open Data Zürich",
+            "maintainer_email": "opendata@zuerich.ch",
+            "license_id": self._get(dataset_node, "lizenz", default="cc-zero"),
+            "tags": self._generate_tags(dataset_node),
+            "groups": self._dropzone_get_groups(dataset_node),
+            "spatialRelationship": self._get(dataset_node, "raeumliche_beziehung"),
             "dateFirstPublished": self._get(
                 dataset_node, "erstmalige_veroeffentlichung"
-            ),  # noqa
-            "dateLastUpdated": self._get(dataset_node, "aktualisierungsdatum"),  # noqa
-            "updateInterval": self._get_update_interval(dataset_node),  # noqa
-            "dataType": self._get_data_type(dataset_node),  # noqa
-            "legalInformation": self._get(dataset_node, "rechtsgrundlage"),  # noqa
-            "version": self._get(dataset_node, "aktuelle_version"),  # noqa
-            "timeRange": self._get(dataset_node, "zeitraum"),  # noqa
-            "sszBemerkungen": self._convert_comments(dataset_node),  # noqa
+            ),
+            "dateLastUpdated": self._get(dataset_node, "aktualisierungsdatum"),
+            "updateInterval": self._get_update_interval(dataset_node),
+            "dataType": self._get_data_type(dataset_node),
+            "legalInformation": self._get(dataset_node, "rechtsgrundlage"),
+            "version": self._get(dataset_node, "aktuelle_version"),
+            "timeRange": self._get(dataset_node, "zeitraum"),
+            "sszBemerkungen": self._convert_comments(dataset_node),
             "sszFields": self._json_encode_attributes(
                 self._get_attributes(dataset_node)
-            ),  # noqa
-            "dataQuality": self._get(dataset_node, "datenqualitaet"),  # noqa
+            ),
+            "dataQuality": self._get(dataset_node, "datenqualitaet"),
         }
 
     def _get_update_interval(self, dataset_node):
@@ -830,7 +822,7 @@ class StadtzhHarvester(HarvesterBase):
                         resource_dict["zh_hash"] = md5.hexdigest()
 
                     # add file to FieldStorage
-                    with retry_open_file(resource_path, "rb", close=False) as f:  # noqa
+                    with retry_open_file(resource_path, "rb", close=False) as f:
                         field_storage = FlaskFileStorage(f, f.name)
                         resource_dict["upload"] = field_storage
 
