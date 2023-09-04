@@ -19,7 +19,7 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        ckan-version: [2.9, "2.10"]
+        ckan-version: ["2.10"]
       fail-fast: false
 
     name: CKAN ${{ matrix.ckan-version }}
@@ -55,7 +55,7 @@ jobs:
           -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"$SOLR_CONFIG_CKAN_DIR/managed-schema" \
           -v "${{ github.workspace }}/solr/german_dictionary.txt":"$SOLR_CONFIG_CKAN_DIR/german_dictionary.txt" \
           -v "${{ github.workspace }}/solr/solrconfig.xml":"$SOLR_CONFIG_CKAN_DIR/solrconfig.xml" \
-          ckan/ckan-solr:2.9-solr8
+          ckan/ckan-solr:${{ matrix.ckan-version }}
         docker start test_solr
     - name: Create ckan container
       run: |
