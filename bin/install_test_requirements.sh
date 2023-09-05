@@ -9,8 +9,8 @@ pip install -U requests[security]
 # Install ckanext dependencies
 pip install -e git+https://github.com/ckan/ckanext-xloader.git#egg=ckanext-xloader
 pip install -r https://raw.githubusercontent.com/ckan/ckanext-xloader/master/requirements.txt
-pip install -e git+https://github.com/opendatazurich/ckanext-stadtzh-theme.git@feat/ckan-2.10-python-3#egg=ckanext-stadtzh-theme
-pip install -r https://raw.githubusercontent.com/opendatazurich/ckanext-stadtzh-theme/feat/ckan-2.10-python-3/pip-requirements.txt
+pip install -e git+https://github.com/opendatazurich/ckanext-stadtzh-theme.git@dockerizing#egg=ckanext-stadtzh-theme
+pip install -r https://raw.githubusercontent.com/opendatazurich/ckanext-stadtzh-theme/dockerizing/pip-requirements.txt
 pip install -e git+https://github.com/ckan/ckanext-dcat.git#egg=ckanext-dcat
 pip install -r https://raw.githubusercontent.com/ckan/ckanext-dcat/master/requirements.txt
 pip install -e git+https://github.com/ckan/ckanext-harvest.git#egg=ckanext-harvest
