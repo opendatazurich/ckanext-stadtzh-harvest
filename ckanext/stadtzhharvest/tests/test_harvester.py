@@ -9,7 +9,6 @@ import pytest
 from ckan.lib.helpers import url_for
 from ckan.tests import helpers
 
-import ckanext.harvest.model as harvest_model
 import ckanext.stadtzhharvest.harvester as plugin
 import ckanext.stadtzhtheme.plugin as theme
 from ckanext.harvest import queue
@@ -167,10 +166,6 @@ class FunctionalHarvestTest(object):
         cls.fetch_consumer = queue.get_fetch_consumer()
 
     def setup(self):
-        harvest_model.setup()
-
-        queue.purge_queues()
-
         # create required tag vocabularies
         theme.create_updateInterval()
         theme.create_dataType()
@@ -263,7 +258,9 @@ class FunctionalHarvestTest(object):
 
 
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester stadtzhtheme")
-@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_index")
+@pytest.mark.usefixtures(
+    "clean_db", "clean_index", "clean_queues", "harvest_setup", "with_plugins"
+)
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
         data_path = os.path.join(__location__, "fixtures", "test_dropzone")
