@@ -258,9 +258,7 @@ class FunctionalHarvestTest(object):
 
 
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester stadtzhtheme")
-@pytest.mark.usefixtures(
-    "clean_db", "clean_index", "clean_queues", "harvest_setup", "with_plugins"
-)
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_index", "clean_queues")
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
         data_path = os.path.join(__location__, "fixtures", "test_dropzone")

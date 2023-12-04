@@ -26,4 +26,4 @@ ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db init
 echo "Re-enabling ckan plugins now the database is initialized"
 ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
 echo "Plugins enabled: harvest stadtzh_harvester stadtzhtheme"
-ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini harvester initdb
+ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db upgrade -p harvest
