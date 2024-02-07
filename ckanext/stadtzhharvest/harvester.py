@@ -779,15 +779,29 @@ class StadtzhHarvester(HarvesterBase):
                 resource_file,
             )
             if resource_file == "link.xml":
+                log.warning("Got link.xml")
                 with retry_open_file(resource_path, "r") as links_xml:
+                    log.warning("opened link.xml")
                     links = etree.parse(links_xml).findall("link")
 
                     for link in links:
+                        log.warning(link)
                         url = self._get(link, "url")
+                        log.warning(url)
                         if url:
                             # generate hash for URL
                             md5 = hashlib.md5()
                             md5.update(url.encode("utf-8"))
+                            log.warning(
+                                {
+                                    "url": url,
+                                    "zh_hash": md5.hexdigest(),
+                                    "name": self._get(link, "lable"),
+                                    "description": self._get(link, "description"),
+                                    "format": self._get(link, "type"),
+                                    "resource_type": "api",
+                                }
+                            )
                             resources.append(
                                 {
                                     "url": url,
