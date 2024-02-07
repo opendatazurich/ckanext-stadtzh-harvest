@@ -2,20 +2,27 @@
 
 import pytest
 from alembic.util import CommandError
-import ckanext.harvest.model as harvest_model
+from ckan.tests.helpers import config
 
+import ckanext.harvest.model as harvest_model
 from ckanext.harvest import queue
+from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 
 
 @pytest.fixture
 def clean_db(reset_db, migrate_db_for):
     reset_db()
+
     try:
         migrate_db_for("harvest")
     except CommandError:
         # ckanext-harvest has switched to using Alembic migrations, but this change
         # is not yet released: https://github.com/ckan/ckanext-harvest/pull/540
         pass
+
+    # Cleaning the db gets rid of our custom tag vocabularies, so create them again
+    plugin = StadtzhThemePlugin()
+    plugin.configure(config=config)
 
 
 @pytest.fixture

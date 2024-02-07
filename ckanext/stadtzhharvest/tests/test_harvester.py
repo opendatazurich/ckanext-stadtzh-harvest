@@ -17,8 +17,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester")
-# "with_plugins" is needed before and after "clean_db"
-@pytest.mark.usefixtures("with_plugins", "clean_db", "with_plugins", "clean_index")
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_index")
 class TestStadtzhHarvester(object):
     def test_load_metadata_from_path(self):
         harvester = plugin.StadtzhHarvester()
@@ -258,12 +257,10 @@ class FunctionalHarvestTest(object):
         self._fetch_queue(num_objects)
 
 
-@pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester stadtzhtheme")
-# "with_plugins" is needed before and after "clean_db"
+@pytest.mark.ckan_config("ckan.plugins", "stadtzhtheme harvest stadtzh_harvester")
 @pytest.mark.usefixtures(
     "with_plugins",
     "clean_db",
-    "with_plugins",
     "clean_index",
     "clean_queues",
     "harvest_setup",
