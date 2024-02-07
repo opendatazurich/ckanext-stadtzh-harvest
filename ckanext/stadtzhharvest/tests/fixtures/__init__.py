@@ -2,6 +2,7 @@
 
 import pytest
 from alembic.util import CommandError
+import ckanext.harvest.model as harvest_model
 
 from ckanext.harvest import queue
 
@@ -15,6 +16,11 @@ def clean_db(reset_db, migrate_db_for):
         # ckanext-harvest has switched to using Alembic migrations, but this change
         # is not yet released: https://github.com/ckan/ckanext-harvest/pull/540
         pass
+
+
+@pytest.fixture
+def harvest_setup():
+    harvest_model.setup()
 
 
 @pytest.fixture

@@ -261,7 +261,12 @@ class FunctionalHarvestTest(object):
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester stadtzhtheme")
 # "with_plugins" is needed before and after "clean_db"
 @pytest.mark.usefixtures(
-    "with_plugins", "clean_db", "with_plugins", "clean_index", "clean_queues"
+    "with_plugins",
+    "clean_db",
+    "with_plugins",
+    "clean_index",
+    "clean_queues",
+    "harvest_setup",
 )
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
