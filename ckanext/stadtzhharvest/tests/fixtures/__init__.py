@@ -27,7 +27,12 @@ def clean_db(reset_db, migrate_db_for):
 
 @pytest.fixture
 def harvest_setup():
-    harvest_model.setup()
+    try:
+        harvest_model.setup()
+    except AttributeError:
+        # harvest_model.setup() has been removed in the new version of ckanext-harvest
+        # https://github.com/ckan/ckanext-harvest/pull/540
+        pass
 
 
 @pytest.fixture
