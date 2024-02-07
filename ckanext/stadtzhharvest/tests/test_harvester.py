@@ -344,6 +344,8 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         assert len(results["results"]) == 1
         result = results["results"][0]
 
+        print(result["resources"])
+
         assert result["title"] == "Administrative Einteilungen Stadt Zürich"
         assert result["license_id"] == "cc-zero"
         assert len(result["resources"]) == 4
