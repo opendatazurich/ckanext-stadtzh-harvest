@@ -785,14 +785,14 @@ class StadtzhHarvester(HarvesterBase):
                     links = etree.parse(links_xml).findall("link")
 
                     for link in links:
-                        log.warning(link)
+                        print(link)
                         url = self._get(link, "url")
-                        log.warning(url)
+                        print(url)
                         if url:
                             # generate hash for URL
                             md5 = hashlib.md5()
                             md5.update(url.encode("utf-8"))
-                            log.warning(
+                            print(
                                 {
                                     "url": url,
                                     "zh_hash": md5.hexdigest(),
