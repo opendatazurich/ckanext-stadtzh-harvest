@@ -1,5 +1,2 @@
-defusedxml==0.5.0
+defusedxml==0.7.1
 ckantoolkit>=0.0.3
-# Required so that ckanext-xloader v0.7.0 works (Python 3 compatibility)
-six==1.12.0
-future==0.18.2
