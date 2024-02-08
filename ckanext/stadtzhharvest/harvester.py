@@ -842,7 +842,11 @@ class StadtzhHarvester(HarvesterBase):
 
                     resources.append(resource_dict)
 
+        print([r["name"] for r in resources])
+        print(len(resources))
         sorted_resources = sorted(resources, key=cmp_to_key(self._sort_resource))
+        print([r["name"] for r in sorted_resources])
+        print(len(sorted_resources))
         return sorted_resources
 
     def _node_exists_and_is_nonempty(self, dataset_node, element_name):
