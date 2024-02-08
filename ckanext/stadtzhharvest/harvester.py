@@ -779,29 +779,15 @@ class StadtzhHarvester(HarvesterBase):
                 resource_file,
             )
             if resource_file == "link.xml":
-                log.warning("Got link.xml")
                 with retry_open_file(resource_path, "r") as links_xml:
-                    log.warning("opened link.xml")
                     links = etree.parse(links_xml).findall("link")
 
                     for link in links:
-                        print(link)
                         url = self._get(link, "url")
-                        print(url)
                         if url:
                             # generate hash for URL
                             md5 = hashlib.md5()
                             md5.update(url.encode("utf-8"))
-                            print(
-                                {
-                                    "url": url,
-                                    "zh_hash": md5.hexdigest(),
-                                    "name": self._get(link, "lable"),
-                                    "description": self._get(link, "description"),
-                                    "format": self._get(link, "type"),
-                                    "resource_type": "api",
-                                }
-                            )
                             resources.append(
                                 {
                                     "url": url,
@@ -842,11 +828,7 @@ class StadtzhHarvester(HarvesterBase):
 
                     resources.append(resource_dict)
 
-        print([r["name"] for r in resources])
-        print(len(resources))
         sorted_resources = sorted(resources, key=cmp_to_key(self._sort_resource))
-        print([r["name"] for r in sorted_resources])
-        print(len(sorted_resources))
         return sorted_resources
 
     def _node_exists_and_is_nonempty(self, dataset_node, element_name):
