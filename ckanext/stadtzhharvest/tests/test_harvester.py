@@ -9,7 +9,6 @@ import pytest
 from ckan.lib.helpers import url_for
 from ckan.tests import helpers
 
-import ckanext.harvest.model as harvest_model
 import ckanext.stadtzhharvest.harvester as plugin
 import ckanext.stadtzhtheme.plugin as theme
 from ckanext.harvest import queue
@@ -18,11 +17,8 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 @pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester")
-@pytest.mark.usefixtures("with_plugins")
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_index")
 class TestStadtzhHarvester(object):
-    def setup(self):
-        helpers.reset_db()
-
     def test_load_metadata_from_path(self):
         harvester = plugin.StadtzhHarvester()
         dataset_folder = "test_dataset"
@@ -166,16 +162,10 @@ class TestStadtzhHarvester(object):
 class FunctionalHarvestTest(object):
     @classmethod
     def setup_class(cls):
-        helpers.reset_db()
-
         cls.gather_consumer = queue.get_gather_consumer()
         cls.fetch_consumer = queue.get_fetch_consumer()
 
     def setup(self):
-        harvest_model.setup()
-
-        queue.purge_queues()
-
         # create required tag vocabularies
         theme.create_updateInterval()
         theme.create_dataType()
@@ -184,7 +174,6 @@ class FunctionalHarvestTest(object):
         self.temp_dir = tempfile.mkdtemp()
 
     def teardown(self):
-        helpers.reset_db()
         shutil.rmtree(self.temp_dir)
 
     def _create_harvest_source(self, **kwargs):
@@ -268,8 +257,14 @@ class FunctionalHarvestTest(object):
         self._fetch_queue(num_objects)
 
 
-@pytest.mark.ckan_config("ckan.plugins", "harvest stadtzh_harvester stadtzhtheme")
-@pytest.mark.usefixtures("with_plugins", "clean_index")
+@pytest.mark.ckan_config("ckan.plugins", "stadtzhtheme harvest stadtzh_harvester")
+@pytest.mark.usefixtures(
+    "with_plugins",
+    "clean_db",
+    "clean_index",
+    "clean_queues",
+    "harvest_setup",
+)
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
         data_path = os.path.join(__location__, "fixtures", "test_dropzone")

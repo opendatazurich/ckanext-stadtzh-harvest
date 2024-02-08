@@ -20,6 +20,10 @@ pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/master/req
 sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini
 
 # Init db and enable required plugins
+echo "Removing all ckan plugins so we can initialize the database"
 ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = "
 ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db init
+echo "Re-enabling ckan plugins now the database is initialized"
 ckan config-tool /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini "ckan.plugins = harvest stadtzh_harvester stadtzhtheme"
+echo "Plugins enabled: harvest stadtzh_harvester stadtzhtheme"
+ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db upgrade -p harvest
