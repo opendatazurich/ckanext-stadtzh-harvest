@@ -135,15 +135,7 @@ def stadtzhharvest_create_package(dataset, harvest_object):
     model.Session.execute("SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED")
     model.Session.flush()
 
-    try:
-        tk.get_action("package_create")(context, dataset)
-    except tk.ValidationError as e:
-        self._save_object_error(
-            "Create validation Error: %s" % str(e.error_summary),
-            harvest_object,
-            "Import",
-        )
-        return False
+    tk.get_action("package_create")(context, dataset)
 
     log.info("Created dataset %s", dataset["name"])
 

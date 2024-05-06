@@ -281,10 +281,14 @@ class StadtzhHarvester(HarvesterBase):
         # import the package if it does not yet exists => it's a new package
         # or if this harvester is allowed to update packages
         if not existing_package:
-            dataset_id = stadtzhharvest_create_package(package_dict, harvest_object)
-            if not dataset_id:
-                # No need to log an error here
-                # as it was logged in stadtzhharvest_create_package
+            try:
+                dataset_id = stadtzhharvest_create_package(package_dict, harvest_object)
+            except tk.ValidationError as e:
+                self._save_object_error(
+                    "Create validation Error: %s" % str(e.error_summary),
+                    harvest_object,
+                    "Import",
+                )
                 return False
         else:
             # Don't change the dataset name even if the title has
