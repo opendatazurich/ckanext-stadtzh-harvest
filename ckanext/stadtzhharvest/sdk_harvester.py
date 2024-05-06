@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 
 import requests
 from ckan.lib.munge import munge_title_to_name
@@ -8,8 +9,8 @@ from requests.exceptions import HTTPError, JSONDecodeError
 from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhharvest.utils import (
-    stadtzhharvest_create_new_context,
     stadtzhharvest_create_package,
+    stadtzhharvest_find_or_create_organization,
 )
 
 log = logging.getLogger(__name__)
@@ -67,8 +68,7 @@ class StadtzhSDKHarvester(HarvesterBase):
         for dataset in datasets:
             dataset_name = munge_title_to_name(dataset["title"]).strip("-")
             log.debug(f"Gathering dataset {dataset_name}")
-            gathered_dataset_names.append(dataset_name)
-            dataset["name"] = dataset_name
+            package_dict = self._map_metadata(dataset)
 
             obj = HarvestObject(
                 guid=dataset_name, job=harvest_job, content=json.dumps(dataset)
@@ -76,6 +76,7 @@ class StadtzhSDKHarvester(HarvesterBase):
             obj.save()
             log.debug(f"Added dataset {dataset_name} to the queue")
             ids.append(obj.id)
+            gathered_dataset_names.append(dataset_name)
 
             # todo: check for deleted datasets
 
@@ -96,16 +97,44 @@ class StadtzhSDKHarvester(HarvesterBase):
             return False
 
         package_dict = json.loads(harvest_object.content)
-        context = stadtzhharvest_create_new_context()
-        log.warning(package_dict)
+
+        try:
+            return stadtzhharvest_create_package(package_dict, harvest_object)
+        except Exception as e:
+            log.exception(e)
+            self._save_object_error(
+                (
+                    "Unable to get content for package: %s: %r / %s"
+                    % (harvest_object.guid, e, traceback.format_exc())
+                ),
+                harvest_object,
+            )
+            return False
+
+    def _map_metadata(self, dataset):
+        """Map the exported dataset from SDK to a package_dict that we can give to CKAN
+        to create/update a package.
+        """
+        log.warning(dataset)
+        package_dict = {}
 
         # Simple fields
+        # todo: can we just keep the id from SDK and use it as the CKAN package id?
+        # does it make sense to do that?
+        package_dict["id"] = dataset.get("id", "")
+        package_dict["title"] = dataset.get("title", "")
+        # Translated as 'quelle'
+        package_dict["author"] = ", ".join(
+            [dataset.get("department"), dataset.get("service_department")]
+        )
+        package_dict["notes"] = dataset.get("notes", "")
+
         # Groups
         # Tags
         # Attributes
         # Actual data
 
-        dataset_id = stadtzhharvest_create_package(package_dict, harvest_object)
-        log.warning(dataset_id)
+        stadtzhharvest_find_or_create_organization(package_dict)
 
+        # todo: Return 'unchanged' if the package has not changed
         return True

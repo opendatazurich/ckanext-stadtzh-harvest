@@ -8,7 +8,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.munge import munge_title_to_name
 from ckan.lib.navl import validators
-from ckan.logic import get_action, NotFound
+from ckan.logic import NotFound, get_action
 from ckan.model import Session
 
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
