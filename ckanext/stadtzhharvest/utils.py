@@ -8,7 +8,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.munge import munge_title_to_name
 from ckan.lib.navl import validators
-from ckan.logic import get_action
+from ckan.logic import get_action, NotFound
 from ckan.model import Session
 
 from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
@@ -33,8 +33,7 @@ def stadtzhharvest_find_or_create_organization(package_dict):
         package_dict["owner_org"] = get_action("organization_show")(
             context.copy(), data_dict
         )["id"]
-        return package_dict
-    except Exception:
+    except NotFound:
         data_dict = {
             "permission": "edit_group",
             "id": munge_title_to_name(ORGANIZATION["de"]),
@@ -43,7 +42,6 @@ def stadtzhharvest_find_or_create_organization(package_dict):
         }
         organization = get_action("organization_create")(context.copy(), data_dict)
         package_dict["owner_org"] = organization["id"]
-        return package_dict
 
 
 def stadtzhharvest_create_new_context():
