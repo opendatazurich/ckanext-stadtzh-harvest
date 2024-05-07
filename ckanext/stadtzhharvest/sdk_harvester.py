@@ -4,6 +4,7 @@ import traceback
 
 import requests
 from ckan.lib.munge import munge_tag, munge_title_to_name
+from ckan.logic import ValidationError
 from requests.exceptions import HTTPError, JSONDecodeError
 
 from ckanext.harvest.harvesters import HarvesterBase
@@ -69,6 +70,7 @@ class StadtzhSDKHarvester(HarvesterBase):
         for dataset in datasets:
             dataset_name = munge_title_to_name(dataset["title"]).strip("-")
             log.debug(f"Gathering dataset {dataset_name}")
+            dataset["name"] = dataset_name
             package_dict = self._map_metadata(dataset)
 
             obj = HarvestObject(
@@ -78,8 +80,7 @@ class StadtzhSDKHarvester(HarvesterBase):
             log.debug(f"Added dataset {dataset_name} to the queue")
             ids.append(obj.id)
             gathered_dataset_names.append(dataset_name)
-
-            # todo: check for deleted datasets
+            # todo: check for deleted datasets and save that info on the harvest object
 
         return ids
 
@@ -100,8 +101,16 @@ class StadtzhSDKHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
 
         try:
+            # todo: check whether we already have a package of this name, and if so,
+            #       update it
+            # todo: delete packages if the harvest object says to do so
             # todo: Return 'unchanged' if the package has not changed
             return stadtzhharvest_create_package(package_dict, harvest_object)
+        except ValidationError as e:
+            self._save_object_error(
+                f"Validation error on creating package {harvest_object.guid}: {e}",
+                harvest_object,
+            )
         except Exception as e:
             log.exception(e)
             self._save_object_error(
@@ -134,7 +143,7 @@ class StadtzhSDKHarvester(HarvesterBase):
             "dateFirstPublished": dataset.get("dateFirstPublished", ""),
             "dateLastUpdated": dataset.get("dateLastUpdated", ""),
             "updateInterval": dataset.get("updateInterval", ""),
-            "legalInformation": dataset.get("legalInformation", []),
+            "legalInformation": self._get_legal_information(dataset),
             "timeRange": dataset.get("timeRange", ""),
             "sszBemerkungen": dataset.get("sszBemerkungen", ""),
             "dataQuality": dataset.get("dataQuality", ""),
@@ -142,8 +151,11 @@ class StadtzhSDKHarvester(HarvesterBase):
         }
 
         # todo: not in the JSON export: license_id
-        # todo: for legalInformation we get a list, but this should be a string
+        # todo: for updateInterval we get a string like "008" - we need to know how to
+        #       map this
         # todo: we need a link to the location of the actual data
+        # todo: map resources here, make sure they are in the right order on the
+        #       dataset
 
         stadtzhharvest_find_or_create_organization(package_dict)
 
@@ -175,8 +187,8 @@ class StadtzhSDKHarvester(HarvesterBase):
 
     def _get_attributes(self, dataset):
         # todo: the list of attributes we get from the SDK export is in a different
-        # format than the list we get from the metadata xml. Find out how it should be
-        # saved.
+        #       format than the list we get from the metadata xml. Find out how it
+        #       should be saved.
         attribute_list = dataset.get("attributes", [])
         attributes = []
         if not isinstance(attribute_list, list):
@@ -184,3 +196,9 @@ class StadtzhSDKHarvester(HarvesterBase):
             return attributes
 
         return attributes
+
+    def _get_legal_information(self, dataset):
+        # todo: for legalInformation we get a list - we need to know how to map this
+        legal_information = dataset.get("legalInformation", [])
+        if len(legal_information) > 0:
+            return legal_information[0].get("code", "")
