@@ -3,7 +3,7 @@ import logging
 import traceback
 
 import requests
-from ckan.lib.munge import munge_title_to_name
+from ckan.lib.munge import munge_tag, munge_title_to_name
 from requests.exceptions import HTTPError, JSONDecodeError
 
 from ckanext.harvest.harvesters import HarvesterBase
@@ -11,6 +11,7 @@ from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhharvest.utils import (
     stadtzhharvest_create_package,
     stadtzhharvest_find_or_create_organization,
+    stadtzhharvest_get_group_names,
 )
 
 log = logging.getLogger(__name__)
@@ -116,13 +117,14 @@ class StadtzhSDKHarvester(HarvesterBase):
         """Map the exported dataset from SDK to a package_dict that we can give to CKAN
         to create/update a package.
         """
-        log.warning(dataset)
         package_dict = {
+            "name": dataset.get("name", ""),
             "title": dataset.get("title", ""),
             "url": dataset.get("url", ""),
             "notes": dataset.get("notes", ""),
-            "author": ", ".join([dataset.get("department"),
-                                 dataset.get("service_department")]),
+            "author": ", ".join(
+                [dataset.get("department"), dataset.get("service_department")]
+            ),
             "maintainer": dataset.get("maintainer", "Open Data Zürich"),
             "maintainer_email": dataset.get("maintainer", "opendata@zuerich.ch"),
             "license_id": dataset.get("license", "cc-zero"),
@@ -145,4 +147,40 @@ class StadtzhSDKHarvester(HarvesterBase):
 
         stadtzhharvest_find_or_create_organization(package_dict)
 
-        return True
+        return package_dict
+
+    def _get_tags(self, dataset):
+        tag_list = dataset.get("tags", [])
+        tags = []
+        if not isinstance(tag_list, list):
+            log.info(f"Dataset tags should be a list, not {tag_list}")
+            return tags
+
+        for tag in tag_list:
+            tags.append({"name": munge_tag(tag)})
+
+        return tags
+
+    def _get_groups(self, dataset):
+        group_titles = dataset.get("groups", [])
+        groups = []
+        if not isinstance(group_titles, list):
+            log.info(f"Dataset groups should be a list, not {group_titles}")
+            return groups
+
+        for title in group_titles:
+            name = munge_title_to_name(title)
+            groups.append((name, title))
+        return stadtzhharvest_get_group_names(groups)
+
+    def _get_attributes(self, dataset):
+        # todo: the list of attributes we get from the SDK export is in a different
+        # format than the list we get from the metadata xml. Find out how it should be
+        # saved.
+        attribute_list = dataset.get("attributes", [])
+        attributes = []
+        if not isinstance(attribute_list, list):
+            log.info(f"Dataset attributes should be a list, not {attribute_list}")
+            return attributes
+
+        return attributes
