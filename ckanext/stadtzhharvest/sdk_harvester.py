@@ -71,7 +71,7 @@ class StadtzhSDKHarvester(HarvesterBase):
             package_dict = self._map_metadata(dataset)
 
             obj = HarvestObject(
-                guid=dataset_name, job=harvest_job, content=json.dumps(dataset)
+                guid=dataset_name, job=harvest_job, content=json.dumps(package_dict)
             )
             obj.save()
             log.debug(f"Added dataset {dataset_name} to the queue")
@@ -99,6 +99,7 @@ class StadtzhSDKHarvester(HarvesterBase):
         package_dict = json.loads(harvest_object.content)
 
         try:
+            # todo: Return 'unchanged' if the package has not changed
             return stadtzhharvest_create_package(package_dict, harvest_object)
         except Exception as e:
             log.exception(e)
@@ -116,25 +117,32 @@ class StadtzhSDKHarvester(HarvesterBase):
         to create/update a package.
         """
         log.warning(dataset)
-        package_dict = {}
+        package_dict = {
+            "title": dataset.get("title", ""),
+            "url": dataset.get("url", ""),
+            "notes": dataset.get("notes", ""),
+            "author": ", ".join([dataset.get("department"),
+                                 dataset.get("service_department")]),
+            "maintainer": dataset.get("maintainer", "Open Data Zürich"),
+            "maintainer_email": dataset.get("maintainer", "opendata@zuerich.ch"),
+            "license_id": dataset.get("license", "cc-zero"),
+            "tags": self._get_tags(dataset),
+            "groups": self._get_groups(dataset),
+            "spatialRelationship": dataset.get("spatialRelationship", ""),
+            "dateFirstPublished": dataset.get("dateFirstPublished", ""),
+            "dateLastUpdated": dataset.get("dateLastUpdated", ""),
+            "updateInterval": dataset.get("updateInterval", ""),
+            "legalInformation": dataset.get("legalInformation", []),
+            "timeRange": dataset.get("timeRange", ""),
+            "sszBemerkungen": dataset.get("sszBemerkungen", ""),
+            "dataQuality": dataset.get("dataQuality", ""),
+            "sszFields": self._get_attributes(dataset),
+        }
 
-        # Simple fields
-        # todo: can we just keep the id from SDK and use it as the CKAN package id?
-        # does it make sense to do that?
-        package_dict["id"] = dataset.get("id", "")
-        package_dict["title"] = dataset.get("title", "")
-        # Translated as 'quelle'
-        package_dict["author"] = ", ".join(
-            [dataset.get("department"), dataset.get("service_department")]
-        )
-        package_dict["notes"] = dataset.get("notes", "")
-
-        # Groups
-        # Tags
-        # Attributes
-        # Actual data
+        # todo: not in the JSON export: license_id
+        # todo: for legalInformation we get a list, but this should be a string
+        # todo: we need a link to the location of the actual data
 
         stadtzhharvest_find_or_create_organization(package_dict)
 
-        # todo: Return 'unchanged' if the package has not changed
         return True
