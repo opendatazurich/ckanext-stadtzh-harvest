@@ -411,9 +411,9 @@ class StadtzhHarvester(HarvesterBase):
                 actions.append(action)
 
             for old in old_resources:
-                if not filter(
-                    lambda action: action["res_name"] == old["name"], actions
-                ):
+                if not [
+                    action for action in actions if action["res_name"] == old["name"]
+                ]:
                     actions.append(
                         {
                             "action": "delete",
