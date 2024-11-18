@@ -465,7 +465,7 @@ class StadtzhHarvester(HarvesterBase):
                     log.debug("Dataset resource `%s` has been updated" % resource_id)
 
                 elif action["action"] == "delete":
-                    replace_upload = get_action("resource_update")(
+                    replace_upload = get_action("resource_patch")(
                         context.copy(),
                         {
                             "id": action["old_resource"]["id"],
