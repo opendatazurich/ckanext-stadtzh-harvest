@@ -411,9 +411,9 @@ class StadtzhHarvester(HarvesterBase):
                 actions.append(action)
 
             for old in old_resources:
-                if not filter(
-                    lambda action: action["res_name"] == old["name"], actions
-                ):
+                if not [
+                    action for action in actions if action["res_name"] == old["name"]
+                ]:
                     actions.append(
                         {
                             "action": "delete",
@@ -465,7 +465,7 @@ class StadtzhHarvester(HarvesterBase):
                     log.debug("Dataset resource `%s` has been updated" % resource_id)
 
                 elif action["action"] == "delete":
-                    replace_upload = get_action("resource_update")(
+                    replace_upload = get_action("resource_patch")(
                         context.copy(),
                         {
                             "id": action["old_resource"]["id"],
