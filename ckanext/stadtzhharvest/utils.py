@@ -77,12 +77,15 @@ def stadtzhharvest_get_group_names(group_list):
             groups.append({"name": group_name})
             log.debug("Added group %s" % name)
         except Exception:
-            data_dict["name"] = name
-            data_dict["title"] = title
-            data_dict["image_url"] = "%s/kategorien/%s.png" % (
-                tk.config["ckan.site_url"],
-                name,
-            )
+            data_dict = {
+                "name": name,
+                "title": title,
+                "image_url": "%s/kategorien/%s.png"
+                % (
+                    tk.config["ckan.site_url"],
+                    name,
+                ),
+            }
             log.debug(
                 "Couldn't get group id. "
                 "Creating the group `%s` with data_dict: %s" % (name, data_dict)
