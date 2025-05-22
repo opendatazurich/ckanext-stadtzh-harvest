@@ -205,7 +205,8 @@ class StadtzhHarvester(HarvesterBase):
             )
 
         with retry_open_file(meta_xml_path, "r") as meta_xml:
-            meta_xml = etree.parse(meta_xml)
+            tree = etree.parse(meta_xml)
+            meta_xml = tree.getroot()
             dataset_node = meta_xml.find("datensatz")
             resources_node = dataset_node.find("ressourcen")
 
