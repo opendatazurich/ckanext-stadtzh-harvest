@@ -1,13 +1,11 @@
 import json
 import os
 import shutil
-from pprint import pprint
 
 import pytest
 from ckan.lib.helpers import url_for
 from ckan.tests import helpers
 
-from ckanext.harvest import queue
 from ckanext.harvest.tests import factories as harvest_factories
 from ckanext.harvest.tests.lib import run_harvest
 from ckanext.stadtzhharvest.harvester import StadtzhHarvester

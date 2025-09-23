@@ -5,7 +5,6 @@ import pytest
 from ckan.tests import helpers
 
 import ckanext.stadtzhharvest.harvester as plugin
-from ckanext.harvest import queue
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
