@@ -4,10 +4,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
       - name: Install requirements
-        run: pip install flake8 pycodestyle black isort
+        run: pip install -r dev-requirements.txt
       - name: Check syntax
         run: flake8 . --count --select=C901,E901,E999,F401,F821,F822,F823 --show-source --statistics --extend-exclude ckan
       - name: Check codestyle
@@ -19,11 +19,11 @@ jobs:
     needs: lint
     strategy:
       matrix:
-        ckan-version: ["2.10"]
+        ckan-version: ["2.11"]
       fail-fast: false
 
     name: CKAN ${{ matrix.ckan-version }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
@@ -46,7 +46,7 @@ jobs:
       SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v5
     - name: Create solr container
       run: |
         /usr/bin/docker create --name test_solr --network ${{ job.container.network }} --network-alias solr \
@@ -55,7 +55,7 @@ jobs:
           -e GITHUB_ACTIONS=true -e CI=true -v "${{ github.workspace }}/solr/schema.xml":"$SOLR_CONFIG_CKAN_DIR/managed-schema" \
           -v "${{ github.workspace }}/solr/german_dictionary.txt":"$SOLR_CONFIG_CKAN_DIR/german_dictionary.txt" \
           -v "${{ github.workspace }}/solr/solrconfig.xml":"$SOLR_CONFIG_CKAN_DIR/solrconfig.xml" \
-          ckan/ckan-solr:${{ matrix.ckan-version }}
+          ckan/ckan-solr:${{ matrix.ckan-version }}-solr9
         docker start test_solr
     - name: Create ckan container
       run: |
@@ -65,7 +65,7 @@ jobs:
           -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" \
           -v "/home/runner/work/_temp/_github_home":"/github/home" \
           -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" \
-          --entrypoint "tail" openknowledge/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
+          --entrypoint "tail" ckan/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null" --user root
         docker start test_ckan
     - name: Install requirements and set up ckanext
       run: |
