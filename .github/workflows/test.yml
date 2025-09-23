@@ -9,7 +9,7 @@ jobs:
       - name: Install requirements
         run: pip install -r dev-requirements.txt
       - name: Check syntax
-        run: flake8 . --count --select=C901,E901,E999,F401,F821,F822,F823 --show-source --statistics --extend-exclude ckan
+        run: flake8 . --count --select=C901,E901,E999,F401,F821,F822,F823,F841 --show-source --statistics
       - name: Check codestyle
         run: |
           isort --diff --check ckanext/
@@ -35,7 +35,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       redis:
-          image: redis:3
+        image: redis:3
     env:
       WORKDIR: /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest
       SOLR_CONFIG_CKAN_DIR: /opt/solr/server/solr/configsets/ckan/conf
@@ -63,6 +63,7 @@ jobs:
           -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" \
           --entrypoint "tail" ckan/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
         docker start test_ckan
+        docker ps
     - name: Install requirements and set up ckanext
       run: |
         docker exec test_ckan $WORKDIR/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
