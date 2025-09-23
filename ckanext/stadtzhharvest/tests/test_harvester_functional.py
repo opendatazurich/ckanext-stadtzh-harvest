@@ -17,7 +17,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 class FunctionalHarvestTest(object):
-    def _get_harvest_source(self, config=None):
+    def create_harvest_source(self, config=None):
         source_dict = {
             "title": "Stadt ZH Source",
             "name": "test-stadtzh-source",
@@ -28,6 +28,91 @@ class FunctionalHarvestTest(object):
             source_dict["config"] = json.dumps(config)
 
         return harvest_factories.HarvestSource(**source_dict)
+
+    def update_harvest_source(self, config=None):
+        source_dict = {
+            "title": "Stadt ZH Source",
+            "name": "test-stadtzh-source",
+            "url": HARVESTER_URL,
+            "source_type": "stadtzh_harvester",
+        }
+        if config is not None:
+            source_dict["config"] = json.dumps(config)
+
+        harvest_source = helpers.call_action("harvest_source_update", {}, **source_dict)
+
+        return harvest_source
+
+    def _test_harvest_create(self, num_objects, config=None):
+        harvest_source = self.create_harvest_source(config=config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Check that correct amount of datasets were created
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+        assert results["count"] == num_objects
+
+        return results
+
+    def _test_harvest_update(
+        self, num_objects, mock_dropzone, dropzone_path, meta_xml_path, config=None
+    ):
+        # First run, will create datasets as previously tested
+        harvest_source = self.create_harvest_source(config=config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Check that correct amount of datasets were created
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+        assert results["count"] == num_objects
+
+        # change data in source
+        with open(meta_xml_path, "r") as meta_file:
+            meta = meta_file.read()
+        meta = meta.replace("</titel>", " (updated)</titel>")
+        with open(meta_xml_path, "w") as meta_file:
+            meta_file.write(meta)
+
+        # add new file to dropzone
+        dataset_path = os.path.join(
+            __location__, "fixtures", mock_dropzone, "test_dataset"
+        )
+        shutil.copytree(dataset_path, os.path.join(dropzone_path, "test_dataset"))
+
+        # Run a second job
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Check that we still have two datasets
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+
+        assert results["count"] == num_objects + 1
+        return results
+
+    def _test_harvest_update_resource(self, num_objects, meta_xml_path, config=None):
+        # First run, will create datasets as previously tested
+        harvest_source = self.create_harvest_source(config=config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # change data in source
+        with open(meta_xml_path, "r") as meta_file:
+            meta = meta_file.read()
+        meta = meta.replace("</beschreibung>", " (updated)</beschreibung>")
+        with open(meta_xml_path, "w") as meta_file:
+            meta_file.write(meta)
+
+        # Run a second job
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Check that we still have two datasets
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+
+        assert results["count"] == num_objects
+        return results
 
 
 @pytest.mark.ckan_config("ckan.plugins", "stadtzhtheme harvest stadtzh_harvester")
@@ -46,19 +131,15 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             "update_datasets": True,
             "update_date_last_modified": False,
         }
-        self._get_harvest_source(config=test_config)
 
-        results_by_guid = run_harvest(HARVESTER_URL, StadtzhHarvester())
-        pprint(results_by_guid)
-        assert len(results_by_guid) == 1
-
-        dataset = results_by_guid["test_dataset"]["dataset"]
-        assert dataset["name"] == "test_dataset"
-        assert dataset["title"] == "Administrative Einteilungen Stadt Zürich"
-        assert dataset["license_id"] == "cc-by"
-        assert dataset["updateInterval"][0] == "woechentlich"
-        assert dataset["dataType"][0] == "Einzeldaten"
-        assert len(dataset["resources"]) == 1
+        results = self._test_harvest_create(1, config=test_config)["results"]
+        assert len(results) == 1
+        assert results[0]["name"] == "test_dataset"
+        assert results[0]["title"] == "Administrative Einteilungen Stadt Zürich"
+        assert results[0]["license_id"] == "cc-by"
+        assert results[0]["updateInterval"][0] == "woechentlich"
+        assert results[0]["dataType"][0] == "Einzeldaten"
+        assert len(results[0]["resources"]) == 1
 
     def test_harvest_create_dwh(self):
         data_path = os.path.join(__location__, "fixtures", "DWH")
@@ -147,17 +228,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         assert results[0]["dataType"][0] == "Einzeldaten"
         assert len(results[0]["resources"]) == 1
 
-    def _test_harvest_create(self, num_objects, **kwargs):
-        harvest_source = self._get_harvest_source(**kwargs)
-
-        self._run_full_job(harvest_source["id"], num_objects=num_objects)
-
-        # Check that correct amount of datasets were created
-        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = helpers.call_action("package_search", {}, fq=fq)
-        assert results["count"] == num_objects
-        return results
-
     def test_fail_with_invalid_url_resources(self, app):
         data_path = os.path.join(__location__, "fixtures", "fail_dropzone")
         test_config = {
@@ -169,15 +239,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
 
         # harvesting this dropzone should not fail
         # but generate an error on the log
-        harvest_source = self._get_harvest_source(config=test_config)
-        self._run_full_job(harvest_source["id"], num_objects=1)
+        harvest_source = self.create_harvest_source(config=test_config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == 1
-
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
 
         # Get the harvest source with the updated status
         harvest_source = helpers.call_action(
@@ -231,15 +299,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         }
 
         # harvesting the default DWH-dropzone
-        harvest_source = self._get_harvest_source(config=test_config)
-        self._run_full_job(harvest_source["id"], num_objects=3)
+        harvest_source = self.create_harvest_source(config=test_config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == 3
-
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
 
         # Get the harvest source with the updated status
         harvest_source = helpers.call_action(
@@ -269,11 +335,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             "update_date_last_modified": True,
         }
 
-        harvest_source = self._get_harvest_source(config=test_config_deleted)
-        self._run_full_job(harvest_source["id"], num_objects=3)
+        harvest_source = self.update_harvest_source(config=test_config_deleted)
 
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq)
@@ -304,15 +368,13 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         }
 
         # harvesting the default DWH-dropzone
-        harvest_source = self._get_harvest_source(config=test_config)
-        self._run_full_job(harvest_source["id"], num_objects=11)
+        harvest_source = self.create_harvest_source(config=test_config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq, rows=11)
         assert results["count"] == 11
-
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
 
         # Get the harvest source with the updated status
         harvest_source = helpers.call_action(
@@ -334,21 +396,17 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         data_path_deleted = os.path.join(
             __location__, "fixtures", "delete_dataset_dropzone_GEO2"
         )
-        test_config_deleted = json.dumps(
-            {
-                "data_path": data_path_deleted,
-                "delete_missing_datasets": True,
-                "metafile_dir": "DEFAULT",
-                "update_datasets": False,
-                "update_date_last_modified": True,
-            }
-        )
+        test_config_deleted = {
+            "data_path": data_path_deleted,
+            "delete_missing_datasets": True,
+            "metafile_dir": "DEFAULT",
+            "update_datasets": False,
+            "update_date_last_modified": True,
+        }
 
-        harvest_source = self._get_harvest_source(config=test_config_deleted)
-        self._run_full_job(harvest_source["id"], num_objects=11)
+        harvest_source = self.update_harvest_source(config=test_config_deleted)
 
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
 
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq, rows=11)
@@ -440,40 +498,6 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
                 "Title does not match result: %s" % result
             )
 
-    def _test_harvest_update(
-        self, num_objects, mock_dropzone, dropzone_path, meta_xml_path, config=None
-    ):
-        harvest_source = self._get_harvest_source()
-
-        # First run, will create datasets as previously tested
-        self._run_full_job(harvest_source["id"], num_objects=num_objects)
-
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
-
-        # change data in source
-        with open(meta_xml_path, "r") as meta_file:
-            meta = meta_file.read()
-        meta = meta.replace("</titel>", " (updated)</titel>")
-        with open(meta_xml_path, "w") as meta_file:
-            meta_file.write(meta)
-
-        # add new file to dropzone
-        dataset_path = os.path.join(
-            __location__, "fixtures", mock_dropzone, "test_dataset"
-        )
-        shutil.copytree(dataset_path, os.path.join(dropzone_path, "test_dataset"))
-
-        # Run a second job
-        self._run_full_job(harvest_source["id"], num_objects=num_objects + 1)
-
-        # Check that we still have two datasets
-        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = helpers.call_action("package_search", {}, fq=fq)
-
-        assert results["count"] == num_objects + 1
-        return results
-
     def test_harvest_update_resources_geo(self, temp_dir):
         data_path = os.path.join(__location__, "fixtures", "test_geo_dropzone")
         temp_data_path = os.path.join(temp_dir, "GEO")
@@ -498,29 +522,3 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         result = results["results"][0]
         test_json = next(r for r in result["resources"] if r["name"] == "test.json")
         assert test_json["description"] == "This is a test description (updated)"
-
-    def _test_harvest_update_resource(self, num_objects, meta_xml_path, **kwargs):
-        harvest_source = self._get_harvest_source(**kwargs)
-
-        # First run, will create datasets as previously tested
-        self._run_full_job(harvest_source["id"], num_objects=num_objects)
-
-        # Run the jobs to mark the previous one as Finished
-        self._run_jobs()
-
-        # change data in source
-        with open(meta_xml_path, "r") as meta_file:
-            meta = meta_file.read()
-        meta = meta.replace("</beschreibung>", " (updated)</beschreibung>")
-        with open(meta_xml_path, "w") as meta_file:
-            meta_file.write(meta)
-
-        # Run a second job
-        self._run_full_job(harvest_source["id"], num_objects=num_objects)
-
-        # Check that we still have two datasets
-        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
-        results = helpers.call_action("package_search", {}, fq=fq)
-
-        assert results["count"] == num_objects
-        return results
