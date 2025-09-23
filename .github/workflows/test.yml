@@ -63,7 +63,6 @@ jobs:
           -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" \
           --entrypoint "tail" ckan/ckan-dev:${{ matrix.ckan-version }} "-f" "/dev/null"
         docker start test_ckan
-        docker ps
     - name: Install requirements and set up ckanext
       run: |
         docker exec test_ckan $WORKDIR/bin/install_test_requirements.sh ${{ matrix.ckan-version }}
