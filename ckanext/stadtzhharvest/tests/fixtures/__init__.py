@@ -1,12 +1,10 @@
 import tempfile
 
 import pytest
+from ckan.tests import factories
 
 from ckanext.harvest import queue
-from ckanext.stadtzhtheme.plugin import (
-    create_dataType,
-    create_updateInterval,
-)
+from ckanext.stadtzhtheme.plugin import create_dataType, create_updateInterval
 
 
 @pytest.fixture
@@ -25,5 +23,10 @@ def clean_queues():
 
 
 @pytest.fixture
-def test_dir():
+def temp_dir():
     return tempfile.mkdtemp()
+
+
+@pytest.fixture
+def org():
+    return factories.Organization(name="Stadt Zürich")
