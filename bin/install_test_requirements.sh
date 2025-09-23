@@ -19,6 +19,6 @@ pip install -r https://raw.githubusercontent.com/ckan/ckanext-harvest/master/req
 # Replace default path to CKAN core config file with the one on the container
 sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini
 
-# Init db and apply any pending migrations
+echo "Init db and apply any pending migrations"
 ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db init
 ckan -c /__w/ckanext-stadtzh-harvest/ckanext-stadtzh-harvest/test.ini db pending-migrations --apply
