@@ -33,7 +33,6 @@ def stadtzhharvest_find_or_create_organization(package_dict):
     except Exception:
         data_dict = {
             "permission": "edit_group",
-            "id": munge_title_to_name(ORGANIZATION["de"]),
             "name": munge_title_to_name(ORGANIZATION["de"]),
             "title": ORGANIZATION["de"],
         }
