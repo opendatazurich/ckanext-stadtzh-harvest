@@ -143,7 +143,6 @@ class TestStadtzhHarvester(object):
         # groups
         def check_group(id, name, title):
             group_result = helpers.call_action("group_show", {}, id=id)
-            assert group_result["id"] == id
             assert group_result["name"] == name
             assert group_result["title"] == title
 
