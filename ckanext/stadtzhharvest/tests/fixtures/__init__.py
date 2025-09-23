@@ -1,5 +1,6 @@
+import tempfile
+
 import pytest
-from ckan.tests.helpers import config
 
 from ckanext.harvest import queue
 from ckanext.stadtzhtheme.plugin import (
@@ -21,3 +22,8 @@ def clean_db(reset_db, migrate_db_for):
 @pytest.fixture
 def clean_queues():
     queue.purge_queues()
+
+
+@pytest.fixture
+def test_dir():
+    return tempfile.mkdtemp()

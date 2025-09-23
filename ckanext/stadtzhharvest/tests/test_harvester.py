@@ -165,17 +165,6 @@ class FunctionalHarvestTest(object):
         cls.gather_consumer = queue.get_gather_consumer()
         cls.fetch_consumer = queue.get_fetch_consumer()
 
-    def setup(self):
-        # create required tag vocabularies
-        theme.create_updateInterval()
-        theme.create_dataType()
-
-        # create temp dir for this test
-        self.temp_dir = tempfile.mkdtemp()
-
-    def teardown(self):
-        shutil.rmtree(self.temp_dir)
-
     def _create_harvest_source(self, **kwargs):
         source_dict = {
             "title": "Stadt ZH Source",
@@ -263,7 +252,6 @@ class FunctionalHarvestTest(object):
     "clean_db",
     "clean_index",
     "clean_queues",
-    "harvest_setup",
 )
 class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
     def test_harvest_create_test_dropzone(self):
@@ -611,9 +599,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         assert last_job_status["stats"]["not modified"] == 0
         assert last_job_status["stats"]["errored"] == 0
 
-    def test_harvest_update_dwh(self):
+    def test_harvest_update_dwh(self, temp_dir):
         data_path = os.path.join(__location__, "fixtures", "DWH")
-        temp_data_path = os.path.join(self.temp_dir, "DWH")
+        temp_data_path = os.path.join(temp_dir, "DWH")
         shutil.copytree(data_path, temp_data_path)
 
         test_config = json.dumps(
@@ -624,7 +612,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
                 "update_date_last_modified": False,
             }
         )
-        meta_xml_path = os.path.join(self.temp_dir, "DWH", "nachnamen_2014", "meta.xml")
+        meta_xml_path = os.path.join(temp_dir, "DWH", "nachnamen_2014", "meta.xml")
 
         results = self._test_harvest_update(
             3,
@@ -649,9 +637,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
                 "Title does not match result: %s" % result
             )
 
-    def test_harvest_update_geo(self):
+    def test_harvest_update_geo(self, temp_dir):
         data_path = os.path.join(__location__, "fixtures", "GEO")
-        temp_data_path = os.path.join(self.temp_dir, "GEO")
+        temp_data_path = os.path.join(temp_dir, "GEO")
         shutil.copytree(data_path, temp_data_path)
 
         test_config = json.dumps(
@@ -663,7 +651,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             }
         )
         meta_xml_path = os.path.join(
-            self.temp_dir, "GEO", "amtshaus", "DEFAULT", "meta.xml"
+            temp_dir, "GEO", "amtshaus", "DEFAULT", "meta.xml"
         )
 
         results = self._test_harvest_update(
@@ -720,9 +708,9 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         assert results["count"] == num_objects + 1
         return results
 
-    def test_harvest_update_resources_geo(self):
+    def test_harvest_update_resources_geo(self, temp_dir):
         data_path = os.path.join(__location__, "fixtures", "test_geo_dropzone")
-        temp_data_path = os.path.join(self.temp_dir, "GEO")
+        temp_data_path = os.path.join(temp_dir, "GEO")
         shutil.copytree(data_path, temp_data_path)
 
         test_config = json.dumps(
@@ -734,7 +722,7 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
             }
         )
         meta_xml_path = os.path.join(
-            self.temp_dir, "GEO", "test_dataset", "DEFAULT", "meta.xml"
+            temp_dir, "GEO", "test_dataset", "DEFAULT", "meta.xml"
         )
 
         results = self._test_harvest_update_resource(
