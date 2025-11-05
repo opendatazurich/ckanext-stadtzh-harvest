@@ -1,2 +1,2 @@
 defusedxml==0.7.1
-ckantoolkit>=0.0.3
+ckantoolkit==0.0.7
