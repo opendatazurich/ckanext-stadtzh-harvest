@@ -213,8 +213,10 @@ schema. In this case the version should be set to the next CKAN version number.
              (rather than text type).  This allows us to sort on the titleString -->
         <field name="title_string" type="string" indexed="true" stored="false" />
 
-        <field name="data_dict" type="string" indexed="false" stored="true" />
-        <field name="validated_data_dict" type="string" indexed="false" stored="true" />
+      <!-- These fields are too big to store as DocValues fields, and we do not want to facet/sort/group on them
+          anyway -->
+      <field name="data_dict" type="string" indexed="false" stored="true" docValues="false"/>
+      <field name="validated_data_dict" type="string" indexed="false" stored="true" docValues="false" />
 
         <!-- Copy fields to be used for search into a field that uses filters optimised for German text -->
         <field name="text_de" type="text_de" indexed="true" stored="false" multiValued="true"/>
