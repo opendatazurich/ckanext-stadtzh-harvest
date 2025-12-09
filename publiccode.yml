@@ -6,7 +6,6 @@ logo: https://data.stadt-zuerich.ch/logo.svg
 platforms:
   - web
 categories:
-  - data-visualization
   - data-collection
 organisation:
   uri: https://data.stadt-zuerich.ch
