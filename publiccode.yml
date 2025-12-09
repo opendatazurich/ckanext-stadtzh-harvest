@@ -28,7 +28,7 @@ description:
     features:
       - implementing a harvester that imports data from mounted network drives to OGD
 legal:
-  license: GPL-3.0-only
+  license: AGPL-3.0-or-later
 maintenance:
   type: contract
   contractors:
