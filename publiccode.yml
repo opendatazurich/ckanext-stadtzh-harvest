@@ -23,7 +23,7 @@ description:
   en:
     localisedName: ckanext-stadtzh-harvest
     shortDescription: CKAN extension implementing a harvester to import datasets from the City of Zurich's "dropzones" to its CKAN instance (https://data.stadt-zuerich.ch/)
-    longDescription: ckanext-stadtzh-harvest is a plugin/extension for CKAN, based on ckanext-harvest (https://github.com/ckan/ckanext-harvest) and ckanext-dcat (https://github.com/ckan/ckanext-dcat), that implements a harvester for the City of Zurich. The data is loaded from so called "dropzones", which are mounted network drives. Each folder in a dropzone is considered a dataset which will be imported to their OGD Platform (https://data.stadt-zuerich.ch/).
+    longDescription: ckanext-stadtzh-harvest is a plugin/extension for CKAN, based on ckanext-harvest (https://github.com/ckan/ckanext-harvest), that implements a harvester for the City of Zurich. The data is loaded from so called "dropzones", which are mounted network drives. Each folder in a dropzone is considered a dataset which will be imported to their OGD Platform (https://data.stadt-zuerich.ch/).
     features:
       - implementing a harvester that imports data from mounted network drives to OGD
 legal:
