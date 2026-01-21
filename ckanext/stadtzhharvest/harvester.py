@@ -198,24 +198,24 @@ class StadtzhHarvester(HarvesterBase):
             return []
 
     def _load_metadata_from_path(self, meta_xml_path, dataset_id, dataset):
-        if not os.path.exists(meta_xml_path):
+        try:
+            with retry_open_file(meta_xml_path, "r") as meta_xml:
+                tree = etree.parse(meta_xml)
+                meta_xml = tree.getroot()
+                dataset_node = meta_xml.find("datensatz")
+                resources_node = dataset_node.find("ressourcen")
+
+                metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
+
+                # add resource metadata
+                metadata["resource_metadata"] = self._get_resources_metadata(resources_node)
+
+                return metadata
+        except FileNotFoundError:
             raise MetaXmlNotFoundError(
                 "meta.xml not found for dataset %s (path: %s)"
                 % (dataset_id, meta_xml_path)
             )
-
-        with retry_open_file(meta_xml_path, "r") as meta_xml:
-            tree = etree.parse(meta_xml)
-            meta_xml = tree.getroot()
-            dataset_node = meta_xml.find("datensatz")
-            resources_node = dataset_node.find("ressourcen")
-
-        metadata = self._dropzone_get_metadata(dataset_id, dataset, dataset_node)
-
-        # add resource metadata
-        metadata["resource_metadata"] = self._get_resources_metadata(resources_node)
-
-        return metadata
 
     def fetch_stage(self, harvest_object):
         log.debug("In StadtzhHarvester fetch_stage")
