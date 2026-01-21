@@ -885,19 +885,6 @@ class StadtzhHarvester(HarvesterBase):
             attributes.append((attribute_name, attribut.find("feldbeschreibung").text))
         return attributes
 
-    def _get_immediate_subdirectories(self, directory):
-        try:
-            return [
-                name
-                for name in os.listdir(directory)
-                if os.path.isdir(os.path.join(directory, name))
-            ]
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                # directory does not exist
-                return []
-            raise
-
     def _diff_path(self, package_id):
         today = datetime.date.today()
         if package_id:
