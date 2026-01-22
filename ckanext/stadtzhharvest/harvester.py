@@ -755,79 +755,75 @@ class StadtzhHarvester(HarvesterBase):
         Given a dataset folder, it'll return a list of resource metadata
         """
         resources = []
-        file_list = [
-            f
-            for f in os.listdir(
-                os.path.join(
-                    self.config["data_path"], dataset, self.config["metafile_dir"]
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    self.config["data_path"], dataset, self.config["metafile_dir"], f
-                )
-            )
-        ]
-        resource_files = self._remove_hidden_files(file_list)
+
+        base_dir = os.path.join(
+            self.config["data_path"], dataset, self.config["metafile_dir"]
+        )
+
+        try:
+            resource_files = self._remove_hidden_files(os.listdir(base_dir))
+        except FileNotFoundError:
+            return []
+
         log.debug(resource_files)
 
         # for resource_file in resource_files:
-        for resource_file in (x for x in resource_files if x != "meta.xml"):
-            resource_path = os.path.join(
-                self.config["data_path"],
-                dataset,
-                self.config["metafile_dir"],
-                resource_file,
-            )
+        for resource_file in resource_files:
+            if resource_file == "meta.xml":
+                continue
+
+            resource_path = os.path.join(base_dir, resource_file)
+
             if resource_file == "link.xml":
                 with retry_open_file(resource_path, "r") as links_xml:
                     links = etree.parse(links_xml).findall("link")
 
-                    for link in links:
-                        url = self._get(link, "url")
-                        if url:
-                            # generate hash for URL
-                            md5 = hashlib.md5()
-                            md5.update(url.encode("utf-8"))
-                            resources.append(
-                                {
-                                    "url": url,
-                                    "zh_hash": md5.hexdigest(),
-                                    "name": self._get(link, "lable"),
-                                    "description": self._get(link, "description"),
-                                    "format": self._get(link, "type"),
-                                    "resource_type": "api",
-                                }
-                            )
-            else:
-                resource_file = self._validate_filename(resource_file)
-                if resource_file:
-                    resource_dict = {
-                        "name": resource_file,
-                        "url": "",
-                        "description": "",
-                        "url_type": "upload",
-                        "format": resource_file.split(".")[-1],
-                        "resource_type": "file",
-                    }
+                for link in links:
+                    url = self._get(link, "url")
+                    if not url:
+                        continue
 
-                    # calculate the hash of this file
-                    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-                    md5 = hashlib.md5()
-                    with retry_open_file(resource_path, "rb") as f:
-                        while True:
-                            data = f.read(BUF_SIZE)
-                            if not data:
-                                break
-                            md5.update(data)
-                        resource_dict["zh_hash"] = md5.hexdigest()
+                    md5 = hashlib.md5(url.encode("utf-8")).hexdigest()
+                    resources.append(
+                        {
+                            "url": url,
+                            "zh_hash": md5,
+                            "name": self._get(link, "lable"),
+                            "description": self._get(link, "description"),
+                            "format": self._get(link, "type"),
+                            "resource_type": "api",
+                        }
+                    )
+                continue
 
-                    # add file to FieldStorage
-                    with retry_open_file(resource_path, "rb", close=False) as f:
-                        field_storage = FlaskFileStorage(f, f.name)
-                        resource_dict["upload"] = field_storage
+            validated_name = self._validate_filename(resource_file)
+            if not validated_name:
+                continue
 
-                    resources.append(resource_dict)
+            resource_dict = {
+                "name": validated_name,
+                "url": "",
+                "description": "",
+                "url_type": "upload",
+                "format": validated_name.split(".")[-1],
+                "resource_type": "file",
+            }
+
+            # calculate the hash of this file
+            BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+            md5 = hashlib.md5()
+
+            with retry_open_file(resource_path, "rb") as f:
+                for chunk in iter(lambda: f.read(BUF_SIZE), b""):
+                    md5.update(chunk)
+
+            resource_dict["zh_hash"] = md5.hexdigest()
+
+            # only open a second time if we have to upload a file
+            with retry_open_file(resource_path, "rb", close=False) as f:
+                resource_dict["upload"] = FlaskFileStorage(f, f.name)
+
+            resources.append(resource_dict)
 
         sorted_resources = sorted(resources, key=cmp_to_key(self._sort_resource))
         return sorted_resources
