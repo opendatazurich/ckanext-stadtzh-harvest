@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import datetime
-import errno
 import hashlib
 import logging
 import os
