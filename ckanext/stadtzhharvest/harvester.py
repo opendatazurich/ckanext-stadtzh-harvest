@@ -6,11 +6,9 @@ import logging
 import os
 import re
 import traceback
-import uuid
 from contextlib import contextmanager
 from functools import cmp_to_key
 
-import ckan.lib.navl.validators as validators
 import ckan.plugins.toolkit as tk
 import defusedxml.ElementTree as etree
 from ckan import model
@@ -25,6 +23,7 @@ from ckanext.harvest.harvesters import HarvesterBase
 from ckanext.harvest.model import HarvestObject
 from ckanext.stadtzhharvest.utils import (
     stadtzhharvest_create_new_context,
+    stadtzhharvest_create_package,
     stadtzhharvest_find_or_create_organization,
     stadtzhharvest_get_group_names,
 )
@@ -282,10 +281,14 @@ class StadtzhHarvester(HarvesterBase):
         # import the package if it does not yet exists => it's a new package
         # or if this harvester is allowed to update packages
         if not existing_package:
-            dataset_id = self._create_package(package_dict, harvest_object)
-            if not dataset_id:
-                # No need to log an error here
-                # as it was logged in _create_package
+            try:
+                dataset_id = stadtzhharvest_create_package(package_dict, harvest_object)
+            except tk.ValidationError as e:
+                self._save_object_error(
+                    "Create validation Error: %s" % str(e.error_summary),
+                    harvest_object,
+                    "Import",
+                )
                 return False
         else:
             # Don't change the dataset name even if the title has
@@ -498,55 +501,6 @@ class StadtzhHarvester(HarvesterBase):
                 )
                 continue
         return resource_ids
-
-    def _create_package(self, dataset, harvest_object):
-        theme_plugin = StadtzhThemePlugin()
-        package_schema = theme_plugin.create_package_schema()
-
-        # We need to explicitly provide a package ID
-        dataset["id"] = str(uuid.uuid4())
-        package_schema["id"] = [validators.unicode_safe]
-
-        # get the site user
-        site_user = tk.get_action("get_site_user")(
-            {"model": model, "ignore_auth": True}, {}
-        )
-        context = {
-            "user": site_user["name"],
-            "return_id_only": True,
-            "ignore_auth": True,
-            "schema": package_schema,
-        }
-
-        # Flag this object as the current one
-        harvest_object.current = True
-        harvest_object.add()
-
-        # Save reference to the package on the object
-        harvest_object.package_id = dataset["id"]
-        harvest_object.add()
-
-        # Defer constraints and flush so the dataset can be indexed with
-        # the harvest object id (on the after_show hook from the harvester
-        # plugin)
-        model.Session.execute("SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED")
-        model.Session.flush()
-
-        try:
-            p.toolkit.get_action("package_create")(context, dataset)
-        except p.toolkit.ValidationError as e:
-            self._save_object_error(
-                "Create validation Error: %s" % str(e.error_summary),
-                harvest_object,
-                "Import",
-            )
-            return False
-
-        log.info("Created dataset %s", dataset["name"])
-
-        model.Session.commit()
-
-        return dataset["id"]
 
     def _update_package(self, dataset, harvest_object):
         # Get the last harvested object (if any)

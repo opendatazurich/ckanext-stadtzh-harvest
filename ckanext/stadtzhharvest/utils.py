@@ -2,12 +2,16 @@
 
 import logging
 import traceback
+import uuid
 
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.munge import munge_title_to_name
-from ckan.logic import get_action
+from ckan.lib.navl import validators
+from ckan.logic import NotFound, get_action
 from ckan.model import Session
+
+from ckanext.stadtzhtheme.plugin import StadtzhThemePlugin
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +33,7 @@ def stadtzhharvest_find_or_create_organization(package_dict):
         package_dict["owner_org"] = get_action("organization_show")(
             context.copy(), data_dict
         )["id"]
-        return package_dict
-    except Exception:
+    except NotFound:
         data_dict = {
             "permission": "edit_group",
             "name": munge_title_to_name(ORGANIZATION["de"]),
@@ -38,7 +41,6 @@ def stadtzhharvest_find_or_create_organization(package_dict):
         }
         organization = get_action("organization_create")(context.copy(), data_dict)
         package_dict["owner_org"] = organization["id"]
-        return package_dict
 
 
 def stadtzhharvest_create_new_context():
@@ -98,3 +100,45 @@ def stadtzhharvest_get_group_names(group_list):
                 raise
 
     return groups
+
+
+def stadtzhharvest_create_package(dataset, harvest_object):
+    theme_plugin = StadtzhThemePlugin()
+    package_schema = theme_plugin.create_package_schema()
+
+    # We need to explicitly provide a package ID
+    dataset["id"] = str(uuid.uuid4())
+    package_schema["id"] = [validators.unicode_safe]
+
+    # get the site user
+    site_user = tk.get_action("get_site_user")(
+        {"model": model, "ignore_auth": True}, {}
+    )
+    context = {
+        "user": site_user["name"],
+        "return_id_only": True,
+        "ignore_auth": True,
+        "schema": package_schema,
+    }
+
+    # Flag this object as the current one
+    harvest_object.current = True
+    harvest_object.add()
+
+    # Save reference to the package on the object
+    harvest_object.package_id = dataset["id"]
+    harvest_object.add()
+
+    # Defer constraints and flush so the dataset can be indexed with
+    # the harvest object id (on the after_show hook from the harvester
+    # plugin)
+    model.Session.execute("SET CONSTRAINTS harvest_object_package_id_fkey DEFERRED")
+    model.Session.flush()
+
+    tk.get_action("package_create")(context, dataset)
+
+    log.info("Created dataset %s", dataset["name"])
+
+    model.Session.commit()
+
+    return dataset["id"]

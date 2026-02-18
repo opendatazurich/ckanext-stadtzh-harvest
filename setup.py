@@ -24,5 +24,6 @@ setup(
     entry_points="""
     [ckan.plugins]
     stadtzh_harvester=ckanext.stadtzhharvest.harvester:StadtzhHarvester
+    stadtzh_sdk_harvester=ckanext.stadtzhharvest.sdk_harvester:StadtzhSDKHarvester
     """,
 )
