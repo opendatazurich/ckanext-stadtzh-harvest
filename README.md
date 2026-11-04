@@ -28,7 +28,8 @@ Example:
     "update_datasets": false,
     "update_date_last_modified": true,
     "dataset_prefix": "",
-    "delete_missing_datasets": false
+    "delete_missing_datasets": false,
+    "delete_missing_resources": false
 }
 ```
 
@@ -61,6 +62,12 @@ E.g. if a harvester imports a dataset "velowege", it will be imported as "velowe
 ### `delete_missing_datasets`
 
 Boolean flag (true/false) to determine if this harvester should delete existing datasets that are no longer included in the harvest-source. 
+Default: false.
+
+### `delete_missing_resources`
+
+Boolean flag (true/false) to determine if this harvester should delete resources from an existing dataset if they are no longer included in the harvest-source.
+Default: true.
 
 ## Metadata
 Each dataset consists of a folder containing a `meta.xml` (required!) and an arbitrary number of resources.
