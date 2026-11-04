@@ -103,6 +103,9 @@ class StadtzhHarvester(HarvesterBase):
         self._validate_boolean_config(
             config_obj, "delete_missing_datasets", required=False
         )
+        self._validate_boolean_config(
+            config_obj, "delete_missing_resources", required=False
+        )
 
         return config_str
 
@@ -135,6 +138,8 @@ class StadtzhHarvester(HarvesterBase):
             self.config["dataset_prefix"] = ""
         if "delete_missing_datasets" not in self.config:
             self.config["delete_missing_datasets"] = False
+        if "delete_missing_resources" not in self.config:
+            self.config["delete_missing_resources"] = True
 
         log.debug("Using config: %r" % self.config)
 
@@ -272,7 +277,7 @@ class StadtzhHarvester(HarvesterBase):
         # set the actions to do with the resources after the package is
         # updated or created
         actions, resources_changed = self._resources_actions(
-            existing_package, new_resources
+            existing_package, new_resources, self.config.get("delete_missing_resources")
         )
 
         if existing_package and "resources" in existing_package:
@@ -376,7 +381,9 @@ class StadtzhHarvester(HarvesterBase):
         )
         return existing_packages_names
 
-    def _resources_actions(self, existing_package, new_resources):
+    def _resources_actions(
+        self, existing_package, new_resources, delete_missing_resources
+    ):
         resources_changed = False
         actions = []
 
@@ -410,17 +417,20 @@ class StadtzhHarvester(HarvesterBase):
                         break
                 actions.append(action)
 
-            for old in old_resources:
-                if not [
-                    action for action in actions if action["res_name"] == old["name"]
-                ]:
-                    actions.append(
-                        {
-                            "action": "delete",
-                            "old_resource": old,
-                            "res_name": old["name"],
-                        }
-                    )
+            if delete_missing_resources:
+                for old in old_resources:
+                    if not [
+                        action
+                        for action in actions
+                        if action["res_name"] == old["name"]
+                    ]:
+                        actions.append(
+                            {
+                                "action": "delete",
+                                "old_resource": old,
+                                "res_name": old["name"],
+                            }
+                        )
         return (actions, resources_changed)
 
     def _import_resources(self, actions, package_dict, harvest_object):
