@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from os.path import isdir
 
 import pytest
 from ckan.lib.helpers import url_for
@@ -60,7 +61,7 @@ class FunctionalHarvestTest(object):
     def _test_harvest_update(
         self, num_objects, mock_dropzone, dropzone_path, meta_xml_path, config=None
     ):
-        # First run, will create datasets as previously tested
+        # First run, will create datasets
         harvest_source = self.create_harvest_source(config=config)
 
         run_harvest(HARVESTER_URL, StadtzhHarvester())
@@ -70,7 +71,7 @@ class FunctionalHarvestTest(object):
         results = helpers.call_action("package_search", {}, fq=fq)
         assert results["count"] == num_objects
 
-        # change data in source
+        # Change metadata in source
         with open(meta_xml_path, "r") as meta_file:
             meta = meta_file.read()
         meta = meta.replace("</titel>", " (updated)</titel>")
@@ -86,7 +87,7 @@ class FunctionalHarvestTest(object):
         # Run a second job
         run_harvest(HARVESTER_URL, StadtzhHarvester())
 
-        # Check that we still have two datasets
+        # Check that one more dataset has been harvested
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq)
 
@@ -94,12 +95,12 @@ class FunctionalHarvestTest(object):
         return results
 
     def _test_harvest_update_resource(self, num_objects, meta_xml_path, config=None):
-        # First run, will create datasets as previously tested
+        # First run, will create datasets
         harvest_source = self.create_harvest_source(config=config)
 
         run_harvest(HARVESTER_URL, StadtzhHarvester())
 
-        # change data in source
+        # Change resource metadata in source
         with open(meta_xml_path, "r") as meta_file:
             meta = meta_file.read()
         meta = meta.replace("</beschreibung>", " (updated)</beschreibung>")
@@ -109,7 +110,32 @@ class FunctionalHarvestTest(object):
         # Run a second job
         run_harvest(HARVESTER_URL, StadtzhHarvester())
 
-        # Check that we still have two datasets
+        # Check that we still have the same number of datasets
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+
+        assert results["count"] == num_objects
+        return results
+
+    def _test_harvest_delete_resource(self, num_objects, dropzone_path, config=None):
+        # First run, will create datasets
+        harvest_source = self.create_harvest_source(config=config)
+
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Remove resources from datasets
+        for dataset_dir in os.listdir(dropzone_path):
+            dir_path = os.path.join(dropzone_path, dataset_dir)
+            if not isdir(dir_path):
+                continue
+            for source_file in os.listdir(dir_path):
+                if source_file not in ["link.xml", "meta.xml"]:
+                    os.remove(os.path.join(dir_path, source_file))
+
+        # Run a second job
+        run_harvest(HARVESTER_URL, StadtzhHarvester())
+
+        # Check that we still have the same number of datasets
         fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
         results = helpers.call_action("package_search", {}, fq=fq)
 
@@ -492,3 +518,75 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         result = results["results"][0]
         test_json = next(r for r in result["resources"] if r["name"] == "test.json")
         assert test_json["description"] == "This is a test description (updated)"
+
+    def test_delete_missing_resources_default_is_true(self, temp_dir):
+        data_path = os.path.join(__location__, "fixtures", "DWH")
+        temp_data_path = os.path.join(temp_dir, "DWH")
+        shutil.copytree(data_path, temp_data_path)
+
+        # The default value of "delete_missing_resources" is True
+        test_config = {
+            "data_path": temp_data_path,
+            "metafile_dir": "",
+            "update_datasets": True,
+            "update_date_last_modified": False,
+        }
+
+        results = self._test_harvest_delete_resource(
+            num_objects=3,
+            dropzone_path=temp_data_path,
+            config=test_config,
+        )
+
+        # The datasets should still be there, but with no resources attached
+        assert len(results["results"]) == 3
+        for result in results["results"]:
+            assert len(result["resources"]) == 0
+
+    def test_delete_missing_resources_true(self, temp_dir):
+        data_path = os.path.join(__location__, "fixtures", "DWH")
+        temp_data_path = os.path.join(temp_dir, "DWH")
+        shutil.copytree(data_path, temp_data_path)
+
+        test_config = {
+            "data_path": temp_data_path,
+            "metafile_dir": "",
+            "update_datasets": True,
+            "update_date_last_modified": False,
+            "delete_missing_resources": True,
+        }
+
+        results = self._test_harvest_delete_resource(
+            num_objects=3,
+            dropzone_path=temp_data_path,
+            config=test_config,
+        )
+
+        # The datasets should still be there, but with no resources attached
+        assert len(results["results"]) == 3
+        for result in results["results"]:
+            assert len(result["resources"]) == 0
+
+    def test_delete_missing_resources_false(self, temp_dir):
+        data_path = os.path.join(__location__, "fixtures", "DWH")
+        temp_data_path = os.path.join(temp_dir, "DWH")
+        shutil.copytree(data_path, temp_data_path)
+
+        test_config = {
+            "data_path": temp_data_path,
+            "metafile_dir": "",
+            "update_datasets": True,
+            "update_date_last_modified": False,
+            "delete_missing_resources": False,
+        }
+
+        results = self._test_harvest_delete_resource(
+            num_objects=3,
+            dropzone_path=temp_data_path,
+            config=test_config,
+        )
+
+        # The datasets should still be there and the resources should still be there too
+        assert len(results["results"]) == 3
+        for result in results["results"]:
+            assert len(result["resources"]) > 0
