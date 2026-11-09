@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-from os.path import isdir
 
 import pytest
 from ckan.lib.helpers import url_for
@@ -123,14 +122,16 @@ class FunctionalHarvestTest(object):
 
         run_harvest(HARVESTER_URL, StadtzhHarvester())
 
+        fq = "+type:dataset harvest_source_id:{0}".format(harvest_source["id"])
+        results = helpers.call_action("package_search", {}, fq=fq)
+
+        assert results["count"] == num_objects
+
         # Remove resources from datasets
-        for dataset_dir in os.listdir(dropzone_path):
-            dir_path = os.path.join(dropzone_path, dataset_dir)
-            if not isdir(dir_path):
-                continue
-            for source_file in os.listdir(dir_path):
-                if source_file not in ["link.xml", "meta.xml"]:
-                    os.remove(os.path.join(dir_path, source_file))
+        for root, dirs, files in os.walk(dropzone_path):
+            for file in files:
+                if file not in ["meta.xml"]:
+                    os.remove(os.path.join(root, file))
 
         # Run a second job
         run_harvest(HARVESTER_URL, StadtzhHarvester())
@@ -519,74 +520,42 @@ class TestStadtzhHarvestFunctional(FunctionalHarvestTest):
         test_json = next(r for r in result["resources"] if r["name"] == "test.json")
         assert test_json["description"] == "This is a test description (updated)"
 
-    def test_delete_missing_resources_default_is_true(self, temp_dir):
-        data_path = os.path.join(__location__, "fixtures", "DWH")
-        temp_data_path = os.path.join(temp_dir, "DWH")
-        shutil.copytree(data_path, temp_data_path)
-
-        # The default value of "delete_missing_resources" is True
-        test_config = {
-            "data_path": temp_data_path,
-            "metafile_dir": "",
-            "update_datasets": True,
-            "update_date_last_modified": False,
-        }
-
-        results = self._test_harvest_delete_resource(
-            num_objects=3,
-            dropzone_path=temp_data_path,
-            config=test_config,
-        )
-
-        # The datasets should still be there, but with no resources attached
-        assert len(results["results"]) == 3
-        for result in results["results"]:
-            assert len(result["resources"]) == 0
-
-    def test_delete_missing_resources_true(self, temp_dir):
-        data_path = os.path.join(__location__, "fixtures", "DWH")
-        temp_data_path = os.path.join(temp_dir, "DWH")
+    @pytest.mark.parametrize(
+        "dropzone, num_datasets, delete_missing_resources, expect_deleted",
+        [
+            ("DWH", 3, None, True),
+            ("DWH", 3, True, True),
+            ("DWH", 3, False, False),
+            ("GEO", 2, None, True),
+            ("GEO", 2, True, True),
+            ("GEO", 2, False, False),
+        ],
+    )
+    def test_delete_missing_resources(
+        self, temp_dir, dropzone, num_datasets, delete_missing_resources, expect_deleted
+    ):
+        data_path = os.path.join(__location__, "fixtures", dropzone)
+        temp_data_path = os.path.join(temp_dir, dropzone)
         shutil.copytree(data_path, temp_data_path)
 
         test_config = {
             "data_path": temp_data_path,
-            "metafile_dir": "",
             "update_datasets": True,
             "update_date_last_modified": False,
-            "delete_missing_resources": True,
         }
+        if dropzone == "GEO":
+            test_config["metafile_dir"] = "DEFAULT"
+        if delete_missing_resources is not None:
+            test_config["delete_missing_resources"] = delete_missing_resources
 
         results = self._test_harvest_delete_resource(
-            num_objects=3,
+            num_objects=num_datasets,
             dropzone_path=temp_data_path,
             config=test_config,
         )
 
-        # The datasets should still be there, but with no resources attached
-        assert len(results["results"]) == 3
         for result in results["results"]:
-            assert len(result["resources"]) == 0
-
-    def test_delete_missing_resources_false(self, temp_dir):
-        data_path = os.path.join(__location__, "fixtures", "DWH")
-        temp_data_path = os.path.join(temp_dir, "DWH")
-        shutil.copytree(data_path, temp_data_path)
-
-        test_config = {
-            "data_path": temp_data_path,
-            "metafile_dir": "",
-            "update_datasets": True,
-            "update_date_last_modified": False,
-            "delete_missing_resources": False,
-        }
-
-        results = self._test_harvest_delete_resource(
-            num_objects=3,
-            dropzone_path=temp_data_path,
-            config=test_config,
-        )
-
-        # The datasets should still be there and the resources should still be there too
-        assert len(results["results"]) == 3
-        for result in results["results"]:
-            assert len(result["resources"]) > 0
+            if expect_deleted:
+                assert result["resources"] == []
+            else:
+                assert len(result["resources"]) > 0
